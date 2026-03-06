@@ -193,8 +193,6 @@ export function QRScanner({ userName, onScanComplete }: QRScannerProps) {
           )}
         </div>
 
-        {/* Gold accent line */}
-        <div className="h-1 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
       </Card>
     </div>
   );

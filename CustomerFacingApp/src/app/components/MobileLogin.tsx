@@ -56,9 +56,7 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
               Koryori Hayashi
             </h1>
             <div className="flex items-center justify-center gap-2 text-sm text-[#6B7280]">
-              <span>小料理林</span>
-              <span>•</span>
-              <span>Forest of Small Birds</span>
+              <span>Welcome!</span>
             </div>
           </div>
 
@@ -192,8 +190,6 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
           </div>
         </div>
 
-        {/* Gold accent line */}
-        <div className="h-1 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
       </Card>
     </div>
   );
