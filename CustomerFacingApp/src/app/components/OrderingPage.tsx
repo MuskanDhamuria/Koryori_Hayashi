@@ -27,149 +27,288 @@ interface OrderingPageProps {
 // Enhanced menu items with flavor profiles, weather tags, and MAB properties
 const BASE_MENU_ITEMS: MenuItemType[] = [
   {
-    id: "1",
-    name: "Deluxe Sushi Platter",
-    description: "Assorted nigiri and maki rolls with fresh wasabi and ginger",
-    price: 32.99,
-    category: "sushi",
-    image: "https://images.unsplash.com/photo-1625937751876-4515cd8e78bd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdXNoaSUyMHBsYXR0ZXJ8ZW58MXx8fHwxNzcyNjUxODA3fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    isHighMargin: true,
-    flavorProfile: { umami: 0.9, citrus: 0.3, refreshing: 0.7, hearty: 0.4 },
-    weatherTags: ['sunny', 'hot'],
-  },
-  {
-    id: "2",
-    name: "California Roll",
-    description: "Crab, avocado, cucumber wrapped in rice and nori",
-    price: 12.99,
-    category: "sushi",
-    image: "https://images.unsplash.com/photo-1559410545-0bdcd187e0a6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYWxpZm9ybmlhJTIwcm9sbCUyMHN1c2hpfGVufDF8fHx8MTc3MjU3MTE0OXww&ixlib=rb-4.1.0&q=80&w=1080",
-    flavorProfile: { umami: 0.6, citrus: 0.4, refreshing: 0.8, hearty: 0.3 },
-    weatherTags: ['sunny'],
-  },
-  {
-    id: "3",
-    name: "Salmon Sashimi",
-    description: "Fresh Norwegian salmon sliced to perfection",
-    price: 18.99,
-    category: "sushi",
-    image: "https://images.unsplash.com/photo-1675870792392-116a80bd7ad6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzYWxtb24lMjBzYXNoaW1pfGVufDF8fHx8MTc3MjY4NDgwNXww&ixlib=rb-4.1.0&q=80&w=1080",
-    isHighMargin: true,
-    flavorProfile: { umami: 0.8, citrus: 0.2, refreshing: 0.9, hearty: 0.2 },
-    weatherTags: ['sunny', 'hot'],
-  },
-  {
-    id: "4",
-    name: "Tonkotsu Ramen",
-    description: "Rich pork bone broth with chashu, egg, and bamboo shoots",
-    price: 16.99,
-    category: "ramen",
-    image: "https://images.unsplash.com/photo-1635379511574-bc167ca085c8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyYW1lbiUyMGJvd2wlMjBqYXBhbmVzZXxlbnwxfHx8fDE3NzI2ODQ4MDN8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    spicy: 1,
-    isHighMargin: true,
-    flavorProfile: { umami: 1.0, citrus: 0.0, refreshing: 0.1, hearty: 1.0 },
-    weatherTags: ['rainy', 'cold'],
-  },
-  {
-    id: "5",
-    name: "Spicy Miso Ramen",
-    description: "Fermented soybean broth with ground pork and vegetables",
-    price: 15.99,
-    category: "ramen",
-    image: "https://images.unsplash.com/photo-1635379511574-bc167ca085c8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyYW1lbiUyMGJvd2wlMjBqYXBhbmVzZXxlbnwxfHx8fDE3NzI2ODQ4MDN8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    spicy: 3,
-    flavorProfile: { umami: 0.9, citrus: 0.1, refreshing: 0.2, hearty: 0.9 },
-    weatherTags: ['rainy', 'cold'],
-  },
-  {
-    id: "6",
-    name: "Udon Noodle Soup",
-    description: "Thick wheat noodles in dashi broth with tempura",
-    price: 14.99,
-    category: "ramen",
-    image: "https://images.unsplash.com/photo-1610554666975-339e1f736bc8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1ZG9uJTIwbm9vZGxlcyUyMGJvd2x8ZW58MXx8fHwxNzcyNjg0ODA3fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    flavorProfile: { umami: 0.7, citrus: 0.1, refreshing: 0.3, hearty: 0.8 },
-    weatherTags: ['rainy', 'cold'],
-  },
-  {
-    id: "7",
-    name: "Gyoza",
-    description: "Pan-fried pork and vegetable dumplings (6 pieces)",
-    price: 8.99,
+    id: "101",
+    name: "Japanese Fresh Oyster",
+    description: "Fresh Japanese oyster served chilled",
+    price: 3.8,
     category: "appetizers",
-    image: "https://images.unsplash.com/photo-1703080173985-936514c7c8bd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxneW96YSUyMGR1bXBsaW5nc3xlbnwxfHx8fDE3NzI2NDc3NzV8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    flavorProfile: { umami: 0.7, citrus: 0.2, refreshing: 0.4, hearty: 0.6 },
+    image: "https://images.unsplash.com/photo-1604908177522-432b8d7a9c8d",
+    isHighMargin: false,
+    flavorProfile: { umami: 0.9, citrus: 0.2, refreshing: 0.8, hearty: 0.2 },
+    weatherTags: ["sunny", "hot"],
   },
   {
-    id: "8",
-    name: "Edamame",
-    description: "Steamed young soybeans with sea salt",
-    price: 5.99,
+    id: "102",
+    name: "Crab Meat Cream Croquette",
+    description: "Crispy croquette filled with creamy crab meat",
+    price: 4.8,
     category: "appetizers",
-    image: "https://images.unsplash.com/photo-1575262599410-837a72005862?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlZGFtYW1lJTIwYmVhbnN8ZW58MXx8fHwxNzcyNjQ3Nzc1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    flavorProfile: { umami: 0.5, citrus: 0.3, refreshing: 0.7, hearty: 0.4 },
-  },
-  {
-    id: "9",
-    name: "Shrimp Tempura",
-    description: "Lightly battered and fried shrimp with dipping sauce",
-    price: 11.99,
-    category: "appetizers",
-    image: "https://images.unsplash.com/photo-1673238104258-38b63f973848?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0ZW1wdXJhJTIwc2hyaW1wfGVufDF8fHx8MTc3MjY4NDgwM3ww&ixlib=rb-4.1.0&q=80&w=1080",
+    image: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092",
     isHighMargin: true,
-    flavorProfile: { umami: 0.6, citrus: 0.4, refreshing: 0.5, hearty: 0.5 },
+    flavorProfile: { umami: 0.8, citrus: 0.1, refreshing: 0.2, hearty: 0.9 },
   },
   {
-    id: "10",
-    name: "Miso Soup",
-    description: "Traditional soybean soup with tofu and seaweed",
-    price: 3.99,
+    id: "103",
+    name: "Fried Oyster",
+    description: "Golden deep-fried oysters with crispy coating",
+    price: 3.8,
     category: "appetizers",
-    image: "https://images.unsplash.com/photo-1680137248903-7af5d51a3350?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtaXNvJTIwc291cHxlbnwxfHx8fDE3NzI2MTcwMjN8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    flavorProfile: { umami: 0.9, citrus: 0.1, refreshing: 0.4, hearty: 0.6 },
-    weatherTags: ['rainy', 'cold'],
+    image: "https://images.unsplash.com/photo-1544025162-d76694265947",
+    isHighMargin: true,
+    flavorProfile: { umami: 0.9, citrus: 0.1, refreshing: 0.3, hearty: 0.7 },
   },
   {
-    id: "11",
-    name: "Teriyaki Chicken",
-    description: "Grilled chicken with homemade teriyaki sauce and rice",
-    price: 13.99,
+    id: "104",
+    name: "Geso Karaage (Squid)",
+    description: "Japanese fried squid karaage",
+    price: 4.8,
+    category: "appetizers",
+    image: "https://images.unsplash.com/photo-1625944525533-473f1c5c2a6a",
+    isHighMargin: true,
+    flavorProfile: { umami: 0.8, citrus: 0.1, refreshing: 0.4, hearty: 0.6 },
+  },
+  {
+    id: "105",
+    name: "Aji Fry",
+    description: "Breaded and fried Japanese horse mackerel",
+    price: 3.8,
+    category: "appetizers",
+    image: "https://images.unsplash.com/photo-1598514982501-3b7b02c27d64",
+    isHighMargin: true,
+    flavorProfile: { umami: 0.7, citrus: 0.2, refreshing: 0.3, hearty: 0.6 },
+  },
+  {
+    id: "106",
+    name: "King Prawn",
+    description: "Large king prawn, lightly fried",
+    price: 7.8,
+    category: "appetizers",
+    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6c2c",
+    isHighMargin: false,
+    flavorProfile: { umami: 0.8, citrus: 0.2, refreshing: 0.4, hearty: 0.5 },
+  },
+
+  {
+    id: "107",
+    name: "Mentaiko Pasta",
+    description: "Japanese pasta with creamy cod roe sauce",
+    price: 9.8,
     category: "mains",
-    image: "https://images.unsplash.com/photo-1609183480237-ccbb2d7c5772?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0ZXJpeWFraSUyMGNoaWNrZW58ZW58MXx8fHwxNzcyNjg0ODA1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+    image: "https://images.unsplash.com/photo-1608756687911-aa1599ab3bd9",
+    isHighMargin: true,
+    flavorProfile: { umami: 0.9, citrus: 0.1, refreshing: 0.2, hearty: 0.8 },
+  },
+  {
+    id: "108",
+    name: "Creamy Truffle Mushroom Pasta",
+    description: "Rich truffle cream pasta with mushrooms",
+    price: 9.8,
+    category: "mains",
+    image: "https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5",
+    isHighMargin: true,
+    flavorProfile: { umami: 0.9, citrus: 0.0, refreshing: 0.1, hearty: 0.9 },
+  },
+  {
+    id: "109",
+    name: "Chicken/Pork Katsu Don",
+    description: "Breaded cutlet served over rice with egg and sauce",
+    price: 8.8,
+    category: "mains",
+    image: "https://images.unsplash.com/photo-1604908177522-432b8d7a9c8d",
+    isHighMargin: true,
+    flavorProfile: { umami: 0.8, citrus: 0.1, refreshing: 0.2, hearty: 0.9 },
+  },
+  {
+    id: "110",
+    name: "Chicken Nanban Don",
+    description: "Japanese fried chicken with tangy sauce over rice",
+    price: 8.8,
+    category: "mains",
+    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6c2c",
+    isHighMargin: true,
+    flavorProfile: { umami: 0.8, citrus: 0.3, refreshing: 0.3, hearty: 0.8 },
+  },
+  {
+    id: "111",
+    name: "Salmon Teriyaki Don",
+    description: "Grilled salmon with teriyaki sauce over rice",
+    price: 9.8,
+    category: "mains",
+    image: "https://images.unsplash.com/photo-1553621042-f6e147245754",
+    isHighMargin: false,
+    flavorProfile: { umami: 0.9, citrus: 0.2, refreshing: 0.4, hearty: 0.7 },
+  },
+  {
+    id: "112",
+    name: "Kitsune Udon",
+    description: "Udon noodles with sweet fried tofu",
+    price: 7.8,
+    category: "ramen",
+    image: "https://images.unsplash.com/photo-1610554666975-339e1f736bc8",
+    isHighMargin: true,
+    flavorProfile: { umami: 0.7, citrus: 0.1, refreshing: 0.3, hearty: 0.7 },
+    weatherTags: ["rainy", "cold"],
+  },
+  {
+    id: "113",
+    name: "Sukiyaki Beef Udon",
+    description: "Udon noodles with sweet soy beef sukiyaki",
+    price: 9.8,
+    category: "ramen",
+    image: "https://images.unsplash.com/photo-1610554666975-339e1f736bc8",
+    isHighMargin: false,
+    flavorProfile: { umami: 0.9, citrus: 0.1, refreshing: 0.2, hearty: 0.9 },
+    weatherTags: ["rainy", "cold"],
+  },
+  {
+    id: "114",
+    name: "Tempura Udon",
+    description: "Udon noodle soup served with crispy tempura",
+    price: 11.8,
+    category: "ramen",
+    image: "https://images.unsplash.com/photo-1610554666975-339e1f736bc8",
+    isHighMargin: true,
+    flavorProfile: { umami: 0.8, citrus: 0.1, refreshing: 0.3, hearty: 0.8 },
+    weatherTags: ["rainy", "cold"],
+  },
+
+  {
+    id: "115",
+    name: "Ice Cream (Matcha/Yuzu/Black Sesame/Houjicha/Jersey Milk)",
+    description: "Japanese flavored ice cream selection",
+    price: 2.5,
+    category: "desserts",
+    image: "https://images.unsplash.com/photo-1563805042-7684c019e1cb",
+    isHighMargin: true,
+    flavorProfile: { umami: 0.3, citrus: 0.6, refreshing: 0.8, hearty: 0.2 },
+    weatherTags: ["sunny", "hot"],
+  },
+  {
+    id: "116",
+    name: "Monaka Shell Ice Cream",
+    description: "Ice cream served in crispy monaka wafer shell",
+    price: 3.0,
+    category: "desserts",
+    image: "https://images.unsplash.com/photo-1505253216365-73a1f6e8b6af",
+    isHighMargin: true,
+    flavorProfile: { umami: 0.3, citrus: 0.4, refreshing: 0.7, hearty: 0.3 },
+  },
+  {
+    id: "117",
+    name: "Tempura Ice Cream",
+    description: "Deep fried ice cream (vanilla or chocolate)",
+    price: 4.8,
+    category: "desserts",
+    image: "https://images.unsplash.com/photo-1551024601-bec78aea704b",
+    isHighMargin: true,
+    isNew: true,
+    flavorProfile: { umami: 0.2, citrus: 0.2, refreshing: 0.5, hearty: 0.7 },
+  },
+  {
+    id: "118",
+    name: "Spicy Tuna Roll",
+    description: "Fresh tuna mixed with spicy mayo and wrapped with rice and nori",
+    price: 14.99,
+    category: "appetizers",
+    image: "https://images.unsplash.com/photo-1617196034796-73dfa7b1fd56",
+    spicy: 2,
+    isHighMargin: true,
+    flavorProfile: { umami: 0.8, citrus: 0.3, refreshing: 0.6, hearty: 0.4 },
+    weatherTags: ['sunny', 'hot'],
+  },
+
+  {
+    id: "119",
+    name: "Volcano Ramen",
+    description: "Extra spicy ramen with chili oil, minced pork, and soft boiled egg",
+    price: 17.99,
+    category: "mains",
+    image: "https://images.unsplash.com/photo-1617093727343-374698b1b08d",
+    spicy: 4,
+    isHighMargin: true,
+    flavorProfile: { umami: 0.9, citrus: 0.1, refreshing: 0.2, hearty: 1.0 },
+    weatherTags: ['rainy', 'cold'],
+  },
+
+  {
+    id: "120",
+    name: "Spicy Karaage Chicken",
+    description: "Japanese fried chicken tossed in spicy chili sauce",
+    price: 10.99,
+    category: "appetizers",
+    image: "https://images.unsplash.com/photo-1604908177522-040a5c1a3f10",
+    spicy: 3,
+    isHighMargin: true,
     flavorProfile: { umami: 0.8, citrus: 0.2, refreshing: 0.3, hearty: 0.7 },
   },
+
   {
-    id: "12",
-    name: "Green Tea",
-    description: "Premium Japanese sencha green tea",
-    price: 3.99,
-    category: "drinks",
-    image: "https://images.unsplash.com/photo-1708572727896-117b5ea25a86?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxncmVlbiUyMHRlYSUyMG1hdGNoYXxlbnwxfHx8fDE3NzI2ODQ4MDV8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    flavorProfile: { umami: 0.3, citrus: 0.6, refreshing: 0.9, hearty: 0.1 },
-    weatherTags: ['sunny'],
-  },
-  {
-    id: "13",
-    name: "Sake",
-    description: "Premium Japanese rice wine, served warm or cold",
-    price: 9.99,
-    category: "drinks",
-    image: "https://images.unsplash.com/photo-1703756292847-833e3cb741eb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzYWtlJTIwamFwYW5lc2UlMjBkcmlua3xlbnwxfHx8fDE3NzI2MzE2NTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    flavorProfile: { umami: 0.6, citrus: 0.2, refreshing: 0.7, hearty: 0.3 },
-    weatherTags: ['sunny', 'hot'],
-  },
-  {
-    id: "14",
-    name: "Fusion Dragon Roll",
-    description: "NEW! Spicy tuna, eel, and mango with special sauce",
-    price: 16.99,
-    category: "sushi",
-    image: "https://images.unsplash.com/photo-1625937751876-4515cd8e78bd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdXNoaSUyMHBsYXR0ZXJ8ZW58MXx8fHwxNzcyNjUxODA3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+    id: "121",
+    name: "Truffle Salmon Roll",
+    description: "NEW! Seared salmon sushi roll with truffle oil and avocado",
+    price: 18.99,
+    category: "appetizers",
+    image: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351",
     isNew: true,
     isHighMargin: true,
-    spicy: 2,
-    flavorProfile: { umami: 0.8, citrus: 0.5, refreshing: 0.6, hearty: 0.5 },
+    flavorProfile: { umami: 0.9, citrus: 0.2, refreshing: 0.6, hearty: 0.5 },
     weatherTags: ['sunny'],
+  },
+
+  {
+    id: "122",
+    name: "Matcha Cheesecake",
+    description: "NEW! Creamy cheesecake infused with premium Japanese matcha",
+    price: 7.99,
+    category: "desserts",
+    image: "https://images.unsplash.com/photo-1586985289906-406988974504",
+    isNew: true,
+    isHighMargin: true,
+    flavorProfile: { umami: 0.3, citrus: 0.2, refreshing: 0.5, hearty: 0.6 },
+  },
+
+  {
+    id: "123",
+    name: "Yuzu Sparkling Soda",
+    description: "NEW! Refreshing Japanese citrus soda with yuzu flavor",
+    price: 4.99,
+    category: "drinks",
+    image: "https://images.unsplash.com/photo-1558640479-823d3b9c7c2d",
+    isNew: true,
+    isHighMargin: true,
+    flavorProfile: { umami: 0.1, citrus: 0.9, refreshing: 1.0, hearty: 0.1 },
+    weatherTags: ['sunny', 'hot'],
+  },
+
+  {
+    id: "124",
+    name: "Iced Lemon Tea",
+    description: "Refreshing black tea served over ice with fresh lemon slices for a light citrus taste.",
+    price: 3.50,
+    category: "drinks",
+    image: "images/drinks/iced-lemon-tea.jpg",
+    isHighMargin: true,
+    isNew: false
+  },
+  {
+    id: "125",
+    name: "Thai Milk Tea",
+    description: "Classic Thai-style tea brewed strong and blended with sweetened milk, served chilled.",
+    price: 4.50,
+    category: "drinks",
+    image: "images/drinks/thai-milk-tea.jpg",
+    isHighMargin: true,
+    isNew: false
+  },
+  {
+    id: "126",
+    name: "Fresh Watermelon Juice",
+    description: "Freshly blended watermelon juice with no added sugar, naturally sweet and hydrating.",
+    price: 5.50,
+    category: "drinks",
+    image: "images/drinks/watermelon-juice.jpg",
+    isHighMargin: false,
+    isNew: true
   },
 ];
 
@@ -423,22 +562,16 @@ export function OrderingPage({ tableNumber, userName, phoneNumber, flavorPrefere
           </div>
         )}
         
-        <Tabs defaultValue="sushi" className="w-full">
+        <Tabs defaultValue="mains" className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-6 bg-white border border-[#E5E7EB] p-1">
             <TabsTrigger 
-              value="sushi"
+              value="mains"
               className="data-[state=active]:bg-[#0F1729] data-[state=active]:text-white"
             >
               <span className="mr-2">🍱</span>
-              Sushi
+              Mains
             </TabsTrigger>
-            <TabsTrigger 
-              value="ramen"
-              className="data-[state=active]:bg-[#0F1729] data-[state=active]:text-white"
-            >
-              <span className="mr-2">🍜</span>
-              Ramen
-            </TabsTrigger>
+            
             <TabsTrigger 
               value="appetizers"
               className="data-[state=active]:bg-[#0F1729] data-[state=active]:text-white"
@@ -446,6 +579,15 @@ export function OrderingPage({ tableNumber, userName, phoneNumber, flavorPrefere
               <span className="mr-2">🥟</span>
               Appetizers
             </TabsTrigger>
+
+            <TabsTrigger 
+              value="desserts"
+              className="data-[state=active]:bg-[#0F1729] data-[state=active]:text-white"
+            >
+              <span className="mr-2">🍦</span>
+              Desserts
+            </TabsTrigger>
+
             <TabsTrigger 
               value="drinks"
               className="data-[state=active]:bg-[#0F1729] data-[state=active]:text-white"
@@ -455,17 +597,17 @@ export function OrderingPage({ tableNumber, userName, phoneNumber, flavorPrefere
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="sushi" className="space-y-6">
+          <TabsContent value="mains" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {menuItems.filter((item) => item.category === "sushi").map((item) => (
+              {menuItems.filter((item) => item.category === "mains").map((item) => (
                 <MenuItem key={item.id} item={item} onAddToCart={handleAddToCart} />
               ))}
             </div>
           </TabsContent>
 
-          <TabsContent value="ramen" className="space-y-6">
+          <TabsContent value="desserts" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {menuItems.filter((item) => item.category === "ramen").map((item) => (
+              {menuItems.filter((item) => item.category === "desserts").map((item) => (
                 <MenuItem key={item.id} item={item} onAddToCart={handleAddToCart} />
               ))}
             </div>

@@ -115,7 +115,7 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
             <Button
               type="button"
               variant="outline"
-              className="w-full h-auto py-3 border-2 hover:bg-[#F9FAFB] transition-all"
+              className="w-full h-auto py-3 border-2 hover:bg-[#E5E7EB] transition-all"
               onClick={() => handleQuickLogin("+1 (555) 123-4567")}
             >
               <div className="flex items-center justify-between w-full">
@@ -138,7 +138,7 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
             <Button
               type="button"
               variant="outline"
-              className="w-full h-auto py-3 border-2 hover:bg-[#F9FAFB] transition-all"
+              className="w-full h-auto py-3 border-2 hover:bg-[#E5E7EB] transition-all"
               onClick={() => handleQuickLogin("+1 (555) 987-6543")}
             >
               <div className="flex items-center justify-between w-full">
@@ -161,7 +161,7 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
             <Button
               type="button"
               variant="outline"
-              className="w-full h-auto py-3 border-2 hover:bg-[#F9FAFB] transition-all"
+              className="w-full h-auto py-3 border-2 hover:bg-[#E5E7EB] transition-all"
               onClick={() => handleQuickLogin("+1 (555) 555-5555")}
             >
               <div className="flex items-center justify-between w-full">
