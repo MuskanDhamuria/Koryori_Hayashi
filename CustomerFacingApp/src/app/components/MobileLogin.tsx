@@ -4,7 +4,6 @@ import { Input } from "./ui/input";
 import { Card } from "./ui/card";
 import { UtensilsCrossed, Phone, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
-import { CherryBlossom } from "./JapanesePattern";
 
 interface MobileLoginProps {
   onLogin: (phoneNumber: string) => void;
@@ -36,83 +35,67 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#E8DCC8] flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Subtle sage green glow */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 right-20 w-96 h-96 bg-[#7C8A7A]/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-40 left-20 w-80 h-80 bg-[#9BA89A]/10 rounded-full blur-3xl" />
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-[#0A0E1A] via-[#0F1729] to-[#1A2642] flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Subtle grid pattern */}
+      <div className="fixed inset-0 opacity-5" style={{
+        backgroundImage: `linear-gradient(#D4AF37 1px, transparent 1px), linear-gradient(90deg, #D4AF37 1px, transparent 1px)`,
+        backgroundSize: '50px 50px'
+      }} />
 
-      {/* Floating Cherry Blossoms */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <CherryBlossom className="absolute top-20 left-10 animate-float opacity-20" size={40} />
-        <CherryBlossom className="absolute top-40 right-20 animate-float-delayed opacity-15" size={30} />
-        <CherryBlossom className="absolute bottom-32 left-1/4 animate-float opacity-18" size={35} />
-        <CherryBlossom className="absolute top-1/3 right-1/3 animate-float-delayed opacity-12" size={25} />
-        <CherryBlossom className="absolute bottom-20 right-10 animate-float opacity-25" size={45} />
-      </div>
-
-      <Card className="w-full max-w-md relative bg-[#F5F0E8]/95 backdrop-blur-sm border border-[#7C8A7A]/20 shadow-2xl overflow-hidden">
-        {/* Top sage accent */}
-        <div className="h-1 bg-gradient-to-r from-transparent via-[#7C8A7A] to-transparent opacity-60" />
-        
-        <div className="p-8">
+      <Card className="w-full max-w-md relative bg-white shadow-2xl">
+        <div className="p-10">
           {/* Logo & Header */}
-          <div className="text-center mb-8">
-            <div className="relative inline-block mb-6">
-              <div className="w-24 h-24 bg-gradient-to-br from-[#7C8A7A] to-[#9BA89A] rounded-full flex items-center justify-center shadow-lg relative">
-                <UtensilsCrossed className="w-12 h-12 text-[#F5F0E8]" />
-                <div className="absolute inset-0 rounded-full bg-gradient-to-t from-transparent to-white/20" />
-                <CherryBlossom className="absolute -top-2 -right-2 opacity-80" size={32} />
+          <div className="text-center mb-10">
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#0F1729] to-[#2D3E5F] rounded-full flex items-center justify-center shadow-lg">
+                <UtensilsCrossed className="w-8 h-8 text-[#D4AF37]" strokeWidth={2} />
               </div>
             </div>
             
-            <h1 className="text-5xl font-bold mb-3 text-[#4A5548]" style={{ fontFamily: 'serif' }}>
+            <h1 className="text-4xl font-bold text-[#0F1729] mb-2 tracking-tight">
               Koryori Hayashi
-
             </h1>
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <div className="h-px w-12 bg-gradient-to-r from-transparent to-[#7C8A7A]/40" />
-              <h2 className="text-xl tracking-widest text-[#5A6558]">Authentic Japanese Cuisine</h2>
-              <div className="h-px w-12 bg-gradient-to-l from-transparent to-[#7C8A7A]/40" />
+            <div className="flex items-center justify-center gap-2 text-sm text-[#6B7280]">
+              <span>小料理林</span>
+              <span>•</span>
+              <span>Forest of Small Birds</span>
             </div>
-            <p className="text-[#6B7669] text-sm"></p>
           </div>
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label htmlFor="phone" className="text-sm font-semibold text-[#4A5548] block">
+              <label htmlFor="phone" className="text-sm font-medium text-[#0F1729]">
                 Mobile Number
               </label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7C8A7A]" />
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#6B7280]" />
                 <Input
                   id="phone"
                   type="tel"
                   placeholder="+1 (555) 000-0000"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="pl-11 h-12 bg-white/60 border-2 border-[#7C8A7A]/30 focus:border-[#7C8A7A] focus:ring-[#7C8A7A] text-[#4A5548] placeholder:text-[#9BA89A]"
+                  className="pl-11 h-12 border-2 border-[#E5E7EB] focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
                 />
               </div>
-              <p className="text-xs text-[#6B7669]">
-                We'll send you a verification code
-              </p>
             </div>
 
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full h-12 bg-gradient-to-r from-[#7C8A7A] to-[#9BA89A] hover:from-[#6B7969] hover:to-[#8A9889] text-white shadow-lg text-base font-semibold"
+              className="w-full h-12 bg-[#0F1729] hover:bg-[#1A2642] text-white shadow-md transition-all"
             >
               {isLoading ? (
-                "Signing in..."
+                <span className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Signing in...
+                </span>
               ) : (
-                <>
+                <span className="flex items-center gap-2">
                   Continue
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </>
+                  <ArrowRight className="w-4 h-4" />
+                </span>
               )}
             </Button>
           </form>
@@ -120,94 +103,98 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
           {/* Divider */}
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#7C8A7A]/20" />
+              <div className="w-full border-t border-[#E5E7EB]" />
             </div>
             <div className="relative flex justify-center">
-              <span className="bg-[#F5F0E8] px-4 text-xs uppercase tracking-wider text-[#6B7669]">Quick Access</span>
+              <span className="bg-white px-4 text-xs text-[#6B7280] uppercase">
+                Quick Access
+              </span>
             </div>
           </div>
 
           {/* Quick Login Options */}
           <div className="space-y-3">
-            <p className="text-sm text-[#6B7669] text-center mb-3">
-              Demo accounts for testing:
-            </p>
             <Button
               type="button"
               variant="outline"
-              className="w-full border-2 border-[#7C8A7A]/30 hover:bg-[#7C8A7A]/10 hover:border-[#7C8A7A]/50 transition-all bg-white/40 text-[#4A5548]"
+              className="w-full h-auto py-3 border-2 hover:bg-[#F9FAFB] transition-all"
               onClick={() => handleQuickLogin("+1 (555) 123-4567")}
             >
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🌸</span>
-                  <span className="font-medium">Yuki Tanaka</span>
-                  <span className="text-xs px-2 py-0.5 bg-[#C5A572]/30 text-[#8B6F47] rounded-full border border-[#C5A572]/40">Gold</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#E8C95A]/20 to-[#D4AF37]/20 flex items-center justify-center">
+                    <span className="text-lg">⭐</span>
+                  </div>
+                  <div className="text-left">
+                    <div className="font-semibold text-[#0F1729]">Yuki Tanaka</div>
+                    <div className="text-xs text-[#6B7280]">+1 (555) 123-4567</div>
+                  </div>
                 </div>
-                <span className="text-xs text-[#6B7669]">850 pts</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-[#6B7280]">850 pts</span>
+                  <span className="text-xs px-2 py-1 bg-[#D4AF37] text-white rounded font-semibold">Gold</span>
+                </div>
               </div>
             </Button>
+            
             <Button
               type="button"
               variant="outline"
-              className="w-full border-2 border-[#7C8A7A]/30 hover:bg-[#7C8A7A]/10 hover:border-[#7C8A7A]/50 transition-all bg-white/40 text-[#4A5548]"
+              className="w-full h-auto py-3 border-2 hover:bg-[#F9FAFB] transition-all"
               onClick={() => handleQuickLogin("+1 (555) 987-6543")}
             >
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">💎</span>
-                  <span className="font-medium">Akira Sato</span>
-                  <span className="text-xs px-2 py-0.5 bg-purple-900/20 text-purple-800 rounded-full border border-purple-700/30">Platinum</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#D4AF37]/30 to-[#B8952B]/30 flex items-center justify-center">
+                    <span className="text-lg">💎</span>
+                  </div>
+                  <div className="text-left">
+                    <div className="font-semibold text-[#0F1729]">Akira Sato</div>
+                    <div className="text-xs text-[#6B7280]">+1 (555) 987-6543</div>
+                  </div>
                 </div>
-                <span className="text-xs text-[#6B7669]">2100 pts</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-[#6B7280]">2100 pts</span>
+                  <span className="text-xs px-2 py-1 bg-[#0F1729] text-[#D4AF37] rounded font-semibold">Platinum</span>
+                </div>
               </div>
             </Button>
+            
             <Button
               type="button"
               variant="outline"
-              className="w-full border-2 border-[#7C8A7A]/30 hover:bg-[#7C8A7A]/10 hover:border-[#7C8A7A]/50 transition-all bg-white/40 text-[#4A5548]"
+              className="w-full h-auto py-3 border-2 hover:bg-[#F9FAFB] transition-all"
               onClick={() => handleQuickLogin("+1 (555) 555-5555")}
             >
               <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">🏮</span>
-                  <span className="font-medium">New Customer</span>
-                  <span className="text-xs px-2 py-0.5 bg-[#9BA89A]/20 text-[#5A6558] rounded-full border border-[#7C8A7A]/30">Silver</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#F3F4F6] flex items-center justify-center">
+                    <span className="text-lg">🌸</span>
+                  </div>
+                  <div className="text-left">
+                    <div className="font-semibold text-[#0F1729]">New Customer</div>
+                    <div className="text-xs text-[#6B7280]">+1 (555) 555-5555</div>
+                  </div>
                 </div>
-                <span className="text-xs text-[#6B7669]">0 pts</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-[#6B7280]">0 pts</span>
+                  <span className="text-xs px-2 py-1 bg-[#F3F4F6] text-[#6B7280] rounded font-semibold">Silver</span>
+                </div>
               </div>
             </Button>
           </div>
 
           {/* Footer */}
-          <div className="mt-8 pt-6 border-t border-[#7C8A7A]/20">
-            <p className="text-xs text-center text-[#6B7669]">
-              By continuing, you agree to our Terms of Service and Privacy Policy
+          <div className="mt-8 pt-6 border-t border-[#E5E7EB]">
+            <p className="text-xs text-center text-[#6B7280]">
+              By continuing, you agree to our <span className="text-[#0F1729] font-medium">Terms</span> and <span className="text-[#0F1729] font-medium">Privacy Policy</span>
             </p>
           </div>
         </div>
 
-        {/* Decorative corner glow */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#7C8A7A]/10 to-transparent rounded-bl-full" />
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-[#9BA89A]/10 to-transparent rounded-tr-full" />
+        {/* Gold accent line */}
+        <div className="h-1 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
       </Card>
-
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(5deg); }
-        }
-        @keyframes float-delayed {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-25px) rotate(-5deg); }
-        }
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-        .animate-float-delayed {
-          animation: float-delayed 8s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   );
 }

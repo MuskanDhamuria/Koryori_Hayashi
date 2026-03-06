@@ -1,9 +1,8 @@
 
-  # Koryori Hayashi Ordering 
+  # Japanese Restaurant QR Ordering
+
 
   ## Running the code
-
-  Run `cd CustomerFacingApp` to install the dependencies.
 
   Run `npm i` to install the dependencies.
 

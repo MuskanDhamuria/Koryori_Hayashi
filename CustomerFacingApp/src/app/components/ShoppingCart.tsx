@@ -1,15 +1,11 @@
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "./ui/sheet";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { Separator } from "./ui/separator";
 import { Badge } from "./ui/badge";
 import { ShoppingCart as CartIcon, Minus, Plus, Trash2, CreditCard, Star } from "lucide-react";
-import { MenuItemData } from "./MenuItem";
+import { MenuItem as MenuItemType, CartItem } from "../types";
 import { LoyaltyTier } from "./LoyaltyCard";
-
-interface CartItem extends MenuItemData {
-  quantity: number;
-}
 
 interface ShoppingCartProps {
   items: CartItem[];
@@ -53,6 +49,7 @@ export function ShoppingCart({ items, onUpdateQuantity, onRemoveItem, onCheckout
       <SheetContent className="w-full sm:max-w-lg">
         <SheetHeader>
           <SheetTitle>Your Order</SheetTitle>
+          <SheetDescription>Review your items and proceed to checkout</SheetDescription>
         </SheetHeader>
         
         {items.length === 0 ? (

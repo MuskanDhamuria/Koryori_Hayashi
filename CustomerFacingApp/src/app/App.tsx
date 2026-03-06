@@ -2,15 +2,18 @@ import { useState } from "react";
 import { MobileLogin } from "./components/MobileLogin";
 import { QRScanner } from "./components/QRScanner";
 import { OrderingPage } from "./components/OrderingPage";
+import { FlavorProfileQuiz } from "./components/FlavorProfileQuiz";
 import { Toaster } from "./components/ui/sonner";
+import { FlavorPreferences } from "./types";
 
-type AppState = "login" | "qr-scan" | "ordering";
+type AppState = "login" | "flavor-quiz" | "qr-scan" | "ordering";
 
 export default function App() {
   const [appState, setAppState] = useState<AppState>("login");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [userName, setUserName] = useState("");
   const [tableNumber, setTableNumber] = useState("");
+  const [flavorPreferences, setFlavorPreferences] = useState<FlavorPreferences | undefined>();
 
   const handleLogin = (phone: string) => {
     setPhoneNumber(phone);
@@ -24,6 +27,11 @@ export default function App() {
       setUserName("Guest");
     }
     
+    setAppState("flavor-quiz");
+  };
+
+  const handleFlavorProfileComplete = (preferences: FlavorPreferences) => {
+    setFlavorPreferences(preferences);
     setAppState("qr-scan");
   };
 
@@ -40,6 +48,13 @@ export default function App() {
         <MobileLogin onLogin={handleLogin} />
       )}
       
+      {appState === "flavor-quiz" && (
+        <FlavorProfileQuiz 
+          userName={userName}
+          onComplete={handleFlavorProfileComplete}
+        />
+      )}
+      
       {appState === "qr-scan" && (
         <QRScanner 
           userName={userName}
@@ -52,6 +67,7 @@ export default function App() {
           tableNumber={tableNumber}
           userName={userName}
           phoneNumber={phoneNumber}
+          flavorPreferences={flavorPreferences}
         />
       )}
     </>
