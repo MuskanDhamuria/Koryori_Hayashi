@@ -1,6 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, type FormEvent } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
-import { MetricCard } from './components/MetricCard';
 import { RevenueChart } from './components/RevenueChart';
 import { HourlySalesChart } from './components/HourlySalesChart';
 import { ItemPerformanceTable } from './components/ItemPerformanceTable';
@@ -33,26 +32,130 @@ import {
   ArrowUpDown
 } from 'lucide-react';
 import { 
-  generateHistoricalSales, 
   calculatePeakHours, 
   getTopItems, 
   getWorstItems,
-  getReorderAlerts,
   forecastNextWeek,
-  menuItems,
-  SalesRecord
+  type MenuItem,
+  type SalesRecord
 } from './utils/mockData';
+import { fetchInventoryAlerts, fetchMenuCatalog, fetchOrders, staffLogin } from './services/api';
+
+const STORAGE_KEY = 'koryori-staff-token';
+
+function buildMenuCatalog(
+  categories: Array<{
+    slug: string;
+    name: string;
+    items: Array<{
+      id: string;
+      name: string;
+      price: string | number;
+      cost: string | number;
+      inventoryItem: {
+        stockOnHand: number;
+        reorderPoint: number;
+      } | null;
+    }>;
+  }>
+): MenuItem[] {
+  return categories.flatMap((category) =>
+    category.items.map((item) => ({
+      id: item.id,
+      name: item.name,
+      category: category.name,
+      price: Number(item.price),
+      cost: Number(item.cost),
+      stock: item.inventoryItem?.stockOnHand ?? 0,
+      reorderPoint: item.inventoryItem?.reorderPoint ?? 0
+    }))
+  );
+}
+
+function buildSalesRecords(
+  orders: Array<{
+    orderedAt: string;
+    orderItems: Array<{
+      quantity: number;
+      lineTotal: string | number;
+      menuItem: {
+        id: string;
+      };
+    }>;
+  }>
+): SalesRecord[] {
+  return orders.flatMap((order) => {
+    const date = new Date(order.orderedAt);
+
+    return order.orderItems.map((item) => ({
+      date,
+      hour: date.getHours(),
+      itemId: item.menuItem.id,
+      quantity: item.quantity,
+      revenue: Number(item.lineTotal)
+    }));
+  });
+}
 
 export default function App() {
   const [selectedPeriod, setSelectedPeriod] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
   const [historicalSales, setHistoricalSales] = useState<SalesRecord[]>([]);
+  const [menuCatalog, setMenuCatalog] = useState<MenuItem[]>([]);
+  const [inventoryAlerts, setInventoryAlerts] = useState<Array<{ item: { id: string; name: string; category: string; stock: number; reorderPoint: number }; daysUntilStockout: number; suggestedOrder: number }>>([]);
+  const [authToken, setAuthToken] = useState<string>(() => localStorage.getItem(STORAGE_KEY) ?? '');
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [authError, setAuthError] = useState('');
+  const [email, setEmail] = useState('admin@koryorihayashi.local');
+  const [password, setPassword] = useState('ChangeMe123!');
 
   useEffect(() => {
     // Force dark mode
     document.documentElement.classList.add('dark');
-    const sales = generateHistoricalSales(30);
-    setHistoricalSales(sales);
   }, []);
+
+  useEffect(() => {
+    if (!authToken) {
+      setIsLoadingData(false);
+      return;
+    }
+
+    const loadDashboard = async () => {
+      setIsLoadingData(true);
+      try {
+        const [menuResponse, ordersResponse, inventoryResponse] = await Promise.all([
+          fetchMenuCatalog(),
+          fetchOrders(authToken),
+          fetchInventoryAlerts(authToken)
+        ]);
+
+        const catalog = buildMenuCatalog(menuResponse.categories);
+        setMenuCatalog(catalog);
+        setHistoricalSales(buildSalesRecords(ordersResponse.orders));
+        setInventoryAlerts(
+          inventoryResponse.alerts.map((alert) => ({
+            item: {
+              id: alert.menuItem.id,
+              name: alert.menuItem.name,
+              category: alert.menuItem.category.name,
+              stock: alert.stockOnHand,
+              reorderPoint: alert.reorderPoint
+            },
+            daysUntilStockout: Math.max(1, Math.floor(alert.stockOnHand / Math.max(1, alert.reorderPoint / 3 || 1))),
+            suggestedOrder: Math.max(alert.reorderPoint * 3 - alert.stockOnHand, 0)
+          }))
+        );
+        setAuthError('');
+      } catch (error) {
+        localStorage.removeItem(STORAGE_KEY);
+        setAuthToken('');
+        setAuthError(error instanceof Error ? error.message : 'Unable to load dashboard data');
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    void loadDashboard();
+  }, [authToken]);
 
   // Calculate metrics
   const metrics = useMemo(() => {
@@ -82,7 +185,7 @@ export default function App() {
     const prevWeekOrders = prevWeekSales.length;
 
     const totalCost = historicalSales.reduce((sum, s) => {
-      const item = menuItems.find(m => m.id === s.itemId);
+      const item = menuCatalog.find(m => m.id === s.itemId);
       return sum + (item ? item.cost * s.quantity : 0);
     }, 0);
     const avgMargin = ((monthRevenue - totalCost) / monthRevenue * 100);
@@ -115,7 +218,7 @@ export default function App() {
       prevWeekOrders,
       prevAvgOrderValue,
     };
-  }, [historicalSales]);
+  }, [historicalSales, menuCatalog]);
 
   // Category breakdown
   const categoryData = useMemo(() => {
@@ -124,7 +227,7 @@ export default function App() {
     const categoryStats: { [key: string]: { revenue: number; orders: number } } = {};
     
     historicalSales.forEach(sale => {
-      const item = menuItems.find(m => m.id === sale.itemId);
+      const item = menuCatalog.find(m => m.id === sale.itemId);
       if (item) {
         if (!categoryStats[item.category]) {
           categoryStats[item.category] = { revenue: 0, orders: 0 };
@@ -139,7 +242,7 @@ export default function App() {
       revenue: stats.revenue,
       orders: stats.orders,
     }));
-  }, [historicalSales]);
+  }, [historicalSales, menuCatalog]);
 
   // Heat map data
   const heatMapData = useMemo(() => {
@@ -240,8 +343,8 @@ export default function App() {
     }));
   }, [historicalSales]);
 
-  const topItems = useMemo(() => getTopItems(historicalSales, 5), [historicalSales]);
-  const worstItems = useMemo(() => getWorstItems(historicalSales, 5), [historicalSales]);
+  const topItems = useMemo(() => getTopItems(historicalSales, menuCatalog, 5), [historicalSales, menuCatalog]);
+  const worstItems = useMemo(() => getWorstItems(historicalSales, menuCatalog, 5), [historicalSales, menuCatalog]);
 
   const forecastData = useMemo(() => {
     if (topItems.length === 0) return [];
@@ -308,8 +411,6 @@ export default function App() {
       }));
   }, [historicalSales]);
 
-  const inventoryAlerts = useMemo(() => getReorderAlerts(), []);
-
   // Comparison data for previous period
   const comparisonData = useMemo(() => {
     if (!metrics) return null;
@@ -335,7 +436,54 @@ export default function App() {
     };
   }, [metrics]);
 
-  if (!metrics || !comparisonData) {
+  const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsLoadingData(true);
+    try {
+      const response = await staffLogin(email, password);
+      localStorage.setItem(STORAGE_KEY, response.token);
+      setAuthToken(response.token);
+      setAuthError('');
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : 'Unable to sign in');
+      setIsLoadingData(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setAuthToken('');
+    setHistoricalSales([]);
+    setMenuCatalog([]);
+    setInventoryAlerts([]);
+  };
+
+  if (!authToken) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-6">
+        <form onSubmit={handleLogin} className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl p-8 shadow-2xl space-y-5">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Staff Login</h1>
+            <p className="text-slate-400 mt-2">Use your backend staff credentials to access the analytics dashboard.</p>
+          </div>
+          <div>
+            <label className="block text-sm text-slate-300 mb-2">Email</label>
+            <input value={email} onChange={(event) => setEmail(event.target.value)} className="w-full rounded-lg bg-slate-800 border border-slate-600 px-4 py-3 text-white" />
+          </div>
+          <div>
+            <label className="block text-sm text-slate-300 mb-2">Password</label>
+            <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-lg bg-slate-800 border border-slate-600 px-4 py-3 text-white" />
+          </div>
+          {authError ? <p className="text-sm text-red-400">{authError}</p> : null}
+          <button type="submit" disabled={isLoadingData} className="w-full rounded-lg bg-cyan-600 hover:bg-cyan-500 disabled:opacity-60 text-white font-semibold py-3">
+            {isLoadingData ? 'Signing in...' : 'Sign In'}
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  if (isLoadingData || !metrics || !comparisonData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-red-950 to-gray-900">
         <div className="text-center">
@@ -393,6 +541,9 @@ export default function App() {
                 </div>
               </div>
               <div className="flex flex-col items-end gap-3">
+                <button onClick={handleLogout} className="text-xs text-slate-400 hover:text-white">
+                  Sign Out
+                </button>
                 <div className="text-right">
                   <div className="text-slate-400 text-sm">Current Time</div>
                   <div className="text-2xl font-bold text-white">{new Date().toLocaleTimeString()}</div>

@@ -18,7 +18,8 @@ export function QRScanner({ userName, onScanComplete }: QRScannerProps) {
     setIsScanning(true);
     
     setTimeout(() => {
-      const mockTableNumber = `A-${Math.floor(Math.random() * 20) + 1}`;
+      const supportedTables = ["A-1", "A-2", "B-1", "B-2"];
+      const mockTableNumber = supportedTables[Math.floor(Math.random() * supportedTables.length)];
       setTableNumber(mockTableNumber);
       setScanned(true);
       setIsScanning(false);
@@ -124,7 +125,7 @@ export function QRScanner({ userName, onScanComplete }: QRScannerProps) {
 
               {/* Manual Table Selection */}
               <div className="grid grid-cols-4 gap-2">
-                {["A-1", "A-5", "A-12", "B-3", "B-7", "B-15", "C-2", "C-9"].map((table) => (
+                {["A-1", "A-2", "B-1", "B-2"].map((table) => (
                   <Button
                     key={table}
                     variant="outline"
