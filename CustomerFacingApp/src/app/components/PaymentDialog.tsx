@@ -4,6 +4,7 @@ import { Badge } from "./ui/badge";
 import { CheckCircle2, CreditCard, Smartphone, Star, Tag, Gift, Percent, Ticket } from "lucide-react";
 import { useState } from "react";
 import { LoyaltyProfile } from "./LoyaltyCard";
+import { JSX } from "react/jsx-runtime";
 
 interface PaymentDialogProps {
   open: boolean;
