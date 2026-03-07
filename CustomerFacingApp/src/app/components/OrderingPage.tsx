@@ -8,6 +8,7 @@ import { RecommendationCard } from "./RecommendationCard";
 import { ShoppingCart } from "./ShoppingCart";
 import { PaymentDialog } from "./PaymentDialog";
 import { LoyaltyProfile } from "./LoyaltyCard";
+import {InAppGames} from "./InAppGames";
 import { QrCode, UtensilsCrossed, Sparkles, CloudRain, Sun, Cloud, Info, Gift, Users, Star, Plus, Flame } from "lucide-react";
 import { toast } from "sonner";
 import { CherryBlossom } from "./JapanesePattern";
@@ -353,12 +354,20 @@ function getWeatherIcon(condition: string) {
   }
 }
 
+function getTierFromPoints(points: number): LoyaltyProfile["tier"] {
+  if (points >= 1500) return "platinum";
+  if (points >= 500) return "gold";
+  return "silver";
+}
+
 export function OrderingPage({ tableNumber, userName, phoneNumber, flavorPreferences }: OrderingPageProps) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [loyaltyInfoOpen, setLoyaltyInfoOpen] = useState(false);
+  const [currentView, setCurrentView] = useState<"ordering" | "games">("ordering");
+  const [hasPlacedOrder, setHasPlacedOrder] = useState(false);
   const [recommendations, setRecommendations] = useState<Array<{ item: MenuItemType; reason: string }>>([]);
-  const [loyaltyProfile] = useState<LoyaltyProfile>(getUserProfile(phoneNumber));
+  const [loyaltyProfile, setLoyaltyProfile] = useState<LoyaltyProfile>(getUserProfile(phoneNumber));
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItemType[]>(BASE_MENU_ITEMS);
   const [activeCategory, setActiveCategory] = useState("mains");
@@ -445,8 +454,21 @@ const handleAddFromDialog = (item: MenuItemType) => {
     toast.info("Item removed from cart");
   };
 
-  const handleCheckout = () => {
+   const handleCheckout = () => {
     setPaymentDialogOpen(true);
+  };
+
+  const addLoyaltyPoints = (pointsToAdd: number, source: string) => {
+    if (pointsToAdd <= 0) return;
+    setLoyaltyProfile((current) => {
+      const updatedPoints = current.points + pointsToAdd;
+      return {
+        ...current,
+        points: updatedPoints,
+        tier: getTierFromPoints(updatedPoints),
+      };
+    });
+    toast.success(`+${pointsToAdd} points from ${source}`);
   };
 
   const handlePaymentComplete = () => {
@@ -455,9 +477,12 @@ const handleAddFromDialog = (item: MenuItemType) => {
       recordSuccess(item.id);
     });
     
+    addLoyaltyPoints(loyaltyPoints, "Order Complete");
+    setHasPlacedOrder(true);
+    setCurrentView("games");
     setPaymentDialogOpen(false);
     setCart([]);
-    toast.success("Thank you for your order!");
+    toast.success("Payment successful. Redirecting you to Games.");
   };
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -502,24 +527,46 @@ const handleAddFromDialog = (item: MenuItemType) => {
         </div>
       </header>
 
+            
+
+
+         {currentView === "games" ? (
+        <InAppGames
+          currentPoints={loyaltyProfile.points}
+          onEarnPoints={addLoyaltyPoints}
+          onBackToOrdering={() => setCurrentView("ordering")}
+        />
+      ) : (
+      <>
             {/* Main Content */}
       <main className="container mx-auto px-6 py-8 pt-16 relative">
         {/* Status Badges - Now in a single row */}
         <div className="absolute top-6 right-6 flex items-center gap-2">
           {/* Guest/Loyalty Info Button - moved here */}
-          <button
+           <button
             onClick={() => setLoyaltyInfoOpen(true)}
             className="flex items-center gap-2 bg-[#F3F4F6] hover:bg-[#E5E7EB] px-3 py-2 rounded-lg text-xs font-medium transition-colors"
           >
+
             <span className="text-[#6B7280]">👋</span>
             <span className="text-[#0F1729] font-medium">{userName}</span>
             <span className="text-[#6B7280]">•</span>
             <span className="text-[#D4AF37]">⭐</span>
             <span className="text-[#0F1729] font-medium">{loyaltyProfile.points}</span>
-            <span className="text-[#6B7280] text-[10px] capitalize">({loyaltyProfile.tier})</span>
+             <span className="text-[#6B7280] text-[10px] capitalize">({loyaltyProfile.tier})</span>
           </button>
+
+          {hasPlacedOrder && (
+            <button
+              onClick={() => setCurrentView("games")}
+              className="flex items-center gap-2 bg-[#0F1729] hover:bg-[#1A2642] px-3 py-2 rounded-lg text-xs font-medium text-white transition-colors"
+            >
+              Play Games
+            </button>
+          )}
           
           {/* Personalized badge */}
+
           {flavorPreferences && (
             <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-2 rounded-lg text-xs font-medium">
               <Sparkles className="w-3 h-3" />
@@ -789,7 +836,8 @@ const handleAddFromDialog = (item: MenuItemType) => {
       {/* Payment Dialog */}
       <PaymentDialog
         open={paymentDialogOpen}
-        onClose={handlePaymentComplete}
+        onClose={() => setPaymentDialogOpen(false)}
+        onPaymentComplete={handlePaymentComplete}
         total={total}
         loyaltyPoints={loyaltyPoints}
         loyaltyProfile={loyaltyProfile}
@@ -1227,6 +1275,8 @@ const handleAddFromDialog = (item: MenuItemType) => {
           animation: float-delayed 8s ease-in-out infinite;
         }
       `}</style>
+      </>
+      )}
     </div>
   );
 }

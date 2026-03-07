@@ -8,6 +8,7 @@ import { LoyaltyProfile } from "./LoyaltyCard";
 interface PaymentDialogProps {
   open: boolean;
   onClose: () => void;
+  onPaymentComplete: () => void;
   total: number;
   loyaltyPoints: number;
   loyaltyProfile: LoyaltyProfile;
@@ -24,7 +25,7 @@ interface Discount {
   requiresPoints?: boolean;
 }
 
-export function PaymentDialog({ open, onClose, total, loyaltyPoints, loyaltyProfile }: PaymentDialogProps) {
+export function PaymentDialog({ open, onClose, onPaymentComplete, total, loyaltyPoints, loyaltyProfile }: PaymentDialogProps) {
   const [paymentMethod, setPaymentMethod] = useState<"card" | "mobile" | null>(null);
   const [isPaid, setIsPaid] = useState(false);
   const [selectedDiscount, setSelectedDiscount] = useState<string | null>(null);
@@ -97,11 +98,16 @@ export function PaymentDialog({ open, onClose, total, loyaltyPoints, loyaltyProf
     }, 1500);
   };
 
-  const handleClose = () => {
+    const handleClose = () => {
     setPaymentMethod(null);
     setIsPaid(false);
     setSelectedDiscount(null);
     onClose();
+  };
+
+  const handleDone = () => {
+    onPaymentComplete();
+    handleClose();
   };
 
   if (isPaid) {
@@ -129,8 +135,9 @@ export function PaymentDialog({ open, onClose, total, loyaltyPoints, loyaltyProf
             <p className="text-sm text-[#6B7280] mb-6">
               Your food will be prepared shortly. Estimated time: 15-20 minutes
             </p>
-            <Button 
-              onClick={handleClose} 
+
+             <Button 
+              onClick={handleDone}
               className="w-full bg-[#0F1729] hover:bg-[#1A2642] text-white shadow-md"
             >
               Done
