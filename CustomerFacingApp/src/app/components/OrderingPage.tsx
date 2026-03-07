@@ -518,6 +518,13 @@ const handleAddFromDialog = (item: MenuItemType) => {
   ) => {
     const subtotal = calculateCartSubtotal(cart);
     const pricing = calculatePricing(subtotal, loyaltyProfile, selectedDiscountId);
+    let completionResult:
+      | {
+          earnedPoints: number;
+          pointsBalance: number;
+        }
+      | undefined;
+
     const response = await createOrder({
       customerName: userName,
       phoneNumber,
@@ -542,7 +549,7 @@ const handleAddFromDialog = (item: MenuItemType) => {
         tier: response.loyalty!.tier,
       }));
       toast.success(`Payment successful. You earned ${response.loyalty.earnedPoints} points.`);
-      return {
+      completionResult = {
         earnedPoints: response.loyalty.earnedPoints,
         pointsBalance: response.loyalty.pointsBalance,
       };
@@ -550,18 +557,21 @@ const handleAddFromDialog = (item: MenuItemType) => {
       const refreshedProfile = await fetchLoyaltyProfile(phoneNumber);
       if (refreshedProfile) {
         setLoyaltyProfile(refreshedProfile);
-        return {
+        completionResult = {
           earnedPoints: pricing.pointsEarned,
           pointsBalance: refreshedProfile.points,
         };
+      } else {
+        toast.success("Payment successful. Redirecting you to Games.");
       }
-      toast.success("Payment successful. Redirecting you to Games.");
     }
 
     setHasPlacedOrder(true);
     setCurrentView("games");
     setPaymentDialogOpen(false);
     setCart([]);
+
+    return completionResult;
   };
 
   const subtotal = calculateCartSubtotal(cart);
