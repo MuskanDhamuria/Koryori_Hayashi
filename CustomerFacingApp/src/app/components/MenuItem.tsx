@@ -42,7 +42,7 @@ export function MenuItem({ item, onAddToCart }: MenuItemProps) {
         )}
         
         {isNew && !hasFlashSale && (
-          <Badge className="absolute top-3 left-3 bg-purple-600 text-white font-bold px-3 py-1 shadow-lg">
+          <Badge className="absolute top-3 right-3 bg-purple-600 text-white font-bold px-3 py-1 shadow-lg">
             <Sparkles className="w-3.5 h-3.5 mr-1" />
             NEW
           </Badge>
@@ -102,17 +102,20 @@ export function MenuItem({ item, onAddToCart }: MenuItemProps) {
         </p>
 
         {/* Add Button */}
-        <Button
-          onClick={() => onAddToCart(item)}
-          className={`w-full h-10 ${
-            hasFlashSale 
-              ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600' 
-              : 'bg-[#0F1729] hover:bg-[#1A2642]'
-          } text-white shadow-sm transition-all`}
-        >
-          <Plus className="w-4 h-4 mr-1.5" />
-          {hasFlashSale ? 'Grab Deal' : 'Add to Cart'}
-        </Button>
+       <Button
+  onClick={(e) => {
+    e.stopPropagation();
+    onAddToCart(item);
+  }}
+  className={`w-full h-9 sm:h-10 text-xs sm:text-sm ${
+    hasFlashSale 
+      ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600' 
+      : 'bg-[#0F1729] hover:bg-[#1A2642]'
+  } text-white shadow-sm transition-all`}
+>
+  <Plus className="w-4 h-4 mr-1.5" />
+  {hasFlashSale ? 'Grab Deal' : 'Add to Cart'}
+</Button>
       </div>
     </Card>
   );

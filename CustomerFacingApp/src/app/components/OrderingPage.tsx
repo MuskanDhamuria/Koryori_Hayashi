@@ -8,7 +8,7 @@ import { RecommendationCard } from "./RecommendationCard";
 import { ShoppingCart } from "./ShoppingCart";
 import { PaymentDialog } from "./PaymentDialog";
 import { LoyaltyProfile } from "./LoyaltyCard";
-import { QrCode, UtensilsCrossed, Sparkles, CloudRain, Sun, Cloud, Info, Gift, Users, Star } from "lucide-react";
+import { QrCode, UtensilsCrossed, Sparkles, CloudRain, Sun, Cloud, Info, Gift, Users, Star, Plus, Flame } from "lucide-react";
 import { toast } from "sonner";
 import { CherryBlossom } from "./JapanesePattern";
 import { MenuItem as MenuItemType, CartItem, FlavorPreferences, WeatherData } from "../types";
@@ -361,6 +361,9 @@ export function OrderingPage({ tableNumber, userName, phoneNumber, flavorPrefere
   const [loyaltyProfile] = useState<LoyaltyProfile>(getUserProfile(phoneNumber));
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItemType[]>(BASE_MENU_ITEMS);
+  const [activeCategory, setActiveCategory] = useState("mains");
+  const [selectedItem, setSelectedItem] = useState<MenuItemType | null>(null);
+  const [itemDialogOpen, setItemDialogOpen] = useState(false);
 
   // Fetch weather on mount
   useEffect(() => {
@@ -370,6 +373,17 @@ export function OrderingPage({ tableNumber, userName, phoneNumber, flavorPrefere
     };
     fetchWeather();
   }, []);
+
+  const handleItemClick = (item: MenuItemType) => {
+  setSelectedItem(item);
+  setItemDialogOpen(true);
+};
+
+const handleAddFromDialog = (item: MenuItemType) => {
+  handleAddToCart(item);
+  setItemDialogOpen(false);
+  setSelectedItem(null);
+};
 
   // Apply dynamic pricing based on surplus inventory
   useEffect(() => {
@@ -457,99 +471,79 @@ export function OrderingPage({ tableNumber, userName, phoneNumber, flavorPrefere
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
-      {/* Header */}
+            {/* Header */}
       <header className="bg-white border-b border-[#E5E7EB] shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
+        <div className="container mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#0F1729] to-[#2D3E5F] rounded-full flex items-center justify-center">
-                <UtensilsCrossed className="w-6 h-6 text-[#D4AF37]" strokeWidth={2} />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-[#0F1729]">Koryori Hayashi</h1>
-                <p className="text-xs text-[#6B7280]">小料理林</p>
+            {/* Logo and User Info in one row */}
+            <div className="flex items-center gap-6">
+              {/* Logo */}
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-[#0F1729] to-[#2D3E5F] rounded-full flex items-center justify-center">
+                  <UtensilsCrossed className="w-4 h-4 text-[#D4AF37]" strokeWidth={2} />
+                </div>
+                <div>
+                  <h1 className="text-base font-bold text-[#0F1729] leading-tight">Koryori Hayashi</h1>
+                  <p className="text-[10px] text-[#6B7280]">小料理林</p>
+                </div>
               </div>
             </div>
             
-            {/* Right side */}
-            <div className="flex items-center gap-4">
-              {weatherData && (
-                <div className="flex items-center gap-2 bg-[#F3F4F6] px-3 py-2 rounded-lg">
-                  {getWeatherIcon(weatherData.condition)}
-                  <span className="text-sm font-medium text-[#0F1729]">{weatherData.temperature}°F</span>
-                </div>
-              )}
-              
-              <div className="flex items-center gap-2 bg-[#F3F4F6] px-4 py-2 rounded-lg">
-                <QrCode className="w-4 h-4 text-[#6B7280]" />
-                <div>
-                  <p className="text-xs text-[#6B7280]">Table</p>
-                  <p className="text-sm font-bold text-[#0F1729]">{tableNumber}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* User info bar */}
-          <div className="mt-4 pt-4 border-t border-[#E5E7EB] flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-[#6B7280]">Welcome back,</span>
-              <span className="text-sm font-semibold text-[#0F1729]">{userName}</span>
-            </div>
-            
+            {/* Right side - Weather and Table */}
             <div className="flex items-center gap-3">
-              {/* Loyalty Points Display */}
-              <div className="flex items-center gap-3 bg-gradient-to-r from-[#0F1729] to-[#2D3E5F] px-4 py-2 rounded-lg relative">
-                <div className="flex items-center gap-2">
-                  <div className="text-xl">
-                    {loyaltyProfile.tier === 'platinum' ? '💎' : loyaltyProfile.tier === 'gold' ? '⭐' : '🌸'}
-                  </div>
-                  <div>
-                    <p className="text-xs text-white/70">Your Points</p>
-                    <p className="text-lg font-bold text-white">{loyaltyProfile.points.toLocaleString()}</p>
-                  </div>
-                </div>
-                <div className="h-8 w-px bg-white/20" />
-                <div>
-                  <p className="text-xs text-white/70">Status</p>
-                  <p className="text-sm font-bold text-[#D4AF37] uppercase">{loyaltyProfile.tier}</p>
-                </div>
-                {/* Info Button */}
-                <button
-                  onClick={() => setLoyaltyInfoOpen(true)}
-                  className="ml-2 p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors group"
-                  aria-label="Loyalty program information"
-                >
-                  <Info className="w-4 h-4 text-white group-hover:text-[#D4AF37]" />
-                </button>
+              
+              <div className="flex items-center gap-1.5 bg-[#F3F4F6] px-3 py-1.5 rounded-lg">
+                <QrCode className="w-3.5 h-3.5 text-[#6B7280]" />
+                <span className="text-xs text-[#6B7280]">Table</span>
+                <span className="text-sm font-bold text-[#0F1729]">{tableNumber}</span>
               </div>
-              
-              {flavorPreferences && (
-                <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-2 rounded-lg text-xs font-medium">
-                  <Sparkles className="w-3 h-3" />
-                  Personalized
-                </div>
-              )}
-              
-              {loyaltyProfile.isBirthday && (
-                <div className="flex items-center gap-2 bg-pink-50 text-pink-700 px-3 py-2 rounded-lg text-xs font-medium">
-                  🎂 Birthday Bonus Active
-                </div>
-              )}
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-6 py-8">
+            {/* Main Content */}
+      <main className="container mx-auto px-6 py-8 pt-16 relative">
+        {/* Status Badges - Now in a single row */}
+        <div className="absolute top-6 right-6 flex items-center gap-2">
+          {/* Guest/Loyalty Info Button - moved here */}
+          <button
+            onClick={() => setLoyaltyInfoOpen(true)}
+            className="flex items-center gap-2 bg-[#F3F4F6] hover:bg-[#E5E7EB] px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+          >
+            <span className="text-[#6B7280]">👋</span>
+            <span className="text-[#0F1729] font-medium">{userName}</span>
+            <span className="text-[#6B7280]">•</span>
+            <span className="text-[#D4AF37]">⭐</span>
+            <span className="text-[#0F1729] font-medium">{loyaltyProfile.points}</span>
+            <span className="text-[#6B7280] text-[10px] capitalize">({loyaltyProfile.tier})</span>
+          </button>
+          
+          {/* Personalized badge */}
+          {flavorPreferences && (
+            <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-2 rounded-lg text-xs font-medium">
+              <Sparkles className="w-3 h-3" />
+              Personalized
+            </div>
+          )}
+          
+          {/* Birthday badge */}
+          {loyaltyProfile.isBirthday && (
+            <div className="flex items-center gap-2 bg-pink-50 text-pink-700 px-3 py-2 rounded-lg text-xs font-medium">
+              🎂 Birthday Bonus Active
+            </div>
+          )}
+        </div>
+        
         {/* Weather banner */}
         {weatherData && (
           <div className="mb-6 bg-white border border-[#E5E7EB] rounded-xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#F3F4F6] rounded-lg flex items-center justify-center">
-              {getWeatherIcon(weatherData.condition)}
-            </div>
+             {weatherData && (
+                <div className="flex items-center gap-1.5 bg-[#F3F4F6] px-2 py-1.5 rounded-lg">
+                  {getWeatherIcon(weatherData.condition)}
+                  <span className="text-xs font-medium text-[#0F1729]">{weatherData.temperature}°F</span>
+                </div>
+              )}
             <div>
               <h3 className="font-semibold text-[#0F1729] text-sm">
                 {weatherData.condition === 'rainy' && 'Perfect weather for hot ramen'}
@@ -562,73 +556,165 @@ export function OrderingPage({ tableNumber, userName, phoneNumber, flavorPrefere
           </div>
         )}
         
-        <Tabs defaultValue="mains" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6 bg-white border border-[#E5E7EB] p-1">
-            <TabsTrigger 
-              value="mains"
-              className="data-[state=active]:bg-[#0F1729] data-[state=active]:text-white"
-            >
-              <span className="mr-2">🍱</span>
-              Mains
-            </TabsTrigger>
-            
-            <TabsTrigger 
-              value="appetizers"
-              className="data-[state=active]:bg-[#0F1729] data-[state=active]:text-white"
-            >
-              <span className="mr-2">🥟</span>
-              Appetizers
-            </TabsTrigger>
-
-            <TabsTrigger 
-              value="desserts"
-              className="data-[state=active]:bg-[#0F1729] data-[state=active]:text-white"
-            >
-              <span className="mr-2">🍦</span>
-              Desserts
-            </TabsTrigger>
-
-            <TabsTrigger 
-              value="drinks"
-              className="data-[state=active]:bg-[#0F1729] data-[state=active]:text-white"
-            >
-              <span className="mr-2">🍵</span>
-              Drinks
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="mains" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {menuItems.filter((item) => item.category === "mains").map((item) => (
-                <MenuItem key={item.id} item={item} onAddToCart={handleAddToCart} />
-              ))}
+                   {/* Main Content with Vertical Categories */}
+      <div className="flex gap-6">
+               {/* Left Sidebar - Vertical Categories */}
+        <aside className="w-24 shrink-0">
+          <div className="sticky top-20 bg-white rounded-xl border border-[#E5E7EB] p-2">
+            <div className="flex flex-col gap-1">
+              <button
+                onClick={() => setActiveCategory("mains")}
+                title="Mains"
+                className={`w-full flex items-center px-2 py-2.5 rounded-lg text-left transition-colors ${
+                  activeCategory === "mains" 
+                    ? "bg-[#0F1729] text-white" 
+                    : "hover:bg-[#F3F4F6] text-[#0F1729]"
+                }`}
+              >
+                <span className="text-base mr-1.5">🍱</span>
+                <span className="text-xs truncate">Mains</span>
+              </button>
+              <button
+                onClick={() => setActiveCategory("appetizers")}
+                title="Appetizers"
+                className={`w-full flex items-center px-2 py-2.5 rounded-lg text-left transition-colors ${
+                  activeCategory === "appetizers" 
+                    ? "bg-[#0F1729] text-white" 
+                    : "hover:bg-[#F3F4F6] text-[#0F1729]"
+                }`}
+              >
+                <span className="text-base mr-1.5">🥟</span>
+                <span className="text-xs truncate">Appetizers</span>
+              </button>
+              <button
+                onClick={() => setActiveCategory("ramen")}
+                title="Ramen"
+                className={`w-full flex items-center px-2 py-2.5 rounded-lg text-left transition-colors ${
+                  activeCategory === "ramen" 
+                    ? "bg-[#0F1729] text-white" 
+                    : "hover:bg-[#F3F4F6] text-[#0F1729]"
+                }`}
+              >
+                <span className="text-base mr-1.5">🍜</span>
+                <span className="text-xs truncate">Ramen</span>
+              </button>
+              <button
+                onClick={() => setActiveCategory("desserts")}
+                title="Desserts"
+                className={`w-full flex items-center px-2 py-2.5 rounded-lg text-left transition-colors ${
+                  activeCategory === "desserts" 
+                    ? "bg-[#0F1729] text-white" 
+                    : "hover:bg-[#F3F4F6] text-[#0F1729]"
+                }`}
+              >
+                <span className="text-base mr-1.5">🍦</span>
+                <span className="text-xs truncate">Desserts</span>
+              </button>
+              <button
+                onClick={() => setActiveCategory("drinks")}
+                title="Drinks"
+                className={`w-full flex items-center px-2 py-2.5 rounded-lg text-left transition-colors ${
+                  activeCategory === "drinks" 
+                    ? "bg-[#0F1729] text-white" 
+                    : "hover:bg-[#F3F4F6] text-[#0F1729]"
+                }`}
+              >
+                <span className="text-base mr-1.5">🍵</span>
+                <span className="text-xs truncate">Drinks</span>
+              </button>
             </div>
-          </TabsContent>
+          </div>
+        </aside>
 
-          <TabsContent value="desserts" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {menuItems.filter((item) => item.category === "desserts").map((item) => (
-                <MenuItem key={item.id} item={item} onAddToCart={handleAddToCart} />
-              ))}
-            </div>
-          </TabsContent>
+                {/* Right Content - Menu Items */}
+        <section className="flex-1 min-w-0">
+          {activeCategory === "mains" && (
+            <>
+              <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Mains</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+                {menuItems.filter(item => item.category === 'mains').map(item => (
+                 <div 
+  key={item.id} 
+  className="w-full cursor-pointer transition-transform hover:scale-[1.02]"
+  onClick={() => handleItemClick(item)}
+>
+  <MenuItem item={item} onAddToCart={handleAddToCart} />
+</div>
+                ))}
+              </div>
+            </>
+          )}
+          
+                  {activeCategory === "appetizers" && (
+            <>
+              <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Appetizers</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+                {menuItems.filter(item => item.category === 'appetizers').map(item => (
+                  <div 
+                    key={item.id} 
+                    className="w-full cursor-pointer transition-transform hover:scale-[1.02]"
+                    onClick={() => handleItemClick(item)}
+                  >
+                    <MenuItem item={item} onAddToCart={handleAddToCart} />
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+          
+                    {activeCategory === "ramen" && (
+            <>
+              <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Ramen</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+                {menuItems.filter(item => item.category === 'ramen').map(item => (
+                  <div 
+                    key={item.id} 
+                    className="w-full cursor-pointer transition-transform hover:scale-[1.02]"
+                    onClick={() => handleItemClick(item)}
+                  >
+                    <MenuItem item={item} onAddToCart={handleAddToCart} />
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
 
-          <TabsContent value="appetizers" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {menuItems.filter((item) => item.category === "appetizers" || item.category === "mains").map((item) => (
-                <MenuItem key={item.id} item={item} onAddToCart={handleAddToCart} />
-              ))}
-            </div>
-          </TabsContent>
+                    {activeCategory === "desserts" && (
+            <>
+              <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Desserts</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+                {menuItems.filter(item => item.category === 'desserts').map(item => (
+                  <div 
+                    key={item.id} 
+                    className="w-full cursor-pointer transition-transform hover:scale-[1.02]"
+                    onClick={() => handleItemClick(item)}
+                  >
+                    <MenuItem item={item} onAddToCart={handleAddToCart} />
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+          
+                    {activeCategory === "drinks" && (
+            <>
+              <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Drinks</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+                {menuItems.filter(item => item.category === 'drinks').map(item => (
+                  <div 
+                    key={item.id} 
+                    className="w-full cursor-pointer transition-transform hover:scale-[1.02]"
+                    onClick={() => handleItemClick(item)}
+                  >
+                    <MenuItem item={item} onAddToCart={handleAddToCart} />
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
 
-          <TabsContent value="drinks" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {menuItems.filter((item) => item.category === "drinks").map((item) => (
-                <MenuItem key={item.id} item={item} onAddToCart={handleAddToCart} />
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
+        </section>
+      </div>
 
         {/* AI Recommendations - Enhanced with MAB */}
         {recommendations.length > 0 && (
@@ -708,6 +794,209 @@ export function OrderingPage({ tableNumber, userName, phoneNumber, flavorPrefere
         loyaltyPoints={loyaltyPoints}
         loyaltyProfile={loyaltyProfile}
       />
+
+      {/* Item Detail Dialog */}
+      <Dialog open={itemDialogOpen} onOpenChange={setItemDialogOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          {selectedItem && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-3 text-2xl">
+                  <div className="w-10 h-10 bg-gradient-to-br from-[#0F1729] to-[#2D3E5F] rounded-full flex items-center justify-center">
+                    <UtensilsCrossed className="w-5 h-5 text-[#D4AF37]" />
+                  </div>
+                  {selectedItem.name}
+                </DialogTitle>
+                <DialogDescription>
+                  {selectedItem.description}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-6">
+                {/* Image */}
+                <div className="relative aspect-[16/9] rounded-xl overflow-hidden">
+                  <img 
+                    src={selectedItem.image} 
+                    alt={selectedItem.name}
+                    className="w-full h-full object-cover"
+                  />
+                  
+                  {/* Badges */}
+                  <div className="absolute top-4 left-4 flex gap-2">
+                    {selectedItem.isNew && (
+                      <Badge className="bg-purple-600 text-white px-3 py-1.5">
+                        <Sparkles className="w-4 h-4 mr-1.5" />
+                        NEW
+                      </Badge>
+                    )}
+                    {selectedItem.spicy && (
+                      <Badge className="bg-red-500 text-white px-3 py-1.5">
+                        {Array.from({ length: selectedItem.spicy }).map((_, i) => (
+                          <span key={i}>🌶️</span>
+                        ))}
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  {selectedItem.isHighMargin && !selectedItem.isNew && (
+                    <Badge className="absolute top-4 right-4 bg-[#D4AF37] text-white px-3 py-1.5">
+                      <Sparkles className="w-4 h-4 mr-1.5" />
+                      Chef's Pick
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Details Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Price */}
+                  <div className="bg-[#F3F4F6] rounded-xl p-4">
+                    <p className="text-xs text-[#6B7280] mb-1">Price</p>
+                    <p className="text-2xl font-bold text-[#0F1729]">
+                      ${selectedItem.price.toFixed(2)}
+                    </p>
+                    {selectedItem.originalPrice && (
+                      <p className="text-xs text-[#9CA3AF] line-through">
+                        ${selectedItem.originalPrice.toFixed(2)}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Category */}
+                  <div className="bg-[#F3F4F6] rounded-xl p-4">
+                    <p className="text-xs text-[#6B7280] mb-1">Category</p>
+                    <p className="text-lg font-semibold text-[#0F1729] capitalize">
+                      {selectedItem.category}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Flavor Profile */}
+                {selectedItem.flavorProfile && (
+                  <div className="bg-gradient-to-br from-[#F3F4F6] to-white rounded-xl p-4">
+                    <h3 className="font-semibold text-[#0F1729] mb-3">Flavor Profile</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      {selectedItem.flavorProfile.umami !== undefined && (
+                        <div>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span>Umami</span>
+                            <span className="font-medium">{(selectedItem.flavorProfile.umami * 100).toFixed(0)}%</span>
+                          </div>
+                          <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-amber-600 rounded-full"
+                              style={{ width: `${selectedItem.flavorProfile.umami * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                      {selectedItem.flavorProfile.citrus !== undefined && (
+                        <div>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span>Citrus</span>
+                            <span className="font-medium">{(selectedItem.flavorProfile.citrus * 100).toFixed(0)}%</span>
+                          </div>
+                          <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-yellow-400 rounded-full"
+                              style={{ width: `${selectedItem.flavorProfile.citrus * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                      {selectedItem.flavorProfile.refreshing !== undefined && (
+                        <div>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span>Refreshing</span>
+                            <span className="font-medium">{(selectedItem.flavorProfile.refreshing * 100).toFixed(0)}%</span>
+                          </div>
+                          <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-blue-400 rounded-full"
+                              style={{ width: `${selectedItem.flavorProfile.refreshing * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                      {selectedItem.flavorProfile.hearty !== undefined && (
+                        <div>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span>Hearty</span>
+                            <span className="font-medium">{(selectedItem.flavorProfile.hearty * 100).toFixed(0)}%</span>
+                          </div>
+                          <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-red-600 rounded-full"
+                              style={{ width: `${selectedItem.flavorProfile.hearty * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Weather Tags */}
+                {selectedItem.weatherTags && selectedItem.weatherTags.length > 0 && (
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4">
+                    <h3 className="font-semibold text-[#0F1729] mb-2">Perfect for</h3>
+                    <div className="flex gap-2">
+                      {selectedItem.weatherTags.map(tag => (
+                        <Badge key={tag} variant="outline" className="bg-white capitalize">
+                          {tag === 'sunny' && '☀️ '}
+                          {tag === 'rainy' && '🌧️ '}
+                          {tag === 'cold' && '❄️ '}
+                          {tag === 'hot' && '🔥 '}
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Flash Sale Info */}
+                {selectedItem.flashSaleRemaining && selectedItem.flashSaleRemaining > 0 && (
+                  <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 text-white">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Flame className="w-5 h-5" />
+                      <h3 className="font-bold">Flash Sale!</h3>
+                    </div>
+                    <p className="text-sm mb-1">
+                      {selectedItem.discountPercentage}% OFF - Only {selectedItem.flashSaleRemaining} left!
+                    </p>
+                    {selectedItem.surplusIngredient && (
+                      <p className="text-xs text-white/90">
+                        ♻️ Made with fresh {selectedItem.surplusIngredient}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setItemDialogOpen(false)}
+                    className="flex-1"
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    onClick={() => handleAddFromDialog(selectedItem)}
+                    className={`flex-1 ${
+                      selectedItem.flashSaleRemaining && selectedItem.flashSaleRemaining > 0
+                        ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600'
+                        : 'bg-[#0F1729] hover:bg-[#1A2642]'
+                    } text-white`}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add to Cart
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Loyalty Info Dialog */}
       <Dialog open={loyaltyInfoOpen} onOpenChange={setLoyaltyInfoOpen}>

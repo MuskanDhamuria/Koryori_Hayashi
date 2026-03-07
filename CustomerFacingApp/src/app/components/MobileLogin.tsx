@@ -112,74 +112,89 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
 
           {/* Quick Login Options */}
           <div className="space-y-3">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-auto py-3 border-2 hover:bg-[#E5E7EB] transition-all"
-              onClick={() => handleQuickLogin("+1 (555) 123-4567")}
-            >
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#E8C95A]/20 to-[#D4AF37]/20 flex items-center justify-center">
-                    <span className="text-lg">⭐</span>
-                  </div>
-                  <div className="text-left">
-                    <div className="font-semibold text-[#0F1729]">Yuki Tanaka</div>
-                    <div className="text-xs text-[#6B7280]">+1 (555) 123-4567</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-[#6B7280]">850 pts</span>
-                  <span className="text-xs px-2 py-1 bg-[#D4AF37] text-white rounded font-semibold">Gold</span>
-                </div>
-              </div>
-            </Button>
             
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-auto py-3 border-2 hover:bg-[#E5E7EB] transition-all"
-              onClick={() => handleQuickLogin("+1 (555) 987-6543")}
-            >
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#D4AF37]/30 to-[#B8952B]/30 flex items-center justify-center">
-                    <span className="text-lg">💎</span>
-                  </div>
-                  <div className="text-left">
-                    <div className="font-semibold text-[#0F1729]">Akira Sato</div>
-                    <div className="text-xs text-[#6B7280]">+1 (555) 987-6543</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-[#6B7280]">2100 pts</span>
-                  <span className="text-xs px-2 py-1 bg-[#0F1729] text-[#D4AF37] rounded font-semibold">Platinum</span>
-                </div>
-              </div>
-            </Button>
             
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-auto py-3 border-2 hover:bg-[#E5E7EB] transition-all"
-              onClick={() => handleQuickLogin("+1 (555) 555-5555")}
-            >
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#F3F4F6] flex items-center justify-center">
-                    <span className="text-lg">🌸</span>
-                  </div>
-                  <div className="text-left">
-                    <div className="font-semibold text-[#0F1729]">New Customer</div>
-                    <div className="text-xs text-[#6B7280]">+1 (555) 555-5555</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-[#6B7280]">0 pts</span>
-                  <span className="text-xs px-2 py-1 bg-[#F3F4F6] text-[#6B7280] rounded font-semibold">Silver</span>
-                </div>
-              </div>
-            </Button>
+               <Button
+  type="button"
+  variant="outline"
+  className="w-full h-auto py-3 px-2 sm:px-3 border-2 hover:bg-[#E5E7EB] transition-all"
+  onClick={() => handleQuickLogin("+1 (555) 123-4567")}
+>
+  <div className="flex items-center justify-between w-full gap-1 sm:gap-2">
+    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-[#E8C95A]/20 to-[#D4AF37]/20 flex items-center justify-center shrink-0">
+        <span className="text-base sm:text-lg">⭐</span>
+      </div>
+      <div className="text-left min-w-0">
+        <div className="font-semibold text-xs sm:text-sm text-[#0F1729] truncate">Yuki Tanaka</div>
+        <div className="text-[10px] sm:text-xs text-[#6B7280] truncate">+1 (555) 123-4567</div>
+      </div>
+    </div>
+    <div className="flex flex-col items-end gap-1 sm:gap-1 shrink-0">
+  <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-[#D4AF37] text-white rounded font-semibold whitespace-nowrap">
+    Gold
+  </span>
+  <span className="text-[10px] sm:text-xs text-[#6B7280] whitespace-nowrap">
+    850 pts
+  </span>
+</div>
+  </div>
+</Button>
+          
+             <Button
+  type="button"
+  variant="outline"
+  className="w-full h-auto py-3 px-2 sm:px-3 border-2 hover:bg-[#E5E7EB] transition-all"
+  onClick={() => handleQuickLogin("+1 (555) 987-6543")}
+>
+  <div className="flex items-center justify-between w-full gap-1 sm:gap-2">
+    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-[#D4AF37]/30 to-[#B8952B]/30 flex items-center justify-center shrink-0">
+        <span className="text-base sm:text-lg">💎</span>
+      </div>
+      <div className="text-left min-w-0">
+        <div className="font-semibold text-xs sm:text-sm text-[#0F1729] truncate">Akira Sato</div>
+        <div className="text-[10px] sm:text-xs text-[#6B7280] truncate">+1 (555) 987-6543</div>
+      </div>
+    </div>
+    <div className="flex flex-col items-end gap-1 sm:gap-1 shrink-0">
+  <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-[#F3F4F6] text-[#6B7280] rounded font-semibold whitespace-nowrap">
+    Silver
+  </span>
+  <span className="text-[10px] sm:text-xs text-[#6B7280] whitespace-nowrap">
+    500 pts
+  </span>
+</div>
+  </div>
+</Button>
+
+<Button
+  type="button"
+  variant="outline"
+  className="w-full h-auto py-3 px-2 sm:px-3 border-2 hover:bg-[#E5E7EB] transition-all"
+  onClick={() => handleQuickLogin("+1 (555) 555-5555")}
+>
+  <div className="flex items-center justify-between w-full gap-1 sm:gap-2">
+    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#F3F4F6] flex items-center justify-center shrink-0">
+        <span className="text-base sm:text-lg">🌸</span>
+      </div>
+      <div className="text-left min-w-0">
+        <div className="font-semibold text-xs sm:text-sm text-[#0F1729] truncate">New Customer</div>
+        <div className="text-[10px] sm:text-xs text-[#6B7280] truncate">+1 (555) 555-5555</div>
+      </div>
+    </div>
+    <div className="flex flex-col items-end gap-1 sm:gap-1 shrink-0">
+  <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-[#0F1729] text-[#D4AF37] rounded font-semibold whitespace-nowrap">
+    Platinum
+  </span>
+  <span className="text-[10px] sm:text-xs text-[#6B7280] whitespace-nowrap">
+    2100 pts
+  </span>
+</div>
+  </div>
+</Button>
+            
           </div>
 
           {/* Footer */}
