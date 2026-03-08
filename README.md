@@ -65,6 +65,9 @@ Notes:
 ```powershell
 cd backend
 npm run prisma:push
+#i had to run the below as well 
+# npm install prisma@6 @prisma/client@6
+# npx prisma generate
 npm run prisma:seed
 ```
 
