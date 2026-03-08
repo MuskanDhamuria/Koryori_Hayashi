@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Card } from "./ui/card";
+import { Skeleton } from "./ui/skeleton";
 import { UtensilsCrossed, Phone, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { fetchQuickAccessProfiles, type CustomerProfile } from "../services/api";
@@ -82,6 +83,7 @@ function getTierEmoji(tier: string) {
 export function MobileLogin({ onLogin }: MobileLoginProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isQuickAccessLoading, setIsQuickAccessLoading] = useState(true);
   const [quickAccessProfiles, setQuickAccessProfiles] = useState<CustomerProfile[]>(FALLBACK_PROFILES);
 
   useEffect(() => {
@@ -102,6 +104,8 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
         }
       } catch {
         setQuickAccessProfiles(FALLBACK_PROFILES);
+      } finally {
+        setIsQuickAccessLoading(false);
       }
     };
 
@@ -206,7 +210,26 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
           </div>
 
           <div className="space-y-3">
-            {quickAccessProfiles.map((profile) => {
+            {isQuickAccessLoading
+              ? Array.from({ length: 3 }, (_, index) => (
+                  <div
+                    key={`quick-access-skeleton-${index}`}
+                    className="flex h-[72px] items-center justify-between rounded-lg border-2 border-[#E5E7EB] px-3 py-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-10 w-10 rounded-full bg-[#F3F4F6]" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-3 w-24 bg-[#F3F4F6]" />
+                        <Skeleton className="h-3 w-32 bg-[#F3F4F6]" />
+                      </div>
+                    </div>
+                    <div className="space-y-2 text-right">
+                      <Skeleton className="ml-auto h-5 w-16 bg-[#F3F4F6]" />
+                      <Skeleton className="ml-auto h-3 w-12 bg-[#F3F4F6]" />
+                    </div>
+                  </div>
+                ))
+              : quickAccessProfiles.map((profile) => {
               const tier = profile.loyaltyProfile?.tier ?? "silver";
               const points = profile.loyaltyProfile?.points ?? 0;
 
