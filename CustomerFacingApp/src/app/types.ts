@@ -51,3 +51,13 @@ export interface MABItemStats {
   beta: number; // failures + 1
   lastUpdated: Date;
 }
+
+export type GameKey = "PLATE_DASH" | "SAKE_POUR";
+
+export interface GameLeaderboardEntry {
+  rank: number;
+  playerName: string;
+  score: number;
+  earnedPoints: number;
+  createdAt: string;
+}

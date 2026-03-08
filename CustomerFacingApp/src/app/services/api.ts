@@ -1,6 +1,11 @@
 import type { LoyaltyProfile } from "../components/LoyaltyCard";
 import type { DiscountId } from "../lib/pricing";
-import type { FlavorPreferences, MenuItem } from "../types";
+import type {
+  FlavorPreferences,
+  GameKey,
+  GameLeaderboardEntry,
+  MenuItem,
+} from "../types";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000";
 
@@ -39,6 +44,21 @@ export interface CustomerProfile {
   fullName: string;
   flavorProfile: FlavorPreferences | null;
   loyaltyProfile: LoyaltyProfile | null;
+}
+
+interface GameScoreResponse {
+  score: {
+    id: string;
+    gameKey: GameKey;
+    score: number;
+    earnedPoints: number;
+    rank: number;
+  };
+  loyalty: {
+    pointsBalance: number;
+    tier: LoyaltyProfile["tier"];
+  } | null;
+  leaderboard: GameLeaderboardEntry[];
 }
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
@@ -171,5 +191,27 @@ export async function createOrder(input: {
   return apiFetch("/api/orders", {
     method: "POST",
     body: JSON.stringify(input)
+  });
+}
+
+export async function fetchGameLeaderboards(): Promise<Record<GameKey, GameLeaderboardEntry[]>> {
+  const response = await apiFetch<{ leaderboards: Record<GameKey, GameLeaderboardEntry[]> }>(
+    "/api/games/leaderboards",
+  );
+
+  return response.leaderboards;
+}
+
+export async function submitGameScore(input: {
+  phoneNumber: string;
+  fullName: string;
+  gameKey: GameKey;
+  score: number;
+  rewardPoints: number;
+  rewardReason: string;
+}): Promise<GameScoreResponse> {
+  return apiFetch<GameScoreResponse>("/api/games/score", {
+    method: "POST",
+    body: JSON.stringify(input),
   });
 }

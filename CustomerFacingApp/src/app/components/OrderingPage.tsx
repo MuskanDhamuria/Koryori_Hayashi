@@ -501,12 +501,27 @@ const handleAddFromDialog = (item: MenuItemType) => {
     setPaymentDialogOpen(true);
   };
 
-  const addLoyaltyPoints = (pointsToAdd: number, source: string) => {
-    if (pointsToAdd <= 0) {
+  const addLoyaltyPoints = (
+    pointsToAdd: number,
+    source: string,
+    updatedLoyalty?: {
+      pointsBalance: number;
+      tier: LoyaltyProfile["tier"];
+    },
+  ) => {
+    if (pointsToAdd <= 0 && !updatedLoyalty) {
       return;
     }
 
     setLoyaltyProfile((current) => {
+      if (updatedLoyalty) {
+        return {
+          ...current,
+          points: updatedLoyalty.pointsBalance,
+          tier: updatedLoyalty.tier,
+        };
+      }
+
       const updatedPoints = current.points + pointsToAdd;
 
       return {
@@ -622,6 +637,8 @@ const handleAddFromDialog = (item: MenuItemType) => {
          {currentView === "games" ? (
         <InAppGames
           currentPoints={loyaltyProfile.points}
+          phoneNumber={phoneNumber}
+          userName={userName}
           onEarnPoints={addLoyaltyPoints}
           onBackToOrdering={() => setCurrentView("ordering")}
         />

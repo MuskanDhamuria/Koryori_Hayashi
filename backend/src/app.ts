@@ -10,6 +10,7 @@ import { ordersRoutes } from "./modules/orders/routes.js";
 import { analyticsRoutes } from "./modules/analytics/routes.js";
 import { inventoryRoutes } from "./modules/inventory/routes.js";
 import { loyaltyRoutes } from "./modules/loyalty/routes.js";
+import { gamesRoutes } from "./modules/games/routes.js";
 import { aiRoutes } from "./modules/ai/routes.js";
 
 export function buildApp() {
@@ -53,6 +54,7 @@ export function buildApp() {
   app.register(analyticsRoutes, { prefix: "/api/analytics" });
   app.register(inventoryRoutes, { prefix: "/api/inventory" });
   app.register(loyaltyRoutes, { prefix: "/api/loyalty" });
+  app.register(gamesRoutes, { prefix: "/api/games" });
   app.register(aiRoutes, { prefix: "/api/ai" });
 
   return app;
