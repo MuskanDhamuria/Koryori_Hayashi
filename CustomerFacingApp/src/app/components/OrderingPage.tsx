@@ -381,13 +381,20 @@ export function OrderingPage({
   flavorPreferences,
   onUpdateFlavorPreferences,
 }: OrderingPageProps) {
+  const initialLoyaltyProfile: LoyaltyProfile = {
+    tier: "silver",
+    points: 0,
+    name: userName || "Guest",
+    isBirthday: phoneNumber === "+1 (555) 123-4567",
+    referralCode: phoneNumber === "+1 (555) 123-4567" ? "YUKI2026" : "WELCOME2026",
+  };
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [loyaltyInfoOpen, setLoyaltyInfoOpen] = useState(false);
   const [currentView, setCurrentView] = useState<"ordering" | "games">("ordering");
   const [hasPlacedOrder, setHasPlacedOrder] = useState(false);
   const [recommendations, setRecommendations] = useState<Array<{ item: MenuItemType; reason: string }>>([]);
-  const [loyaltyProfile, setLoyaltyProfile] = useState<LoyaltyProfile>(getUserProfile(phoneNumber));
+  const [loyaltyProfile, setLoyaltyProfile] = useState<LoyaltyProfile>(initialLoyaltyProfile);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItemType[]>(BASE_MENU_ITEMS);
   const [activeCategory, setActiveCategory] = useState("mains");
