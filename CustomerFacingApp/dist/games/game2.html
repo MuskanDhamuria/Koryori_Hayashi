@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sake Pour Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Noto+Serif+JP', serif;
+            background-color: #f4f1ea; /* Single solid background color */
+            touch-action: manipulation;
+            overflow: hidden;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            background-color: #f4f1ea; /* Matching body background */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2rem 1rem;
+        }
+
+        .bottle {
+            position: absolute;
+            top: 20%;
+            right: 10%;
+            width: 80px;
+            transition: transform 0.3s ease;
+            transform-origin: top right;
+            z-index: 20;
+        }
+
+        .bottle.pouring {
+            transform: rotate(-65deg) translate(-20px, 40px);
+        }
+
+        .stream {
+            position: absolute;
+            top: 28%;
+            right: 50%;
+            width: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            height: 0;
+            border-radius: 2px;
+            z-index: 15;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+            display: none;
+        }
+
+        .stream.active {
+            display: block;
+            height: 160px;
+            animation: flow 0.2s infinite linear;
+        }
+
+        @keyframes flow {
+            0% { opacity: 0.6; transform: scaleX(1); }
+            50% { opacity: 0.8; transform: scaleX(1.2); }
+            100% { opacity: 0.6; transform: scaleX(1); }
+        }
+
+        .cup-container {
+            position: relative;
+            z-index: 10;
+        }
+
+        .cup {
+            width: 120px;
+            height: 100px;
+            background: #fff;
+            border: 4px solid #333;
+            border-top: none;
+            border-radius: 0 0 15px 15px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 -10px 20px rgba(0,0,0,0.05);
+        }
+
+        .sake-liquid {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 0%;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+            transition: height 0.05s linear;
+        }
+
+        .target-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: #e63946;
+            bottom: 85%;
+            z-index: 30;
+            opacity: 0.4;
+        }
+
+        .pour-btn {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #333;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.1s;
+        }
+
+        .pour-btn:active {
+            transform: scale(0.95);
+            background: #111;
+        }
+
+        .message-box {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            text-align: center;
+            display: none;
+            z-index: 100;
+            width: 80%;
+            max-width: 350px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .stats {
+            text-align: center;
+            color: #333;
+        }
+
+        .tries-indicator {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .try-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #333;
+            transition: opacity 0.3s;
+        }
+
+        .try-dot.spent {
+            opacity: 0.2;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="stats mt-8">
+        <h1 class="text-2xl font-bold tracking-widest mb-1">酒 SAKE POUR</h1>
+        <div class="flex justify-around text-sm opacity-60 w-full px-10 gap-8">
+            <p>SCORE: <span id="score">0</span>/1000</p>
+            <p>CUP: <span id="level">1</span>/5</p>
+        </div>
+        <div id="tries-container" class="tries-indicator">
+            <!-- Dots generated by JS -->
+        </div>
+    </div>
+
+    <!-- Message Display -->
+    <div id="message-box" class="message-box">
+        <h2 id="msg-title" class="text-xl font-bold mb-2"></h2>
+        <p id="msg-desc" class="mb-4 text-gray-600"></p>
+        <button id="next-btn" onclick="handleNextStep()" class="bg-black text-white px-8 py-2 rounded-full text-sm font-bold tracking-widest uppercase"></button>
+    </div>
+
+    <!-- The Scene -->
+    <div class="relative w-full h-64">
+        <div id="bottle" class="bottle">
+            <svg viewBox="0 0 100 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M30 10C30 4.47715 34.4772 0 40 0H60C65.5228 0 70 4.47715 70 10V50C70 55.5228 65.5228 60 60 60H40C34.4772 60 30 55.5228 30 50V10Z" fill="#2D3436"/>
+                <path d="M10 80C10 68.9543 18.9543 60 30 60H70C81.0457 60 90 68.9543 90 80V230C90 241.046 81.0457 250 70 250H30C18.9543 250 10 241.046 10 230V80Z" fill="#2D3436"/>
+                <rect x="25" y="100" width="50" height="80" fill="#f4f1ea" rx="4"/>
+                <text x="50" y="150" text-anchor="middle" fill="#333" font-size="24" font-weight="bold">酒</text>
+            </svg>
+        </div>
+        <div id="stream" class="stream"></div>
+    </div>
+
+    <div class="cup-container">
+        <div id="target-line" class="target-line"></div>
+        <div class="cup">
+            <div id="sake-liquid" class="sake-liquid"></div>
+        </div>
+        <div class="w-24 h-4 bg-black/5 rounded-[50%] mx-auto mt-2"></div>
+    </div>
+
+    <div class="flex flex-col items-center mb-12">
+        <div id="pour-btn" class="pour-btn">HOLD</div>
+        <p class="mt-4 text-xs tracking-widest text-black/40 uppercase">Target: 1,000 pts in 5 tries</p>
+    </div>
+</div>
+
+<script>
+    const bottle = document.getElementById('bottle');
+    const stream = document.getElementById('stream');
+    const liquid = document.getElementById('sake-liquid');
+    const targetLine = document.getElementById('target-line');
+    const pourBtn = document.getElementById('pour-btn');
+    const messageBox = document.getElementById('message-box');
+    const msgTitle = document.getElementById('msg-title');
+    const msgDesc = document.getElementById('msg-desc');
+    const nextBtn = document.getElementById('next-btn');
+    const scoreEl = document.getElementById('score');
+    const levelEl = document.getElementById('level');
+    const triesContainer = document.getElementById('tries-container');
+
+    const MAX_TRIES = 5;
+    const WIN_SCORE = 1000;
+
+    let currentFill = 0;
+    let isPouring = false;
+    let pourInterval;
+    let score = 0;
+    let currentTry = 1;
+    let targetFill = 85;
+    let isRoundOver = false;
+    let isGameOver = false;
+
+    function notifyParentGame2Win() {
+        if (window.parent === window) return;
+        window.parent.postMessage({
+            type: 'SAKE_POUR_ROUND_WIN',
+            score
+        }, window.location.origin);
+    }
+
+    function init() {
+        score = 0;
+        currentTry = 1;
+        isGameOver = false;
+        scoreEl.innerText = score;
+        updateTriesUI();
+        resetCup();
+    }
+
+    function updateTriesUI() {
+        triesContainer.innerHTML = '';
+        for (let i = 1; i <= MAX_TRIES; i++) {
+            const dot = document.createElement('div');
+            dot.className = `try-dot ${i < currentTry ? 'spent' : ''}`;
+            triesContainer.appendChild(dot);
+        }
+    }
+
+    function resetCup() {
+        currentFill = 0;
+        liquid.style.height = '0%';
+        isRoundOver = false;
+        messageBox.style.display = 'none';
+        levelEl.innerText = currentTry;
+        
+        targetFill = 70 + Math.floor(Math.random() * 25);
+        targetLine.style.bottom = targetFill + '%';
+        updateTriesUI();
+    }
+
+    function startPouring() {
+        if (isRoundOver || isGameOver) return;
+        isPouring = true;
+        bottle.classList.add('pouring');
+        
+        setTimeout(() => {
+            if (isPouring) {
+                stream.classList.add('active');
+                pourInterval = setInterval(() => {
+                    currentFill += 0.7 + (currentTry * 0.05);
+                    liquid.style.height = Math.min(currentFill, 110) + '%';
+                    
+                    if (currentFill > 105) {
+                        stopPouring();
+                        endRound();
+                    }
+                }, 16);
+            }
+        }, 200);
+    }
+
+    function stopPouring() {
+        if (!isPouring) return;
+        isPouring = false;
+        bottle.classList.remove('pouring');
+        stream.classList.remove('active');
+        clearInterval(pourInterval);
+        
+        if (!isRoundOver) {
+            endRound();
+        }
+    }
+
+    function endRound() {
+        isRoundOver = true;
+        const diff = Math.abs(currentFill - targetFill);
+        let points = 0;
+
+        if (currentFill >= 100) {
+            msgTitle.innerText = "OVERFLOW!";
+            msgDesc.innerText = "Spilled! No points awarded.";
+            points = 0;
+        } else if (diff < 1.5) {
+            msgTitle.innerText = "PERFECT!";
+            msgDesc.innerText = "Masterful precision!";
+            points = 400;
+        } else if (diff < 4) {
+            msgTitle.innerText = "EXCELLENT";
+            msgDesc.innerText = "Very close to the line.";
+            points = 200;
+        } else if (diff < 10) {
+            msgTitle.innerText = "GOOD";
+            msgDesc.innerText = "A respectable pour.";
+            points = 100;
+        } else {
+            msgTitle.innerText = "POOR";
+            msgDesc.innerText = "The cup is too empty.";
+            points = 25;
+        }
+
+        score += points;
+        scoreEl.innerText = score;
+
+        setTimeout(() => {
+            if (currentTry >= MAX_TRIES) {
+                isGameOver = true;
+                if (score >= WIN_SCORE) {
+                    notifyParentGame2Win();
+                    msgTitle.innerText = "SUCCESS!";
+                    msgDesc.innerText = `Final Score: ${score}. You are a Sake Master!`;
+                    nextBtn.innerText = "PLAY AGAIN";
+                } else {
+                    msgTitle.innerText = "GAME OVER";
+                    msgDesc.innerText = `Final Score: ${score}. You needed ${WIN_SCORE} to pass.`;
+                    nextBtn.innerText = "RETRY";
+                }
+            } else {
+                nextBtn.innerText = "NEXT CUP";
+            }
+            messageBox.style.display = 'block';
+        }, 600);
+    }
+
+    function handleNextStep() {
+        if (isGameOver) {
+            init();
+        } else {
+            currentTry++;
+            resetCup();
+        }
+    }
+
+    // Controls
+    pourBtn.addEventListener('mousedown', startPouring);
+    window.addEventListener('mouseup', stopPouring);
+    pourBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startPouring(); });
+    window.addEventListener('touchend', (e) => { stopPouring(); });
+
+    init();
+</script>
+</body>
+</html>
