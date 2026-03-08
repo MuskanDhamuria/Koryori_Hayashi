@@ -29,7 +29,7 @@ export const aiRoutes: FastifyPluginAsync = async (app) => {
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    const [recentOrders, inventoryItems, topOrderItems] = await Promise.all([
+    const [recentOrders, inventoryItems, topOrderItems, menuItems] = await Promise.all([
       prisma.order.findMany({
         where: {
           status: {
@@ -89,6 +89,16 @@ export const aiRoutes: FastifyPluginAsync = async (app) => {
         },
         take: 5,
       }),
+      prisma.menuItem.findMany({
+        include: {
+          category: true,
+          inventoryItem: true,
+        },
+        orderBy: {
+          name: "asc",
+        },
+        take: 30,
+      }),
     ]);
 
     const inventoryAlerts = inventoryItems
@@ -142,6 +152,16 @@ export const aiRoutes: FastifyPluginAsync = async (app) => {
         stockOnHand: item.stockOnHand,
         reorderPoint: item.reorderPoint,
       })),
+      menuCatalog: menuItems.map((item) => ({
+        id: item.id,
+        name: item.name,
+        category: item.category.name,
+        price: round(Number(item.price)),
+        cost: round(Number(item.cost)),
+        isAvailable: item.isAvailable,
+        stockOnHand: item.inventoryItem?.stockOnHand ?? null,
+        reorderPoint: item.inventoryItem?.reorderPoint ?? null,
+      })),
       recentOrders: weekOrders.slice(0, 10).map((order) => ({
         orderedAt: order.orderedAt.toISOString(),
         totalAmount: round(Number(order.totalAmount)),
@@ -150,15 +170,13 @@ export const aiRoutes: FastifyPluginAsync = async (app) => {
       })),
     };
 
-    const prompt = [
+    const instructionPrompt = [
       "You are an operations analyst for a Japanese cafe dashboard.",
-      "Use ONLY the supplied JSON data.",
-      "If data is missing, state that clearly instead of guessing.",
-      "Keep answers concise and actionable.",
-      "",
-      `Question: ${parsed.data.question}`,
-      "",
-      `Data: ${JSON.stringify(context)}`,
+      "You have access to DATABASE_CONTEXT_JSON provided in the next part.",
+      "Use ONLY that data. Do not invent values.",
+      "If required data is missing, say what is missing.",
+      "Answer in concise actionable bullet points.",
+      `User question: ${parsed.data.question}`,
     ].join("\n");
 
     let response: Response;
@@ -176,7 +194,10 @@ export const aiRoutes: FastifyPluginAsync = async (app) => {
             contents: [
               {
                 role: "user",
-                parts: [{ text: prompt }],
+                parts: [
+                  { text: instructionPrompt },
+                  { text: `DATABASE_CONTEXT_JSON:\n${JSON.stringify(context)}` },
+                ],
               },
             ],
             generationConfig: {
