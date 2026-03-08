@@ -7,7 +7,7 @@ import { MenuItem } from "./MenuItem";
 import { RecommendationCard } from "./RecommendationCard";
 import { ShoppingCart } from "./ShoppingCart";
 import { PaymentDialog } from "./PaymentDialog";
-import { LoyaltyProfile } from "./LoyaltyCard";
+import { LoyaltyCard, LoyaltyProfile } from "./LoyaltyCard";
 import {InAppGames} from "./InAppGames";
 import { QrCode, UtensilsCrossed, Sparkles, CloudRain, Sun, Cloud, Info, Gift, Users, Star, Plus, Flame } from "lucide-react";
 import { toast } from "sonner";
@@ -17,12 +17,15 @@ import { generateRecommendations } from "../services/recommendationService";
 import { applyDynamicPricing, recordFlashSaleOrder, hasActiveFlashSale } from "../services/dynamicPricingService";
 import { getCurrentWeather } from "../services/weatherService";
 import { recordSuccess } from "../services/mabService";
+import { createOrder, fetchLoyaltyProfile, fetchMenuItems } from "../services/api";
+import { calculateCartSubtotal, calculatePricing, type DiscountId } from "../lib/pricing";
 
 interface OrderingPageProps {
   tableNumber: string;
   userName: string;
   phoneNumber: string;
   flavorPreferences?: FlavorPreferences;
+  onUpdateFlavorPreferences: () => void;
 }
 
 // Enhanced menu items with flavor profiles, weather tags, and MAB properties
@@ -360,7 +363,24 @@ function getTierFromPoints(points: number): LoyaltyProfile["tier"] {
   return "silver";
 }
 
-export function OrderingPage({ tableNumber, userName, phoneNumber, flavorPreferences }: OrderingPageProps) {
+function mergeMenuImages(items: MenuItemType[]): MenuItemType[] {
+  const fallbackImageByName = new Map(
+    BASE_MENU_ITEMS.map((item) => [item.name, item.image]),
+  );
+
+  return items.map((item) => ({
+    ...item,
+    image: item.image || fallbackImageByName.get(item.name) || "",
+  }));
+}
+
+export function OrderingPage({
+  tableNumber,
+  userName,
+  phoneNumber,
+  flavorPreferences,
+  onUpdateFlavorPreferences,
+}: OrderingPageProps) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [loyaltyInfoOpen, setLoyaltyInfoOpen] = useState(false);
@@ -383,6 +403,35 @@ export function OrderingPage({ tableNumber, userName, phoneNumber, flavorPrefere
     fetchWeather();
   }, []);
 
+  useEffect(() => {
+    const loadMenuItems = async () => {
+      try {
+        const items = await fetchMenuItems();
+        if (items.length > 0) {
+          setMenuItems(applyDynamicPricing(mergeMenuImages(items)));
+          setActiveCategory(items[0]?.category ?? "mains");
+        }
+      } catch {
+        setMenuItems(applyDynamicPricing(BASE_MENU_ITEMS));
+      }
+    };
+
+    void loadMenuItems();
+  }, []);
+
+  useEffect(() => {
+    const loadLoyaltyProfile = async () => {
+      const profile = await fetchLoyaltyProfile(phoneNumber);
+      if (profile) {
+        setLoyaltyProfile(profile);
+      } else {
+        setLoyaltyProfile(getUserProfile(phoneNumber));
+      }
+    };
+
+    void loadLoyaltyProfile();
+  }, [phoneNumber]);
+
   const handleItemClick = (item: MenuItemType) => {
   setSelectedItem(item);
   setItemDialogOpen(true);
@@ -393,12 +442,6 @@ const handleAddFromDialog = (item: MenuItemType) => {
   setItemDialogOpen(false);
   setSelectedItem(null);
 };
-
-  // Apply dynamic pricing based on surplus inventory
-  useEffect(() => {
-    const pricedItems = applyDynamicPricing(BASE_MENU_ITEMS);
-    setMenuItems(pricedItems);
-  }, []);
 
   // Generate recommendations when cart or flavor preferences change
   useEffect(() => {
@@ -454,45 +497,91 @@ const handleAddFromDialog = (item: MenuItemType) => {
     toast.info("Item removed from cart");
   };
 
-   const handleCheckout = () => {
+  const handleCheckout = () => {
     setPaymentDialogOpen(true);
   };
 
   const addLoyaltyPoints = (pointsToAdd: number, source: string) => {
-    if (pointsToAdd <= 0) return;
+    if (pointsToAdd <= 0) {
+      return;
+    }
+
     setLoyaltyProfile((current) => {
       const updatedPoints = current.points + pointsToAdd;
+
       return {
         ...current,
         points: updatedPoints,
         tier: getTierFromPoints(updatedPoints),
       };
     });
+
     toast.success(`+${pointsToAdd} points from ${source}`);
   };
 
-  const handlePaymentComplete = () => {
-    // Record successful orders for MAB
-    cart.forEach(item => {
+  const handlePaymentComplete = async (
+    paymentMethod: "card" | "mobile",
+    selectedDiscountId: DiscountId | null,
+  ) => {
+    const subtotal = calculateCartSubtotal(cart);
+    const pricing = calculatePricing(subtotal, loyaltyProfile, selectedDiscountId);
+    let completionResult:
+      | {
+          earnedPoints: number;
+          pointsBalance: number;
+        }
+      | undefined;
+
+    const response = await createOrder({
+      customerName: userName,
+      phoneNumber,
+      tableCode: tableNumber,
+      items: cart.map((item) => ({
+        menuItemId: item.id,
+        quantity: item.quantity
+      })),
+      paymentMethod: paymentMethod === "card" ? "CARD" : "MOBILE",
+      birthdayDiscountPercent: pricing.birthdayDiscountPercent,
+      selectedDiscountId: pricing.selectedDiscountId,
+    });
+
+    cart.forEach((item) => {
       recordSuccess(item.id);
     });
-    
-    addLoyaltyPoints(loyaltyPoints, "Order Complete");
+
+    if (response.loyalty) {
+      setLoyaltyProfile((current) => ({
+        ...current,
+        points: response.loyalty!.pointsBalance,
+        tier: response.loyalty!.tier,
+      }));
+      toast.success(`Payment successful. You earned ${response.loyalty.earnedPoints} points.`);
+      completionResult = {
+        earnedPoints: response.loyalty.earnedPoints,
+        pointsBalance: response.loyalty.pointsBalance,
+      };
+    } else {
+      const refreshedProfile = await fetchLoyaltyProfile(phoneNumber);
+      if (refreshedProfile) {
+        setLoyaltyProfile(refreshedProfile);
+        completionResult = {
+          earnedPoints: pricing.pointsEarned,
+          pointsBalance: refreshedProfile.points,
+        };
+      } else {
+        toast.success("Payment successful. Redirecting you to Games.");
+      }
+    }
+
     setHasPlacedOrder(true);
     setCurrentView("games");
     setPaymentDialogOpen(false);
     setCart([]);
-    toast.success("Payment successful. Redirecting you to Games.");
+
+    return completionResult;
   };
 
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const birthdayDiscountPercent = loyaltyProfile.isBirthday 
-    ? (loyaltyProfile.tier === "platinum" ? 15 : loyaltyProfile.tier === "gold" ? 10 : 5)
-    : 0;
-  const birthdayDiscountAmount = subtotal * (birthdayDiscountPercent / 100);
-  const total = (subtotal - birthdayDiscountAmount) * 1.1;
-  const pointsMultiplier = loyaltyProfile.tier === "platinum" ? 2 : loyaltyProfile.tier === "gold" ? 1.5 : 1;
-  const loyaltyPoints = Math.floor(total * pointsMultiplier);
+  const subtotal = calculateCartSubtotal(cart);
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
@@ -540,6 +629,10 @@ const handleAddFromDialog = (item: MenuItemType) => {
       <>
             {/* Main Content */}
       <main className="container mx-auto px-6 py-8 pt-16 relative">
+        <div className="mb-6 max-w-md">
+          <LoyaltyCard profile={loyaltyProfile} />
+        </div>
+
         {/* Status Badges - Now in a single row */}
         <div className="absolute top-6 right-6 flex items-center gap-2">
           {/* Guest/Loyalty Info Button - moved here */}
@@ -573,6 +666,14 @@ const handleAddFromDialog = (item: MenuItemType) => {
               Personalized
             </div>
           )}
+
+          <button
+            onClick={onUpdateFlavorPreferences}
+            className="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100"
+          >
+            <Info className="h-3 w-3" />
+            Update Taste Profile
+          </button>
           
           {/* Birthday badge */}
           {loyaltyProfile.isBirthday && (
@@ -829,8 +930,7 @@ const handleAddFromDialog = (item: MenuItemType) => {
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveItem}
         onCheckout={handleCheckout}
-        loyaltyTier={loyaltyProfile.tier}
-        birthdayDiscount={loyaltyProfile.isBirthday}
+        loyaltyProfile={loyaltyProfile}
       />
 
       {/* Payment Dialog */}
@@ -838,8 +938,7 @@ const handleAddFromDialog = (item: MenuItemType) => {
         open={paymentDialogOpen}
         onClose={() => setPaymentDialogOpen(false)}
         onPaymentComplete={handlePaymentComplete}
-        total={total}
-        loyaltyPoints={loyaltyPoints}
+        subtotal={subtotal}
         loyaltyProfile={loyaltyProfile}
       />
 
@@ -1094,6 +1193,13 @@ const handleAddFromDialog = (item: MenuItemType) => {
                   </div>
                 </div>
               </div>
+              <Button
+                onClick={onUpdateFlavorPreferences}
+                variant="outline"
+                className="mt-4 border-white/30 bg-white/10 text-white hover:bg-white/20"
+              >
+                Update My Taste Profile
+              </Button>
             </div>
 
             {/* Membership Tiers */}

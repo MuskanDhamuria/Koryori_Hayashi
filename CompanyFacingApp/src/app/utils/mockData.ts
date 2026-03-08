@@ -155,7 +155,11 @@ export function calculatePeakHours(sales: SalesRecord[]): { hour: number; totalS
 }
 
 // Get top performing items
-export function getTopItems(sales: SalesRecord[], limit: number = 5): { item: MenuItem; totalRevenue: number; totalQuantity: number }[] {
+export function getTopItems(
+  sales: SalesRecord[],
+  availableMenuItems: MenuItem[] = menuItems,
+  limit: number = 5
+): { item: MenuItem; totalRevenue: number; totalQuantity: number }[] {
   const itemStats: { [itemId: string]: { revenue: number; quantity: number } } = {};
   
   sales.forEach(sale => {
@@ -168,7 +172,7 @@ export function getTopItems(sales: SalesRecord[], limit: number = 5): { item: Me
   
   return Object.entries(itemStats)
     .map(([itemId, stats]) => ({
-      item: menuItems.find(m => m.id === itemId)!,
+      item: availableMenuItems.find(m => m.id === itemId)!,
       totalRevenue: stats.revenue,
       totalQuantity: stats.quantity,
     }))
@@ -177,11 +181,15 @@ export function getTopItems(sales: SalesRecord[], limit: number = 5): { item: Me
 }
 
 // Get worst performing items
-export function getWorstItems(sales: SalesRecord[], limit: number = 5): { item: MenuItem; totalRevenue: number; totalQuantity: number }[] {
+export function getWorstItems(
+  sales: SalesRecord[],
+  availableMenuItems: MenuItem[] = menuItems,
+  limit: number = 5
+): { item: MenuItem; totalRevenue: number; totalQuantity: number }[] {
   const itemStats: { [itemId: string]: { revenue: number; quantity: number } } = {};
   
   // Initialize all items with 0
-  menuItems.forEach(item => {
+  availableMenuItems.forEach(item => {
     itemStats[item.id] = { revenue: 0, quantity: 0 };
   });
   
@@ -192,7 +200,7 @@ export function getWorstItems(sales: SalesRecord[], limit: number = 5): { item: 
   
   return Object.entries(itemStats)
     .map(([itemId, stats]) => ({
-      item: menuItems.find(m => m.id === itemId)!,
+      item: availableMenuItems.find(m => m.id === itemId)!,
       totalRevenue: stats.revenue,
       totalQuantity: stats.quantity,
     }))
