@@ -25,6 +25,7 @@ interface OrderingPageProps {
   userName: string;
   phoneNumber: string;
   flavorPreferences?: FlavorPreferences;
+  onUpdateFlavorPreferences: () => void;
 }
 
 // Enhanced menu items with flavor profiles, weather tags, and MAB properties
@@ -373,7 +374,13 @@ function mergeMenuImages(items: MenuItemType[]): MenuItemType[] {
   }));
 }
 
-export function OrderingPage({ tableNumber, userName, phoneNumber, flavorPreferences }: OrderingPageProps) {
+export function OrderingPage({
+  tableNumber,
+  userName,
+  phoneNumber,
+  flavorPreferences,
+  onUpdateFlavorPreferences,
+}: OrderingPageProps) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [loyaltyInfoOpen, setLoyaltyInfoOpen] = useState(false);
@@ -659,6 +666,14 @@ const handleAddFromDialog = (item: MenuItemType) => {
               Personalized
             </div>
           )}
+
+          <button
+            onClick={onUpdateFlavorPreferences}
+            className="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100"
+          >
+            <Info className="h-3 w-3" />
+            Update Taste Profile
+          </button>
           
           {/* Birthday badge */}
           {loyaltyProfile.isBirthday && (
@@ -1178,6 +1193,13 @@ const handleAddFromDialog = (item: MenuItemType) => {
                   </div>
                 </div>
               </div>
+              <Button
+                onClick={onUpdateFlavorPreferences}
+                variant="outline"
+                className="mt-4 border-white/30 bg-white/10 text-white hover:bg-white/20"
+              >
+                Update My Taste Profile
+              </Button>
             </div>
 
             {/* Membership Tiers */}

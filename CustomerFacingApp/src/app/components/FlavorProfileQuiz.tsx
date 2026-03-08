@@ -7,13 +7,20 @@ import { FlavorPreferences } from '../types';
 import { motion } from 'motion/react';
 
 interface FlavorProfileQuizProps {
-  onComplete: (preferences: FlavorPreferences) => void;
+  onComplete: (preferences: FlavorPreferences) => Promise<void> | void;
   userName: string;
+  initialPreferences?: FlavorPreferences;
 }
 
-export function FlavorProfileQuiz({ onComplete, userName }: FlavorProfileQuizProps) {
+export function FlavorProfileQuiz({
+  onComplete,
+  userName,
+  initialPreferences,
+}: FlavorProfileQuizProps) {
   const [step, setStep] = useState(0);
-  const [preferences, setPreferences] = useState<Partial<FlavorPreferences>>({});
+  const [preferences, setPreferences] = useState<Partial<FlavorPreferences>>(
+    initialPreferences ?? {},
+  );
 
   const questions = [
     {
@@ -51,7 +58,7 @@ export function FlavorProfileQuiz({ onComplete, userName }: FlavorProfileQuizPro
   const currentQuestion = questions[step];
   const progress = ((step + 1) / questions.length) * 100;
 
-  const handleSelect = (value: string) => {
+  const handleSelect = async (value: string) => {
     const newPreferences = {
       ...preferences,
       [currentQuestion.id]: value,
@@ -61,7 +68,7 @@ export function FlavorProfileQuiz({ onComplete, userName }: FlavorProfileQuizPro
     if (step < questions.length - 1) {
       setStep(step + 1);
     } else {
-      onComplete(newPreferences as FlavorPreferences);
+      await onComplete(newPreferences as FlavorPreferences);
     }
   };
 
@@ -131,7 +138,7 @@ export function FlavorProfileQuiz({ onComplete, userName }: FlavorProfileQuizPro
                   <Button
                     variant="outline"
                     className="w-full h-auto p-4 border-2 hover:bg-[#F9FAFB] hover:border-[#D4AF37] text-left group"
-                    onClick={() => handleSelect(option.value)}
+                    onClick={() => void handleSelect(option.value)}
                   >
                     <div className="flex items-center gap-4 w-full">
                       <div className="text-4xl group-hover:scale-110 transition-transform">
@@ -156,11 +163,13 @@ export function FlavorProfileQuiz({ onComplete, userName }: FlavorProfileQuizPro
           {/* Skip button */}
           <div className="mt-6 text-center">
             <button
-              onClick={() => onComplete({
-                umamiVsCitrus: 'balanced',
-                refreshingVsHearty: 'balanced',
-                spicyTolerance: 'medium',
-              })}
+              onClick={() =>
+                void onComplete({
+                  umamiVsCitrus: 'balanced',
+                  refreshingVsHearty: 'balanced',
+                  spicyTolerance: 'medium',
+                })
+              }
               className="text-sm text-[#6B7280] hover:text-[#0F1729] transition-colors"
             >
               Skip and use balanced preferences →
