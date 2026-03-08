@@ -30,6 +30,10 @@ npm install
 
 Copy [backend/.env.example](/c:/Users/Naren/Documents/SMU/y2s2/DBTT/project/Koryori_Hayashi/backend/.env.example) to [backend/.env](/c:/Users/Naren/Documents/SMU/y2s2/DBTT/project/Koryori_Hayashi/backend/.env).
 
+Important:
+- `.env` is ignored by Git, so pulling this branch alone does not give other people your database connection.
+- Everyone only sees the same data if they use the same Supabase project in `backend/.env`.
+
 For Supabase, fill:
 
 ```env
@@ -111,7 +115,3 @@ Customer quick access numbers:
 - Customer quick-access cards on the login screen load from backend data.
 - If a customer already has saved taste preferences, the quiz is skipped automatically.
 - Customers can update taste preferences later from the ordering flow.
-
-## Local Postgres Option
-
-If you do not want Supabase for local development, you can use the Docker Postgres service in [docker-compose.yml](/c:/Users/Naren/Documents/SMU/y2s2/DBTT/project/Koryori_Hayashi/docker-compose.yml) and switch `DATABASE_URL` / `DIRECT_URL` in [backend/.env](/c:/Users/Naren/Documents/SMU/y2s2/DBTT/project/Koryori_Hayashi/backend/.env) back to local Postgres values.

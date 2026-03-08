@@ -10,6 +10,10 @@ cd backend
 npm install
 ```
 
+2. Copy [backend/.env.example](/c:/Users/Naren/Documents/SMU/y2s2/DBTT/project/Koryori_Hayashi/backend/.env.example) to [backend/.env](/c:/Users/Naren/Documents/SMU/y2s2/DBTT/project/Koryori_Hayashi/backend/.env) and fill the Supabase connection values.
+
+3. If the team should share the same data, everyone must use the same Supabase `DATABASE_URL` and `DIRECT_URL`.
+
 ## Initialize Database
 
 ```powershell
