@@ -39,7 +39,15 @@ import {
   type MenuItem,
   type SalesRecord
 } from './utils/mockData';
-import { fetchInventoryAlerts, fetchMenuCatalog, fetchOrders, staffLogin } from './services/api';
+import {
+  fetchDashboardAnalytics,
+  fetchInventoryAlerts,
+  fetchMenuCatalog,
+  fetchOrders,
+  staffLogin,
+  type BackendOrder,
+  type DashboardAnalyticsResponse,
+} from './services/api';
 
 const STORAGE_KEY = 'koryori-staff-token';
 
@@ -99,14 +107,16 @@ function buildSalesRecords(
 
 export default function App() {
   const [selectedPeriod, setSelectedPeriod] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
+  const [orders, setOrders] = useState<BackendOrder[]>([]);
   const [historicalSales, setHistoricalSales] = useState<SalesRecord[]>([]);
   const [menuCatalog, setMenuCatalog] = useState<MenuItem[]>([]);
   const [inventoryAlerts, setInventoryAlerts] = useState<Array<{ item: { id: string; name: string; category: string; stock: number; reorderPoint: number }; daysUntilStockout: number; suggestedOrder: number }>>([]);
+  const [dashboardAnalytics, setDashboardAnalytics] = useState<DashboardAnalyticsResponse | null>(null);
   const [authToken, setAuthToken] = useState<string>(() => localStorage.getItem(STORAGE_KEY) ?? '');
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [authError, setAuthError] = useState('');
-  const [email, setEmail] = useState('admin@koryorihayashi.local');
-  const [password, setPassword] = useState('ChangeMe123!');
+  const [email, setEmail] = useState('admin@gmail.com');
+  const [password, setPassword] = useState('meiyu123!');
 
   useEffect(() => {
     // Force dark mode
@@ -122,21 +132,24 @@ export default function App() {
     const loadDashboard = async () => {
       setIsLoadingData(true);
       try {
-        const [menuResponse, ordersResponse, inventoryResponse] = await Promise.all([
+        const [menuResponse, ordersResponse, inventoryResponse, analyticsResponse] = await Promise.all([
           fetchMenuCatalog(),
           fetchOrders(authToken),
-          fetchInventoryAlerts(authToken)
+          fetchInventoryAlerts(authToken),
+          fetchDashboardAnalytics(authToken)
         ]);
 
         const catalog = buildMenuCatalog(menuResponse.categories);
         setMenuCatalog(catalog);
+        setOrders(ordersResponse.orders);
         setHistoricalSales(buildSalesRecords(ordersResponse.orders));
+        setDashboardAnalytics(analyticsResponse);
         setInventoryAlerts(
           inventoryResponse.alerts.map((alert) => ({
             item: {
               id: alert.menuItem.id,
               name: alert.menuItem.name,
-              category: alert.menuItem.category.name,
+              category: alert.menuItem.category?.name ?? "Uncategorized",
               stock: alert.stockOnHand,
               reorderPoint: alert.reorderPoint
             },
@@ -159,66 +172,8 @@ export default function App() {
 
   // Calculate metrics
   const metrics = useMemo(() => {
-    if (historicalSales.length === 0) return null;
-
-    const now = new Date();
-    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-    const todaySales = historicalSales.filter(s => s.date >= oneDayAgo);
-    const weekSales = historicalSales.filter(s => s.date >= oneWeekAgo);
-    const monthSales = historicalSales;
-
-    const todayRevenue = todaySales.reduce((sum, s) => sum + s.revenue, 0);
-    const weekRevenue = weekSales.reduce((sum, s) => sum + s.revenue, 0);
-    const monthRevenue = monthSales.reduce((sum, s) => sum + s.revenue, 0);
-
-    const todayOrders = todaySales.length;
-    const weekOrders = weekSales.length;
-
-    const prevWeekSales = historicalSales.filter(s => {
-      const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-      return s.date >= twoWeeksAgo && s.date < oneWeekAgo;
-    });
-    const prevWeekRevenue = prevWeekSales.reduce((sum, s) => sum + s.revenue, 0);
-    const prevWeekOrders = prevWeekSales.length;
-
-    const totalCost = historicalSales.reduce((sum, s) => {
-      const item = menuCatalog.find(m => m.id === s.itemId);
-      return sum + (item ? item.cost * s.quantity : 0);
-    }, 0);
-    const avgMargin = ((monthRevenue - totalCost) / monthRevenue * 100);
-
-    const avgOrderValue = weekRevenue / weekOrders;
-    const prevAvgOrderValue = prevWeekRevenue / prevWeekOrders;
-
-    // Calculate sparkline data for last 7 days
-    const last7Days = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(now);
-      date.setDate(date.getDate() - (6 - i));
-      const dateKey = date.toISOString().split('T')[0];
-      const daySales = historicalSales.filter(s => 
-        s.date.toISOString().split('T')[0] === dateKey
-      );
-      return { value: daySales.reduce((sum, s) => sum + s.revenue, 0) };
-    });
-
-    return {
-      todayRevenue,
-      weekRevenue,
-      monthRevenue,
-      todayOrders,
-      weekOrders,
-      avgMargin,
-      avgOrderValue,
-      weekGrowth: prevWeekRevenue > 0 ? ((weekRevenue - prevWeekRevenue) / prevWeekRevenue * 100) : 0,
-      sparklineData: last7Days,
-      prevWeekRevenue,
-      prevWeekOrders,
-      prevAvgOrderValue,
-    };
-  }, [historicalSales, menuCatalog]);
+    return dashboardAnalytics?.metrics ?? null;
+  }, [dashboardAnalytics]);
 
   // Category breakdown
   const categoryData = useMemo(() => {
@@ -271,18 +226,19 @@ export default function App() {
 
   // Combo chart data
   const comboData = useMemo(() => {
-    if (historicalSales.length === 0) return [];
+    if (orders.length === 0) return [];
 
     const dailyStats: { [key: string]: { revenue: number; orders: number; customers: number } } = {};
     
-    historicalSales.forEach(sale => {
-      const dateKey = sale.date.toISOString().split('T')[0];
+    orders.forEach(order => {
+      const orderDate = new Date(order.orderedAt);
+      const dateKey = orderDate.toISOString().split('T')[0];
       if (!dailyStats[dateKey]) {
         dailyStats[dateKey] = { revenue: 0, orders: 0, customers: 0 };
       }
-      dailyStats[dateKey].revenue += sale.revenue;
+      dailyStats[dateKey].revenue += Number(order.totalAmount);
       dailyStats[dateKey].orders += 1;
-      dailyStats[dateKey].customers += Math.round(sale.quantity / 2); // Estimate
+      dailyStats[dateKey].customers += 1;
     });
 
     return Object.keys(dailyStats).sort().slice(-14).map(date => ({
@@ -291,7 +247,7 @@ export default function App() {
       orders: dailyStats[date].orders,
       customers: dailyStats[date].customers,
     }));
-  }, [historicalSales]);
+  }, [orders]);
 
   const revenueChartData = useMemo(() => {
     if (historicalSales.length === 0) return [];
@@ -413,28 +369,18 @@ export default function App() {
 
   // Comparison data for previous period
   const comparisonData = useMemo(() => {
-    if (!metrics) return null;
+    if (!dashboardAnalytics) return null;
 
     return {
-      currentPeriod: {
-        revenue: metrics.weekRevenue,
-        orders: metrics.weekOrders,
-        avgOrderValue: metrics.avgOrderValue,
-        margin: metrics.avgMargin,
-      },
-      previousPeriod: {
-        revenue: metrics.prevWeekRevenue,
-        orders: metrics.prevWeekOrders,
-        avgOrderValue: metrics.prevAvgOrderValue,
-        margin: metrics.avgMargin - 2.3, // Simulated previous margin
-      },
+      currentPeriod: dashboardAnalytics.comparison.currentPeriod,
+      previousPeriod: dashboardAnalytics.comparison.previousPeriod,
       industryBenchmark: {
-        avgOrderValue: 16.50, // Industry standard for small Japanese lunch spot
-        margin: 58, // Typical margin for restaurant
-        peakHourRevenue: 350, // Industry benchmark
+        avgOrderValue: dashboardAnalytics.comparison.benchmark.avgOrderValue,
+        margin: dashboardAnalytics.comparison.benchmark.margin,
+        peakHourRevenue: dashboardAnalytics.comparison.benchmark.peakHourRevenue,
       },
     };
-  }, [metrics]);
+  }, [dashboardAnalytics]);
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -453,9 +399,11 @@ export default function App() {
   const handleLogout = () => {
     localStorage.removeItem(STORAGE_KEY);
     setAuthToken('');
+    setOrders([]);
     setHistoricalSales([]);
     setMenuCatalog([]);
     setInventoryAlerts([]);
+    setDashboardAnalytics(null);
   };
 
   if (!authToken) {
@@ -483,7 +431,7 @@ export default function App() {
     );
   }
 
-  if (isLoadingData || !metrics || !comparisonData) {
+  if (isLoadingData || !metrics || !comparisonData || !dashboardAnalytics) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-red-950 to-gray-900">
         <div className="text-center">
@@ -522,21 +470,24 @@ export default function App() {
                     さくら Sakura Kitchen
                   </h1>
                 </div>
-                <p className="text-slate-300 text-lg">
+                <p className="hidden text-slate-300 text-lg">
                   Smart Analytics Dashboard • Small Japanese Lunch Shop • Open 11 AM - 3 PM
+                </p>
+                <p className="text-slate-300 text-lg">
+                  Smart Analytics Dashboard • Live revenue, order, inventory, and margin reporting • Peak window {dashboardAnalytics.operations.peakHourRange}
                 </p>
                 <div className="flex items-center gap-4 mt-3">
                   <div className="flex items-center gap-2 text-slate-400">
                     <Users className="h-4 w-4" />
-                    <span className="text-sm">5 Employees</span>
+                    <span className="text-sm">{dashboardAnalytics.operations.staffCount} Staff Accounts</span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-400">
                     <Clock className="h-4 w-4" />
-                    <span className="text-sm">4 Hours Daily</span>
+                    <span className="text-sm">{dashboardAnalytics.operations.activeTables} Active Tables</span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-400">
                     <Target className="h-4 w-4" />
-                    <span className="text-sm">Lunch Focused</span>
+                    <span className="text-sm">{dashboardAnalytics.operations.uniqueCustomersThisWeek} Customers This Week</span>
                   </div>
                 </div>
               </div>
@@ -576,16 +527,16 @@ export default function App() {
           <SparklineCard
             title="Total Orders"
             value={metrics.weekOrders}
-            change={5.3}
-            data={metrics.sparklineData.map(d => ({ value: d.value / 20 }))}
+            change={metrics.ordersGrowth}
+            data={comboData.map((point) => ({ value: point.orders }))}
             icon={ShoppingCart}
             color="#8b5cf6"
           />
           <SparklineCard
             title="Profit Margin"
             value={`${metrics.avgMargin.toFixed(1)}%`}
-            change={2.1}
-            data={[{ value: 55 }, { value: 58 }, { value: 56 }, { value: 60 }, { value: 62 }, { value: 61 }, { value: metrics.avgMargin }]}
+            change={metrics.marginDelta}
+            data={metrics.sparklineData.map(() => ({ value: metrics.avgMargin }))}
             icon={Percent}
             color="#6366f1"
           />
@@ -813,24 +764,24 @@ export default function App() {
                 <div className="bg-gray-900 rounded-xl shadow-lg p-6 border-2 border-green-700">
                   <h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-white">
                     <Package className="h-5 w-5 text-green-400" />
-                    Waste Reduction
+                    Inventory Health
                   </h3>
                   <div className="space-y-3">
                     <div className="p-3 bg-green-900/30 border-2 border-green-700 rounded-lg">
-                      <div className="font-semibold text-green-200">Excellent</div>
+                      <div className="font-semibold text-green-200">Healthy Stock</div>
                       <div className="text-sm text-green-300 mt-1">
-                        Ramen & Sushi: 95%+ efficiency
+                        {dashboardAnalytics.inventorySummary.healthyCount} items are currently above reorder point
                       </div>
                     </div>
                     <div className="p-3 bg-yellow-900/30 border-2 border-yellow-700 rounded-lg">
-                      <div className="font-semibold text-yellow-200">Monitor</div>
+                      <div className="font-semibold text-yellow-200">Monitor Closely</div>
                       <div className="text-sm text-yellow-300 mt-1">
-                        Tempura: Check prep quantities
+                        {dashboardAnalytics.inventorySummary.warningCount} warning items and {dashboardAnalytics.inventorySummary.criticalCount} critical items
                       </div>
                     </div>
                     <div className="p-3 bg-blue-900/30 border-2 border-blue-700 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-200">-28%</div>
-                      <div className="text-sm text-blue-300">Waste vs last month</div>
+                      <div className="text-2xl font-bold text-blue-200">{dashboardAnalytics.inventorySummary.averageCoverageDays.toFixed(1)} days</div>
+                      <div className="text-sm text-blue-300">Average stock coverage</div>
                     </div>
                   </div>
                 </div>
@@ -840,19 +791,22 @@ export default function App() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center pb-2 border-b-2 border-gray-700">
                       <span className="text-gray-300">High (60%+):</span>
-                      <span className="font-bold text-green-400 text-lg">12 items</span>
+                      <span className="font-bold text-green-400 text-lg">{dashboardAnalytics.marginSummary.highCount} items</span>
                     </div>
                     <div className="flex justify-between items-center pb-2 border-b-2 border-gray-700">
                       <span className="text-gray-300">Medium (40-60%):</span>
-                      <span className="font-bold text-blue-400 text-lg">8 items</span>
+                      <span className="font-bold text-blue-400 text-lg">{dashboardAnalytics.marginSummary.mediumCount} items</span>
                     </div>
                     <div className="flex justify-between items-center pb-2">
                       <span className="text-gray-300">Low (&lt;40%):</span>
-                      <span className="font-bold text-yellow-400 text-lg">4 items</span>
+                      <span className="font-bold text-yellow-400 text-lg">{dashboardAnalytics.marginSummary.lowCount} items</span>
                     </div>
                   </div>
-                  <div className="mt-4 p-3 bg-gradient-to-r from-purple-900/50 to-pink-900/50 border-2 border-purple-700 rounded-lg text-sm text-purple-200">
+                  <div className="hidden mt-4 p-3 bg-gradient-to-r from-purple-900/50 to-pink-900/50 border-2 border-purple-700 rounded-lg text-sm text-purple-200">
                     💡 Promote high-margin items during peak 12-1 PM rush
+                  </div>
+                  <div className="mt-4 p-3 bg-gradient-to-r from-purple-900/50 to-pink-900/50 border-2 border-purple-700 rounded-lg text-sm text-purple-200">
+                    {dashboardAnalytics.marginSummary.recommendation}
                   </div>
                 </div>
               </div>

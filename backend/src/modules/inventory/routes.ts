@@ -5,7 +5,11 @@ export const inventoryRoutes: FastifyPluginAsync = async (app) => {
   app.get("/", { preHandler: app.requireStaff }, async () => {
     const inventory = await prisma.inventoryItem.findMany({
       include: {
-        menuItem: true
+        menuItem: {
+          include: {
+            category: true,
+          },
+        },
       },
       orderBy: { stockOnHand: "asc" }
     });
@@ -21,7 +25,11 @@ export const inventoryRoutes: FastifyPluginAsync = async (app) => {
         }
       },
       include: {
-        menuItem: true
+        menuItem: {
+          include: {
+            category: true,
+          },
+        },
       },
       orderBy: { stockOnHand: "asc" }
     });

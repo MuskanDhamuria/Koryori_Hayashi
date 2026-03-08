@@ -98,7 +98,7 @@ export function ComparisonView({ data }: ComparisonViewProps) {
           <span className="text-gray-500">Previous: {formatValue(previous)}</span>
           {benchmark && (
             <span className={`${isBelowBenchmark ? 'text-yellow-400' : 'text-green-400'}`}>
-              Industry: {formatValue(benchmark)}
+              Benchmark: {formatValue(benchmark)}
             </span>
           )}
         </div>
@@ -115,7 +115,7 @@ export function ComparisonView({ data }: ComparisonViewProps) {
             Period Comparison
           </CardTitle>
           <CardDescription className="text-gray-400">
-            Compare current performance vs previous period and industry benchmarks
+            Compare current performance vs the previous period and your rolling baseline
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -178,10 +178,10 @@ export function ComparisonView({ data }: ComparisonViewProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-white">
             <TrendingUp className="h-5 w-5 text-orange-400" />
-            Industry Benchmarks
+            Performance Benchmarks
           </CardTitle>
           <CardDescription className="text-gray-400">
-            How you compare to typical small Japanese lunch restaurants
+            How this period compares with your backend-derived baseline
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -189,7 +189,7 @@ export function ComparisonView({ data }: ComparisonViewProps) {
             <div className="p-4 bg-gray-800 border-2 border-gray-700 rounded-lg">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-gray-400">Average Order Value</span>
-                <span className="text-sm text-gray-500">Industry: ${data.industryBenchmark.avgOrderValue}</span>
+                <span className="text-sm text-gray-500">Benchmark: ${data.industryBenchmark.avgOrderValue}</span>
               </div>
               <div className="w-full bg-gray-700 rounded-full h-3">
                 <div 
@@ -216,7 +216,7 @@ export function ComparisonView({ data }: ComparisonViewProps) {
             <div className="p-4 bg-gray-800 border-2 border-gray-700 rounded-lg">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-gray-400">Profit Margin</span>
-                <span className="text-sm text-gray-500">Industry: {data.industryBenchmark.margin}%</span>
+                <span className="text-sm text-gray-500">Benchmark: {data.industryBenchmark.margin}%</span>
               </div>
               <div className="w-full bg-gray-700 rounded-full h-3">
                 <div 
@@ -240,7 +240,7 @@ export function ComparisonView({ data }: ComparisonViewProps) {
               </div>
             </div>
 
-            <div className="p-4 bg-gradient-to-r from-blue-900/50 to-purple-900/50 border-2 border-blue-700 rounded-lg">
+            <div className="hidden p-4 bg-gradient-to-r from-blue-900/50 to-purple-900/50 border-2 border-blue-700 rounded-lg">
               <div className="text-sm font-semibold text-blue-200 mb-2">💡 Insights & Recommendations</div>
               <ul className="text-sm text-blue-100 space-y-1">
                 {data.currentPeriod.avgOrderValue < data.industryBenchmark.avgOrderValue && (
@@ -253,6 +253,21 @@ export function ComparisonView({ data }: ComparisonViewProps) {
                   <li>• Strong revenue growth! Consider expanding capacity during peak hours</li>
                 )}
                 <li>• Industry avg lunch rush covers 65-75% of daily revenue (12-1 PM)</li>
+              </ul>
+            </div>
+            <div className="p-4 bg-gradient-to-r from-blue-900/50 to-purple-900/50 border-2 border-blue-700 rounded-lg">
+              <div className="text-sm font-semibold text-blue-200 mb-2">Insights & Recommendations</div>
+              <ul className="text-sm text-blue-100 space-y-1">
+                {data.currentPeriod.avgOrderValue < data.industryBenchmark.avgOrderValue && (
+                  <li>Use combo meals or drink upsells to lift average order value.</li>
+                )}
+                {data.currentPeriod.margin < data.industryBenchmark.margin && (
+                  <li>Review menu pricing and ingredient costs to improve margins.</li>
+                )}
+                {revenueChange > 10 && (
+                  <li>Revenue is accelerating. Consider adding coverage during peak periods.</li>
+                )}
+                <li>The benchmark cards above are based on your recent backend data, not fixed demo targets.</li>
               </ul>
             </div>
           </div>
