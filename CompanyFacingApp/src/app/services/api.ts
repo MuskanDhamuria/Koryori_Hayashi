@@ -74,6 +74,12 @@ export interface DashboardAnalyticsResponse {
   };
 }
 
+export interface DashboardAiResponse {
+  answer: string;
+  model: string;
+  generatedAt: string;
+}
+
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
@@ -160,5 +166,15 @@ export async function fetchDashboardAnalytics(token: string) {
     headers: {
       Authorization: `Bearer ${token}`,
     },
+  });
+}
+
+export async function askDashboardAi(token: string, question: string) {
+  return apiFetch<DashboardAiResponse>("/api/ai/ask", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ question }),
   });
 }

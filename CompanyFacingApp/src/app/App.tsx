@@ -16,6 +16,7 @@ import { StaffScheduleCard } from './components/StaffScheduleCard';
 import { ExportButton } from './components/ExportButton';
 import { ComparisonView } from './components/ComparisonView';
 import { PricingStrategy } from './components/PricingStrategy';
+import { AiAssistantPanel } from './components/AiAssistantPanel';
 import { 
   DollarSign, 
   TrendingUp, 
@@ -29,7 +30,8 @@ import {
   Users,
   Target,
   Zap,
-  ArrowUpDown
+  ArrowUpDown,
+  MessageSquare
 } from 'lucide-react';
 import { 
   calculatePeakHours, 
@@ -467,15 +469,13 @@ export default function App() {
                 <div className="flex items-center gap-3 mb-2">
                   <Utensils className="h-10 w-10 text-cyan-400" />
                   <h1 className="text-4xl font-bold text-white">
-                    さくら Sakura Kitchen
+                    Koryori Hayashi
                   </h1>
                 </div>
                 <p className="hidden text-slate-300 text-lg">
-                  Smart Analytics Dashboard • Small Japanese Lunch Shop • Open 11 AM - 3 PM
+                  Smart Analytics
                 </p>
-                <p className="text-slate-300 text-lg">
-                  Smart Analytics Dashboard • Live revenue, order, inventory, and margin reporting • Peak window {dashboardAnalytics.operations.peakHourRange}
-                </p>
+                
                 <div className="flex items-center gap-4 mt-3">
                   <div className="flex items-center gap-2 text-slate-400">
                     <Users className="h-4 w-4" />
@@ -560,6 +560,10 @@ export default function App() {
             <TabsTrigger value="forecast" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white rounded-lg text-slate-400">
               <Brain className="h-4 w-4" />
               AI Forecasting
+            </TabsTrigger>
+            <TabsTrigger value="assistant" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white rounded-lg text-slate-400">
+              <MessageSquare className="h-4 w-4" />
+              AI Assistant
             </TabsTrigger>
             <TabsTrigger value="staff" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-blue-600 data-[state=active]:text-white rounded-lg text-slate-400">
               <Users className="h-4 w-4" />
@@ -754,6 +758,10 @@ export default function App() {
             )}
           </TabsContent>
 
+          <TabsContent value="assistant" className="space-y-4">
+            <AiAssistantPanel token={authToken} />
+          </TabsContent>
+
           {/* Staff & Inventory Tab */}
           <TabsContent value="staff" className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -834,10 +842,10 @@ export default function App() {
           <div className="flex items-center justify-between text-white flex-wrap gap-3">
             <div className="flex items-center gap-3">
               <div className="w-3 h-3 bg-cyan-500 rounded-full animate-pulse"></div>
-              <span className="font-semibold text-slate-300">Live Dashboard • Real-time Updates • Professional Mode</span>
+              <span className="font-semibold text-slate-300">Live Dashboard • Real-time Updates </span>
             </div>
             <div className="text-sm text-slate-400">
-              Last updated: {new Date().toLocaleString()} • さくら Sakura Kitchen Analytics v2.5
+              Last updated: {new Date().toLocaleString()}
             </div>
           </div>
         </div>
