@@ -441,7 +441,6 @@ export function OrderingPage({
 
     void loadLoyaltyProfile();
   }, [fallbackCustomerProfile, phoneNumber, userName]);
-  }, [fallbackCustomerProfile, phoneNumber, userName]);
 
   const isInitialDataLoading = isMenuLoading || isLoyaltyLoading;
 

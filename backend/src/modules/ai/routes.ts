@@ -11,6 +11,19 @@ function round(value: number) {
   return Number(value.toFixed(2));
 }
 
+function toPlainText(value: string) {
+  return value
+    .replace(/\r\n/g, "\n")
+    .replace(/^\s{0,3}[-*+]\s+/gm, "")
+    .replace(/^\s{0,3}\d+\.\s+/gm, "")
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    .replace(/`{1,3}([^`]+)`{1,3}/g, "$1")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 export const aiRoutes: FastifyPluginAsync = async (app) => {
   app.post("/ask", { preHandler: app.requireStaff }, async (request, reply) => {
     const parsed = askBodySchema.safeParse(request.body);
@@ -202,7 +215,7 @@ export const aiRoutes: FastifyPluginAsync = async (app) => {
             ],
             generationConfig: {
               temperature: 0.2,
-              maxOutputTokens: 500,
+              // maxOutputTokens: 1024,
             },
           }),
           signal: AbortSignal.timeout(env.GEMINI_TIMEOUT_MS),
@@ -245,12 +258,14 @@ export const aiRoutes: FastifyPluginAsync = async (app) => {
         .join("\n")
         .trim() ?? "";
 
-    if (!answer) {
+    const plainAnswer = toPlainText(answer);
+
+    if (!plainAnswer) {
       return reply.code(502).send({ message: "Gemini returned an empty response" });
     }
 
     return {
-      answer,
+      answer: plainAnswer,
       model: env.GEMINI_MODEL,
       generatedAt: now.toISOString(),
     };
