@@ -9,6 +9,7 @@ import {
   fetchCustomerProfile,
   saveCustomerPreferences,
 } from "./services/api";
+import { getFallbackCustomerName } from "./lib/customerProfiles";
 
 type AppState = "login" | "flavor-quiz" | "qr-scan" | "ordering";
 
@@ -20,23 +21,11 @@ export default function App() {
   const [tableNumber, setTableNumber] = useState("");
   const [flavorPreferences, setFlavorPreferences] = useState<FlavorPreferences | undefined>();
 
-  const getFallbackUserName = (phone: string) => {
-    if (phone === "+1 (555) 123-4567") {
-      return "Yuki";
-    }
-
-    if (phone === "+1 (555) 987-6543") {
-      return "Akira";
-    }
-
-    return "Guest";
-  };
-
   const handleLogin = async (phone: string) => {
     setPhoneNumber(phone);
 
     const profile = await fetchCustomerProfile(phone);
-    const resolvedName = profile?.fullName || getFallbackUserName(phone);
+    const resolvedName = profile?.fullName || getFallbackCustomerName(phone);
     setUserName(resolvedName);
 
     if (profile?.loyaltyProfile) {

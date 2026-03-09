@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -20,6 +20,7 @@ import { getCurrentWeather } from "../services/weatherService";
 import { recordSuccess } from "../services/mabService";
 import { createOrder, fetchLoyaltyProfile, fetchMenuItems } from "../services/api";
 import { calculateCartSubtotal, calculatePricing, type DiscountId } from "../lib/pricing";
+import { getFallbackCustomerProfile } from "../lib/customerProfiles";
 
 interface OrderingPageProps {
   tableNumber: string;
@@ -317,34 +318,6 @@ const BASE_MENU_ITEMS: MenuItemType[] = [
   },
 ];
 
-function getUserProfile(phoneNumber: string): LoyaltyProfile {
-  if (phoneNumber === "+1 (555) 123-4567") {
-    return {
-      tier: "gold",
-      points: 850,
-      name: "Yuki Tanaka",
-      isBirthday: true,
-      referralCode: "YUKI2026",
-    };
-  } else if (phoneNumber === "+1 (555) 987-6543") {
-    return {
-      tier: "platinum",
-      points: 2100,
-      name: "Akira Sato",
-      isBirthday: false,
-      referralCode: "AKIRA2026",
-    };
-  } else {
-    return {
-      tier: "silver",
-      points: 0,
-      name: "New Customer",
-      isBirthday: false,
-      referralCode: "WELCOME2026",
-    };
-  }
-}
-
 function getWeatherIcon(condition: string) {
   switch (condition) {
     case 'rainy':
@@ -382,12 +355,16 @@ export function OrderingPage({
   flavorPreferences,
   onUpdateFlavorPreferences,
 }: OrderingPageProps) {
+  const fallbackCustomerProfile = useMemo(
+    () => getFallbackCustomerProfile(phoneNumber),
+    [phoneNumber],
+  );
   const initialLoyaltyProfile: LoyaltyProfile = {
-    tier: "silver",
-    points: 0,
-    name: userName || "Guest",
-    isBirthday: phoneNumber === "+1 (555) 123-4567",
-    referralCode: phoneNumber === "+1 (555) 123-4567" ? "YUKI2026" : "WELCOME2026",
+    tier: fallbackCustomerProfile.loyaltyProfile.tier,
+    points: fallbackCustomerProfile.loyaltyProfile.points,
+    name: userName || fallbackCustomerProfile.fullName,
+    isBirthday: fallbackCustomerProfile.loyaltyProfile.isBirthday,
+    referralCode: fallbackCustomerProfile.loyaltyProfile.referralCode,
   };
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
@@ -403,6 +380,7 @@ export function OrderingPage({
   const [activeCategory, setActiveCategory] = useState("mains");
   const [selectedItem, setSelectedItem] = useState<MenuItemType | null>(null);
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
 
   // Fetch weather on mount
   useEffect(() => {
@@ -437,13 +415,16 @@ export function OrderingPage({
       if (profile) {
         setLoyaltyProfile(profile);
       } else {
-        setLoyaltyProfile(getUserProfile(phoneNumber));
+        setLoyaltyProfile({
+          ...fallbackCustomerProfile.loyaltyProfile,
+          name: userName || fallbackCustomerProfile.fullName,
+        });
       }
       setIsLoyaltyLoading(false);
     };
 
     void loadLoyaltyProfile();
-  }, [phoneNumber]);
+  }, [fallbackCustomerProfile, phoneNumber, userName]);
 
   const isInitialDataLoading = isMenuLoading || isLoyaltyLoading;
 
@@ -562,53 +543,63 @@ const handleAddFromDialog = (item: MenuItemType) => {
         }
       | undefined;
 
-    const response = await createOrder({
-      customerName: userName,
-      phoneNumber,
-      tableCode: tableNumber,
-      items: cart.map((item) => ({
-        menuItemId: item.id,
-        quantity: item.quantity
-      })),
-      paymentMethod: paymentMethod === "card" ? "CARD" : "MOBILE",
-      birthdayDiscountPercent: pricing.birthdayDiscountPercent,
-      selectedDiscountId: pricing.selectedDiscountId,
-    });
+    setIsSubmittingOrder(true);
 
-    cart.forEach((item) => {
-      recordSuccess(item.id);
-    });
+    try {
+      const response = await createOrder({
+        customerName: userName,
+        phoneNumber,
+        tableCode: tableNumber,
+        items: cart.map((item) => ({
+          menuItemId: item.id,
+          quantity: item.quantity
+        })),
+        paymentMethod: paymentMethod === "card" ? "CARD" : "MOBILE",
+        birthdayDiscountPercent: pricing.birthdayDiscountPercent,
+        selectedDiscountId: pricing.selectedDiscountId,
+      });
 
-    if (response.loyalty) {
-      setLoyaltyProfile((current) => ({
-        ...current,
-        points: response.loyalty!.pointsBalance,
-        tier: response.loyalty!.tier,
-      }));
-      toast.success(`Payment successful. You earned ${response.loyalty.earnedPoints} points.`);
-      completionResult = {
-        earnedPoints: response.loyalty.earnedPoints,
-        pointsBalance: response.loyalty.pointsBalance,
-      };
-    } else {
-      const refreshedProfile = await fetchLoyaltyProfile(phoneNumber);
-      if (refreshedProfile) {
-        setLoyaltyProfile(refreshedProfile);
+      cart.forEach((item) => {
+        recordSuccess(item.id);
+      });
+
+      if (response.loyalty) {
+        setLoyaltyProfile((current) => ({
+          ...current,
+          points: response.loyalty!.pointsBalance,
+          tier: response.loyalty!.tier,
+        }));
+        toast.success(`Payment successful. You earned ${response.loyalty.earnedPoints} points.`);
         completionResult = {
-          earnedPoints: pricing.pointsEarned,
-          pointsBalance: refreshedProfile.points,
+          earnedPoints: response.loyalty.earnedPoints,
+          pointsBalance: response.loyalty.pointsBalance,
         };
       } else {
-        toast.success("Payment successful. Redirecting you to Games.");
+        const refreshedProfile = await fetchLoyaltyProfile(phoneNumber);
+        if (refreshedProfile) {
+          setLoyaltyProfile(refreshedProfile);
+          completionResult = {
+            earnedPoints: pricing.pointsEarned,
+            pointsBalance: refreshedProfile.points,
+          };
+        } else {
+          toast.success("Payment successful. Redirecting you to Games.");
+        }
       }
+
+      setHasPlacedOrder(true);
+      setCurrentView("games");
+      setPaymentDialogOpen(false);
+      setCart([]);
+
+      return completionResult;
+    } catch (error) {
+      throw new Error(
+        error instanceof Error ? error.message : "Unable to place your order right now.",
+      );
+    } finally {
+      setIsSubmittingOrder(false);
     }
-
-    setHasPlacedOrder(true);
-    setCurrentView("games");
-    setPaymentDialogOpen(false);
-    setCart([]);
-
-    return completionResult;
   };
 
   const subtotal = calculateCartSubtotal(cart);
@@ -1022,6 +1013,7 @@ const handleAddFromDialog = (item: MenuItemType) => {
         onPaymentComplete={handlePaymentComplete}
         subtotal={subtotal}
         loyaltyProfile={loyaltyProfile}
+        isSubmittingOrder={isSubmittingOrder}
       />
 
       {/* Item Detail Dialog */}

@@ -6,6 +6,7 @@ import type {
   GameLeaderboardEntry,
   MenuItem,
 } from "../types";
+import { getFallbackCustomerProfile } from "../lib/customerProfiles";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000";
 
@@ -101,13 +102,14 @@ export async function fetchMenuItems(): Promise<MenuItem[]> {
 export async function fetchLoyaltyProfile(phoneNumber: string): Promise<LoyaltyProfile | null> {
   try {
     const response = await apiFetch<BackendLoyaltyResponse>(`/api/loyalty/${encodeURIComponent(phoneNumber)}`);
+    const fallbackProfile = getFallbackCustomerProfile(phoneNumber);
 
     return {
-      tier: response.loyaltyAccount?.tier ?? "silver",
+      tier: response.loyaltyAccount?.tier ?? fallbackProfile.loyaltyProfile.tier,
       points: response.loyaltyAccount?.pointsBalance ?? 0,
       name: response.user.fullName,
-      isBirthday: phoneNumber === "+1 (555) 123-4567",
-      referralCode: phoneNumber === "+1 (555) 123-4567" ? "YUKI2026" : "WELCOME2026"
+      isBirthday: fallbackProfile.loyaltyProfile.isBirthday,
+      referralCode: fallbackProfile.loyaltyProfile.referralCode,
     };
   } catch {
     return null;
@@ -117,17 +119,18 @@ export async function fetchLoyaltyProfile(phoneNumber: string): Promise<LoyaltyP
 export async function fetchCustomerProfile(phoneNumber: string): Promise<CustomerProfile | null> {
   try {
     const response = await apiFetch<BackendLoyaltyResponse>(`/api/loyalty/${encodeURIComponent(phoneNumber)}`);
+    const fallbackProfile = getFallbackCustomerProfile(phoneNumber);
 
     return {
       phoneNumber,
       fullName: response.user.fullName,
       flavorProfile: response.user.flavorProfile,
       loyaltyProfile: {
-        tier: response.loyaltyAccount?.tier ?? "silver",
+        tier: response.loyaltyAccount?.tier ?? fallbackProfile.loyaltyProfile.tier,
         points: response.loyaltyAccount?.pointsBalance ?? 0,
         name: response.user.fullName,
-        isBirthday: phoneNumber === "+1 (555) 123-4567",
-        referralCode: phoneNumber === "+1 (555) 123-4567" ? "YUKI2026" : "WELCOME2026",
+        isBirthday: fallbackProfile.loyaltyProfile.isBirthday,
+        referralCode: fallbackProfile.loyaltyProfile.referralCode,
       },
     };
   } catch {
@@ -140,6 +143,7 @@ export async function saveCustomerPreferences(input: {
   fullName: string;
   flavorProfile: FlavorPreferences;
 }): Promise<CustomerProfile> {
+  const fallbackProfile = getFallbackCustomerProfile(input.phoneNumber);
   const response = await apiFetch<BackendLoyaltyResponse>(
     `/api/loyalty/${encodeURIComponent(input.phoneNumber)}/preferences`,
     {
@@ -156,11 +160,11 @@ export async function saveCustomerPreferences(input: {
     fullName: response.user.fullName,
     flavorProfile: response.user.flavorProfile,
     loyaltyProfile: {
-      tier: response.loyaltyAccount?.tier ?? "silver",
+      tier: response.loyaltyAccount?.tier ?? fallbackProfile.loyaltyProfile.tier,
       points: response.loyaltyAccount?.pointsBalance ?? 0,
       name: response.user.fullName,
-      isBirthday: input.phoneNumber === "+1 (555) 123-4567",
-      referralCode: input.phoneNumber === "+1 (555) 123-4567" ? "YUKI2026" : "WELCOME2026",
+      isBirthday: fallbackProfile.loyaltyProfile.isBirthday,
+      referralCode: fallbackProfile.loyaltyProfile.referralCode,
     },
   };
 }

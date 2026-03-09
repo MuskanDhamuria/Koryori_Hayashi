@@ -1,60 +1,26 @@
 import { useEffect, useState } from "react";
+import { UtensilsCrossed, Phone, ArrowRight } from "lucide-react";
+import { toast } from "sonner";
+import { fetchQuickAccessProfiles, type CustomerProfile } from "../services/api";
+import {
+  getQuickAccessFallbackProfiles,
+  QUICK_ACCESS_NUMBERS,
+} from "../lib/customerProfiles";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Card } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
-import { UtensilsCrossed, Phone, ArrowRight } from "lucide-react";
-import { toast } from "sonner";
-import { fetchQuickAccessProfiles, type CustomerProfile } from "../services/api";
 
 interface MobileLoginProps {
   onLogin: (phoneNumber: string) => Promise<void> | void;
 }
 
-const QUICK_ACCESS_NUMBERS = [
-  "+1 (555) 123-4567",
-  "+1 (555) 987-6543",
-  "+1 (555) 555-5555",
-];
-
-const FALLBACK_PROFILES: CustomerProfile[] = [
-  {
-    phoneNumber: "+1 (555) 123-4567",
-    fullName: "Yuki Tanaka",
-    flavorProfile: null,
-    loyaltyProfile: {
-      tier: "gold",
-      points: 850,
-      name: "Yuki Tanaka",
-      isBirthday: true,
-      referralCode: "YUKI2026",
-    },
-  },
-  {
-    phoneNumber: "+1 (555) 987-6543",
-    fullName: "Akira Sato",
-    flavorProfile: null,
-    loyaltyProfile: {
-      tier: "platinum",
-      points: 2100,
-      name: "Akira Sato",
-      isBirthday: false,
-      referralCode: "AKIRA2026",
-    },
-  },
-  {
-    phoneNumber: "+1 (555) 555-5555",
-    fullName: "New Customer",
-    flavorProfile: null,
-    loyaltyProfile: {
-      tier: "silver",
-      points: 0,
-      name: "New Customer",
-      isBirthday: false,
-      referralCode: "WELCOME2026",
-    },
-  },
-];
+const FALLBACK_PROFILES: CustomerProfile[] = getQuickAccessFallbackProfiles().map((profile) => ({
+  phoneNumber: profile.phoneNumber,
+  fullName: profile.fullName,
+  flavorProfile: null,
+  loyaltyProfile: profile.loyaltyProfile,
+}));
 
 function getTierBadgeClasses(tier: string) {
   if (tier === "platinum") {
@@ -68,16 +34,16 @@ function getTierBadgeClasses(tier: string) {
   return "bg-[#F3F4F6] text-[#6B7280]";
 }
 
-function getTierEmoji(tier: string) {
+function getTierLabel(tier: string) {
   if (tier === "platinum") {
-    return "💎";
+    return "P";
   }
 
   if (tier === "gold") {
-    return "⭐";
+    return "G";
   }
 
-  return "🌸";
+  return "S";
 }
 
 export function MobileLogin({ onLogin }: MobileLoginProps) {
@@ -89,7 +55,7 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
   useEffect(() => {
     const loadQuickAccessProfiles = async () => {
       try {
-        const profiles = await fetchQuickAccessProfiles(QUICK_ACCESS_NUMBERS);
+        const profiles = await fetchQuickAccessProfiles([...QUICK_ACCESS_NUMBERS]);
         if (profiles.length > 0) {
           const profileMap = new Map(
             profiles.map((profile) => [profile.phoneNumber, profile]),
@@ -112,25 +78,32 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
     void loadQuickAccessProfiles();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!phoneNumber || phoneNumber.length < 10) {
+  const handleLoginAttempt = async (nextPhoneNumber: string) => {
+    if (!nextPhoneNumber || nextPhoneNumber.length < 10) {
       toast.error("Please enter a valid phone number");
       return;
     }
 
     setIsLoading(true);
 
-    setTimeout(async () => {
+    try {
+      await onLogin(nextPhoneNumber);
       toast.success("Welcome back!");
-      await onLogin(phoneNumber);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to sign in");
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
-  const handleQuickLogin = (number: string) => {
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    await handleLoginAttempt(phoneNumber);
+  };
+
+  const handleQuickLogin = async (number: string) => {
     setPhoneNumber(number);
+    await handleLoginAttempt(number);
   };
 
   return (
@@ -173,7 +146,7 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
                   type="tel"
                   placeholder="+1 (555) 000-0000"
                   value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  onChange={(event) => setPhoneNumber(event.target.value)}
                   className="h-12 border-2 border-[#E5E7EB] pl-11 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37]"
                 />
               </div>
@@ -230,45 +203,46 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
                   </div>
                 ))
               : quickAccessProfiles.map((profile) => {
-              const tier = profile.loyaltyProfile?.tier ?? "silver";
-              const points = profile.loyaltyProfile?.points ?? 0;
+                  const tier = profile.loyaltyProfile?.tier ?? "silver";
+                  const points = profile.loyaltyProfile?.points ?? 0;
 
-              return (
-                <Button
-                  key={profile.phoneNumber}
-                  type="button"
-                  variant="outline"
-                  className="h-auto w-full border-2 px-2 py-3 transition-all hover:bg-[#E5E7EB] sm:px-3"
-                  onClick={() => handleQuickLogin(profile.phoneNumber ?? "")}
-                >
-                  <div className="flex w-full items-center justify-between gap-1 sm:gap-2">
-                    <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F3F4F6] sm:h-10 sm:w-10">
-                        <span className="text-base sm:text-lg">{getTierEmoji(tier)}</span>
-                      </div>
-                      <div className="min-w-0 text-left">
-                        <div className="truncate text-xs font-semibold text-[#0F1729] sm:text-sm">
-                          {profile.fullName}
+                  return (
+                    <Button
+                      key={profile.phoneNumber}
+                      type="button"
+                      variant="outline"
+                      disabled={isLoading}
+                      className="h-auto w-full border-2 px-2 py-3 transition-all hover:bg-[#E5E7EB] sm:px-3"
+                      onClick={() => void handleQuickLogin(profile.phoneNumber ?? "")}
+                    >
+                      <div className="flex w-full items-center justify-between gap-1 sm:gap-2">
+                        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F3F4F6] text-sm font-semibold text-[#0F1729] sm:h-10 sm:w-10">
+                            {getTierLabel(tier)}
+                          </div>
+                          <div className="min-w-0 text-left">
+                            <div className="truncate text-xs font-semibold text-[#0F1729] sm:text-sm">
+                              {profile.fullName}
+                            </div>
+                            <div className="truncate text-[10px] text-[#6B7280] sm:text-xs">
+                              {profile.phoneNumber}
+                            </div>
+                          </div>
                         </div>
-                        <div className="truncate text-[10px] text-[#6B7280] sm:text-xs">
-                          {profile.phoneNumber}
+                        <div className="flex shrink-0 flex-col items-end gap-1 sm:gap-1">
+                          <span
+                            className={`whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-semibold sm:px-2 sm:py-1 sm:text-xs ${getTierBadgeClasses(tier)}`}
+                          >
+                            {tier.charAt(0).toUpperCase() + tier.slice(1)}
+                          </span>
+                          <span className="whitespace-nowrap text-[10px] text-[#6B7280] sm:text-xs">
+                            {points} pts
+                          </span>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex shrink-0 flex-col items-end gap-1 sm:gap-1">
-                      <span
-                        className={`whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-semibold sm:px-2 sm:py-1 sm:text-xs ${getTierBadgeClasses(tier)}`}
-                      >
-                        {tier.charAt(0).toUpperCase() + tier.slice(1)}
-                      </span>
-                      <span className="whitespace-nowrap text-[10px] text-[#6B7280] sm:text-xs">
-                        {points} pts
-                      </span>
-                    </div>
-                  </div>
-                </Button>
-              );
-            })}
+                    </Button>
+                  );
+                })}
           </div>
 
           <div className="mt-8 border-t border-[#E5E7EB] pt-6">

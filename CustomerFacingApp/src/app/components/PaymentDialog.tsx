@@ -28,6 +28,7 @@ interface PaymentDialogProps {
   ) => Promise<{ earnedPoints: number; pointsBalance: number } | void>;
   subtotal: number;
   loyaltyProfile: LoyaltyProfile;
+  isSubmittingOrder?: boolean;
 }
 
 const discountIcons: Record<DiscountId, JSX.Element> = {
@@ -44,6 +45,7 @@ export function PaymentDialog({
   onPaymentComplete,
   subtotal,
   loyaltyProfile,
+  isSubmittingOrder = false,
 }: PaymentDialogProps) {
   const [paymentMethod, setPaymentMethod] = useState<"card" | "mobile" | null>(null);
   const [selectedDiscount, setSelectedDiscount] = useState<DiscountId | null>(null);
@@ -51,6 +53,7 @@ export function PaymentDialog({
   const [isPaid, setIsPaid] = useState(false);
   const [completedEarnedPoints, setCompletedEarnedPoints] = useState<number | null>(null);
   const [completedPointsBalance, setCompletedPointsBalance] = useState<number | null>(null);
+  const [paymentError, setPaymentError] = useState("");
 
   const basePricing = calculatePricing(subtotal, loyaltyProfile);
   const availableDiscounts = getAvailableDiscounts(
@@ -69,6 +72,7 @@ export function PaymentDialog({
     setIsPaid(false);
     setCompletedEarnedPoints(null);
     setCompletedPointsBalance(null);
+    setPaymentError("");
     onClose();
   };
 
@@ -78,6 +82,7 @@ export function PaymentDialog({
     }
 
     setIsCompleting(true);
+    setPaymentError("");
 
     try {
       await new Promise((resolve) => {
@@ -89,6 +94,8 @@ export function PaymentDialog({
       setCompletedEarnedPoints(result?.earnedPoints ?? pricing.pointsEarned);
       setCompletedPointsBalance(result?.pointsBalance ?? pricing.projectedPointsBalance);
       setIsPaid(true);
+    } catch (error) {
+      setPaymentError(error instanceof Error ? error.message : "Unable to complete payment.");
     } finally {
       setIsCompleting(false);
     }
@@ -112,11 +119,11 @@ export function PaymentDialog({
               <p className="text-sm text-white/70">
                 New balance: {(completedPointsBalance ?? pricing.projectedPointsBalance).toLocaleString()} points
               </p>
-              {selectedDiscountData?.requiresPoints && (
+              {selectedDiscountData?.requiresPoints ? (
                 <p className="mt-2 text-xs text-white/60">
                   -{pricing.selectedDiscountPointsCost} points used
                 </p>
-              )}
+              ) : null}
             </div>
             <p className="mb-6 text-sm text-[#6B7280]">
               Your food will be prepared shortly. Estimated time: 15-20 minutes
@@ -148,7 +155,7 @@ export function PaymentDialog({
               <span className="text-[#6B7280]">Subtotal</span>
               <span className="font-semibold text-[#0F1729]">${pricing.subtotal.toFixed(2)}</span>
             </div>
-            {pricing.birthdayDiscountPercent > 0 && (
+            {pricing.birthdayDiscountPercent > 0 ? (
               <div className="flex justify-between text-sm">
                 <span className="text-pink-600">
                   Birthday Discount ({pricing.birthdayDiscountPercent}%)
@@ -157,12 +164,12 @@ export function PaymentDialog({
                   -${pricing.birthdayDiscountAmount.toFixed(2)}
                 </span>
               </div>
-            )}
+            ) : null}
             <div className="flex justify-between text-sm">
               <span className="text-[#6B7280]">Tax (10%)</span>
               <span className="font-semibold text-[#0F1729]">${pricing.taxAmount.toFixed(2)}</span>
             </div>
-            {pricing.selectedDiscountId && (
+            {pricing.selectedDiscountId ? (
               <div className="flex justify-between text-sm">
                 <span className="flex items-center gap-1 text-emerald-600">
                   <Tag className="h-4 w-4" />
@@ -172,7 +179,7 @@ export function PaymentDialog({
                   -${pricing.selectedDiscountAmount.toFixed(2)}
                 </span>
               </div>
-            )}
+            ) : null}
             <div className="my-2 h-px bg-[#E5E7EB]" />
             <div className="flex justify-between">
               <span className="font-bold text-[#0F1729]">Total</span>
@@ -193,7 +200,7 @@ export function PaymentDialog({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold text-[#0F1729]">Apply One Discount (Optional)</p>
-              {selectedDiscount && (
+              {selectedDiscount ? (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -202,7 +209,7 @@ export function PaymentDialog({
                 >
                   Clear
                 </Button>
-              )}
+              ) : null}
             </div>
 
             <div className="max-h-60 space-y-2 overflow-y-auto">
@@ -236,7 +243,7 @@ export function PaymentDialog({
                   </div>
                   <div className="text-right">
                     <p className="font-bold text-[#0F1729]">-${discount.discount.toFixed(2)}</p>
-                    {discount.requiresPoints && (
+                    {discount.requiresPoints ? (
                       <Badge
                         variant="outline"
                         className={`text-xs ${
@@ -247,11 +254,11 @@ export function PaymentDialog({
                       >
                         {discount.pointsCost} pts
                       </Badge>
-                    )}
+                    ) : null}
                   </div>
-                  {selectedDiscount === discount.id && (
+                  {selectedDiscount === discount.id ? (
                     <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#D4AF37]" />
-                  )}
+                  ) : null}
                 </button>
               ))}
             </div>
@@ -260,17 +267,23 @@ export function PaymentDialog({
               <span className="text-sm text-[#6B7280]">Your Points Balance</span>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-[#0F1729]">{loyaltyProfile.points.toLocaleString()}</span>
-                {pricing.selectedDiscountPointsCost > 0 && (
+                {pricing.selectedDiscountPointsCost > 0 ? (
                   <>
-                    <span className="text-[#6B7280]">→</span>
+                    <span className="text-[#6B7280]">-&gt;</span>
                     <span className="font-bold text-emerald-600">
                       {(loyaltyProfile.points - pricing.selectedDiscountPointsCost).toLocaleString()}
                     </span>
                   </>
-                )}
+                ) : null}
               </div>
             </div>
           </div>
+
+          {paymentError ? (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {paymentError}
+            </div>
+          ) : null}
 
           <div className="space-y-3">
             <p className="text-sm font-semibold text-[#0F1729]">Select Payment Method</p>
@@ -324,10 +337,10 @@ export function PaymentDialog({
 
           <Button
             onClick={handlePayment}
-            disabled={!paymentMethod || isCompleting}
+            disabled={!paymentMethod || isCompleting || isSubmittingOrder}
             className="h-12 w-full bg-[#0F1729] font-semibold text-white shadow-md hover:bg-[#1A2642] disabled:opacity-50"
           >
-            {isCompleting
+            {isCompleting || isSubmittingOrder
               ? "Processing..."
               : paymentMethod
                 ? `Pay $${pricing.finalTotal.toFixed(2)}`

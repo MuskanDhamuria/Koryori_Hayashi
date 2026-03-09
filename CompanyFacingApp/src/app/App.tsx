@@ -52,6 +52,15 @@ import {
 } from './services/api';
 
 const STORAGE_KEY = 'koryori-staff-token';
+const authStorage = window.sessionStorage;
+
+function isAuthError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  return /401|403|unauthorized|forbidden/i.test(error.message);
+}
 
 function buildMenuCatalog(
   categories: Array<{
@@ -114,11 +123,14 @@ export default function App() {
   const [menuCatalog, setMenuCatalog] = useState<MenuItem[]>([]);
   const [inventoryAlerts, setInventoryAlerts] = useState<Array<{ item: { id: string; name: string; category: string; stock: number; reorderPoint: number }; daysUntilStockout: number; suggestedOrder: number }>>([]);
   const [dashboardAnalytics, setDashboardAnalytics] = useState<DashboardAnalyticsResponse | null>(null);
-  const [authToken, setAuthToken] = useState<string>(() => localStorage.getItem(STORAGE_KEY) ?? '');
+  const [authToken, setAuthToken] = useState<string>(() => authStorage.getItem(STORAGE_KEY) ?? '');
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [authError, setAuthError] = useState('');
-  const [email, setEmail] = useState('admin@gmail.com');
-  const [password, setPassword] = useState('meiyu123!');
+  const [dashboardError, setDashboardError] = useState('');
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
+  const [reloadNonce, setReloadNonce] = useState(0);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   useEffect(() => {
     // Force dark mode
@@ -128,6 +140,7 @@ export default function App() {
   useEffect(() => {
     if (!authToken) {
       setIsLoadingData(false);
+      setDashboardError('');
       return;
     }
 
@@ -146,6 +159,7 @@ export default function App() {
         setOrders(ordersResponse.orders);
         setHistoricalSales(buildSalesRecords(ordersResponse.orders));
         setDashboardAnalytics(analyticsResponse);
+        setLastUpdatedAt(new Date().toLocaleString());
         setInventoryAlerts(
           inventoryResponse.alerts.map((alert) => ({
             item: {
@@ -160,17 +174,25 @@ export default function App() {
           }))
         );
         setAuthError('');
+        setDashboardError('');
       } catch (error) {
-        localStorage.removeItem(STORAGE_KEY);
-        setAuthToken('');
-        setAuthError(error instanceof Error ? error.message : 'Unable to load dashboard data');
+        const message = error instanceof Error ? error.message : 'Unable to load dashboard data';
+
+        if (isAuthError(error)) {
+          authStorage.removeItem(STORAGE_KEY);
+          setAuthToken('');
+          setAuthError(message);
+          setDashboardError('');
+        } else {
+          setDashboardError(message);
+        }
       } finally {
         setIsLoadingData(false);
       }
     };
 
     void loadDashboard();
-  }, [authToken]);
+  }, [authToken, reloadNonce]);
 
   // Calculate metrics
   const metrics = useMemo(() => {
@@ -389,9 +411,10 @@ export default function App() {
     setIsLoadingData(true);
     try {
       const response = await staffLogin(email, password);
-      localStorage.setItem(STORAGE_KEY, response.token);
+      authStorage.setItem(STORAGE_KEY, response.token);
       setAuthToken(response.token);
       setAuthError('');
+      setDashboardError('');
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : 'Unable to sign in');
       setIsLoadingData(false);
@@ -399,13 +422,14 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem(STORAGE_KEY);
+    authStorage.removeItem(STORAGE_KEY);
     setAuthToken('');
     setOrders([]);
     setHistoricalSales([]);
     setMenuCatalog([]);
     setInventoryAlerts([]);
     setDashboardAnalytics(null);
+    setDashboardError('');
   };
 
   if (!authToken) {
@@ -418,17 +442,36 @@ export default function App() {
           </div>
           <div>
             <label className="block text-sm text-slate-300 mb-2">Email</label>
-            <input value={email} onChange={(event) => setEmail(event.target.value)} className="w-full rounded-lg bg-slate-800 border border-slate-600 px-4 py-3 text-white" />
+            <input placeholder="you@restaurant.com" value={email} onChange={(event) => setEmail(event.target.value)} className="w-full rounded-lg bg-slate-800 border border-slate-600 px-4 py-3 text-white" />
           </div>
           <div>
             <label className="block text-sm text-slate-300 mb-2">Password</label>
-            <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-lg bg-slate-800 border border-slate-600 px-4 py-3 text-white" />
+            <input type="password" placeholder="Enter your password" value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-lg bg-slate-800 border border-slate-600 px-4 py-3 text-white" />
           </div>
           {authError ? <p className="text-sm text-red-400">{authError}</p> : null}
           <button type="submit" disabled={isLoadingData} className="w-full rounded-lg bg-cyan-600 hover:bg-cyan-500 disabled:opacity-60 text-white font-semibold py-3">
             {isLoadingData ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+      </div>
+    );
+  }
+
+  if (dashboardError && !metrics) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-red-950 to-gray-900 p-6">
+        <div className="w-full max-w-lg rounded-2xl border border-red-900 bg-slate-900 p-8 text-white shadow-2xl">
+          <h2 className="text-2xl font-bold">Dashboard unavailable</h2>
+          <p className="mt-3 text-sm text-slate-300">{dashboardError}</p>
+          <div className="mt-6 flex gap-3">
+            <button onClick={() => setReloadNonce((value) => value + 1)} className="rounded-lg bg-cyan-600 px-4 py-3 font-semibold text-white hover:bg-cyan-500">
+              Retry
+            </button>
+            <button onClick={handleLogout} className="rounded-lg border border-slate-600 px-4 py-3 font-semibold text-slate-200 hover:bg-slate-800">
+              Sign Out
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -497,8 +540,8 @@ export default function App() {
                 </button>
                 <div className="text-right">
                   <div className="text-slate-400 text-sm">Current Time</div>
-                  <div className="text-2xl font-bold text-white">{new Date().toLocaleTimeString()}</div>
-                  <div className="text-slate-400 text-sm">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</div>
+                  <div className="text-2xl font-bold text-white">{lastUpdatedAt ? new Date(lastUpdatedAt).toLocaleTimeString() : '--:--:--'}</div>
+                  <div className="text-slate-400 text-sm">{lastUpdatedAt ? `Last sync: ${lastUpdatedAt}` : 'Waiting for data'}</div>
                 </div>
                 <ExportButton data={exportData} />
               </div>
@@ -845,7 +888,7 @@ export default function App() {
               <span className="font-semibold text-slate-300">Live Dashboard • Real-time Updates </span>
             </div>
             <div className="text-sm text-slate-400">
-              Last updated: {new Date().toLocaleString()}
+              Last updated: {lastUpdatedAt ?? 'Waiting for data'}
             </div>
           </div>
         </div>
