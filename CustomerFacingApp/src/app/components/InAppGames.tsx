@@ -30,6 +30,11 @@ type Game2WinMessage = {
   score: number;
 };
 
+type Game3WinMessage = {
+  type: "GAME3_ROUND_WIN";
+  score: number;
+};
+
 const SCORE_TO_EARN_POINTS = 3000;
 
 const EMPTY_LEADERBOARDS: Record<GameKey, GameLeaderboardEntry[]> = {
@@ -49,6 +54,8 @@ export function InAppGames({
   const [lastAwarded, setLastAwarded] = useState(false);
   const [game2Wins, setGame2Wins] = useState(0);
   const [game2LastScore, setGame2LastScore] = useState<number | null>(null);
+  const [game3Wins, setGame3Wins] = useState(0);
+  const [game3LastScore, setGame3LastScore] = useState<number | null>(null);
   const [leaderboards, setLeaderboards] =
     useState<Record<GameKey, GameLeaderboardEntry[]>>(EMPTY_LEADERBOARDS);
 
@@ -72,7 +79,7 @@ export function InAppGames({
     const handleMessage = (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
 
-      const data = event.data as GameOverMessage | Game2WinMessage | undefined;
+      const data = event.data as GameOverMessage | Game2WinMessage | Game3WinMessage | undefined;
       if (!data) return;
 
       if (data.type === "SAKE_POUR_ROUND_WIN") {
@@ -102,6 +109,16 @@ export function InAppGames({
             onEarnPoints(5, "Game 2 Win");
           }
         })();
+        return;
+      }
+
+      if (data.type === "GAME3_ROUND_WIN") {
+        const winScore = Number(data.score);
+        if (!Number.isFinite(winScore)) return;
+
+        setGame3Wins((prev) => prev + 1);
+        setGame3LastScore(winScore);
+        onEarnPoints(5, "Game 3 Win");
         return;
       }
 
@@ -189,7 +206,7 @@ export function InAppGames({
             </p>
           </div>
           <div className="mt-4 rounded-md border border-[#E5E7EB] bg-[#F9FAFB] p-3">
-            <p className="mb-2 text-sm font-semibold text-[#0F1729]">Plate Dash Leaderboard</p>
+            <p className="mb-2 text-sm font-semibold text-[#0F1729]">Sushi Catch Leaderboard</p>
             <div className="space-y-1 text-xs text-[#6B7280]">
               {leaderboards.PLATE_DASH.length === 0 ? (
                 <p>No scores yet.</p>
@@ -207,7 +224,7 @@ export function InAppGames({
 
         <Card className="p-4 border-2 border-[#E5E7EB]">
           <div className="mb-3">
-            <p className="font-semibold text-[#0F1729]">Game 2</p>
+            <p className="font-semibold text-[#0F1729]">SAKE POUR</p>
             <p className="text-xs text-[#6B7280]">
               Earn <span className="font-semibold">+5</span> loyalty points every time you win one round.
             </p>
@@ -235,6 +252,24 @@ export function InAppGames({
                 ))
               )}
             </div>
+          </div>
+        </Card>
+
+        <Card className="p-4 border-2 border-[#E5E7EB]">
+          <div className="mb-3">
+            <p className="font-semibold text-[#0F1729]">SUSHI memory</p>
+            <p className="text-xs text-[#6B7280]">
+              Earn <span className="font-semibold">+5</span> loyalty points every time you win one round.
+            </p>
+          </div>
+          <iframe
+            src="/games/game3.html"
+            title="Game 3"
+            className="w-full h-[600px] rounded-md border border-[#E5E7EB]"
+          />
+          <div className="mt-4 flex items-center justify-between gap-3 text-xs text-[#6B7280]">
+            <p>Round wins: {game3Wins}</p>
+            <p>Last winning score: {game3LastScore ?? "-"}</p>
           </div>
         </Card>
       </div>

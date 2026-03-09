@@ -331,6 +331,22 @@ function getWeatherIcon(condition: string) {
   }
 }
 
+function getPerfectWeatherMessage(weather: WeatherData): string {
+  if (weather.condition === "rainy" || weather.condition === "snowy") {
+    return "Perfect weather for hot ramen and warm udon";
+  }
+
+  if (weather.condition === "sunny" && weather.temperature > 80) {
+    return "Perfect weather for sashimi, yuzu soda, and ice cream";
+  }
+
+  if (weather.condition === "sunny") {
+    return "Perfect weather for sushi rolls and donburi";
+  }
+
+  return "Perfect weather for cozy bowls and comfort dishes";
+}
+
 function getTierFromPoints(points: number): LoyaltyProfile["tier"] {
   if (points >= 1500) return "platinum";
   if (points >= 500) return "gold";
@@ -425,6 +441,7 @@ export function OrderingPage({
 
     void loadLoyaltyProfile();
   }, [fallbackCustomerProfile, phoneNumber, userName]);
+  }, [fallbackCustomerProfile, phoneNumber, userName]);
 
   const isInitialDataLoading = isMenuLoading || isLoyaltyLoading;
 
@@ -448,7 +465,7 @@ const handleAddFromDialog = (item: MenuItemType) => {
         flavorPreferences,
         weather: weatherData || undefined,
       },
-      3
+      4
     );
     setRecommendations(newRecommendations);
   }, [cart, flavorPreferences, weatherData, menuItems]);
@@ -763,10 +780,7 @@ const handleAddFromDialog = (item: MenuItemType) => {
               )}
             <div>
               <h3 className="font-semibold text-[#0F1729] text-sm">
-                {weatherData.condition === 'rainy' && 'Perfect weather for hot ramen'}
-                {weatherData.condition === 'sunny' && weatherData.temperature > 75 && 'Refreshing sashimi weather'}
-                {weatherData.condition === 'sunny' && weatherData.temperature <= 75 && 'Beautiful day for dining'}
-                {weatherData.condition === 'cloudy' && 'Cozy weather ahead'}
+                {getPerfectWeatherMessage(weatherData)}
               </h3>
               <p className="text-xs text-[#6B7280]">{weatherData.description}</p>
             </div>
@@ -813,7 +827,7 @@ const handleAddFromDialog = (item: MenuItemType) => {
                 }`}
               >
                 <span className="text-base mr-1.5">🍜</span>
-                <span className="text-xs truncate">Ramen</span>
+                <span className="text-xs truncate">Udon</span>
               </button>
               <button
                 onClick={() => setActiveCategory("desserts")}
@@ -979,7 +993,7 @@ const handleAddFromDialog = (item: MenuItemType) => {
                 AI Powered
               </Badge>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
               {recommendations.map((rec) => (
                 <RecommendationCard
                   key={rec.item.id}
