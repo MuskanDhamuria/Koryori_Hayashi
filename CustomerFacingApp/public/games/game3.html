@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>sushi · drag to match</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Segoe UI', 'Cabin Sketch', 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
+        }
+        body {
+            min-height: 100vh;
+            background: #ffeacc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 8px;
+        }
+        /* skinny mobile frame */
+        .game-frame {
+            max-width: 380px;
+            width: 100%;
+            aspect-ratio: 9 / 16;
+            background: #fef5e7 url('data:image/svg+xml;utf8,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><circle cx="15" cy="18" r="7" fill="%23ffb7b7" opacity="0.2"/><circle cx="45" cy="30" r="12" fill="%23f7d794" opacity="0.2"/><path d="M10 48 Q 20 38 30 48 Q 40 58 50 48" stroke="%23a5e0b5" stroke-width="4" fill="none" opacity="0.25"/><circle cx="25" cy="10" r="5" fill="%23f5a97f" opacity="0.25"/><rect x="32" y="40" width="16" height="8" rx="4" fill="%23d99b6c" opacity="0.2"/></svg>');
+            background-size: 100px 100px;
+            border-radius: 36px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.15), inset 0 -2px 5px rgba(255,255,255,0.7);
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        /* ----- START PAGE (centered) ----- */
+        .start-screen {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #fef1df url('data:image/svg+xml;utf8,<svg width="70" height="70" viewBox="0 0 70 70" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="25" r="8" fill="%23fbbc8b" opacity="0.3"/><circle cx="55" cy="40" r="15" fill="%23ffe08c" opacity="0.2"/><path d="M12 58 Q 25 45 40 58 Q 55 70 68 58" stroke="%23b7d7a8" stroke-width="5" fill="none" opacity="0.25"/><circle cx="35" cy="15" r="6" fill="%23f7bc7a" opacity="0.3"/></svg>');
+            background-size: 110px 110px;
+            border-radius: 36px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            transition: opacity 0.4s ease;
+            backdrop-filter: blur(2px);
+        }
+        .start-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .big-title {
+            font-size: 3.8rem;
+            font-weight: 800;
+            color: #332211;
+            text-shadow: 5px 5px 0 #fadba8, 7px 7px 0 rgba(255,210,140,0.6);
+            transform: rotate(-2deg);
+            margin-bottom: 30px;
+            font-family: 'Cabin Sketch', cursive;
+            line-height: 1.1;
+            text-align: center;
+            padding: 0 10px;
+        }
+        .big-title span {
+            display: block;
+            font-size: 2.2rem;
+            letter-spacing: 6px;
+            transform: rotate(1deg);
+        }
+        .start-btn {
+            background: #f8cf9c;
+            border: none;
+            font-size: 2.2rem;
+            font-weight: bold;
+            padding: 16px 40px;
+            border-radius: 60px;
+            box-shadow: 0 9px 0 #a87846, 0 12px 18px rgba(0,0,0,0.2);
+            color: #2f1e0e;
+            border: 3px solid #ffe3b5;
+            cursor: pointer;
+            touch-action: manipulation;
+            transition: 0.05s linear;
+            margin-top: 20px;
+        }
+        .start-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 3px 0 #a87846, 0 8px 12px #3f2d19;
+        }
+
+        /* header */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            height: 44px;
+        }
+        .game-title-small {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: #311f0c;
+            text-shadow: 2px 2px 0 #f8d5a3;
+            background: rgba(255,250,210,0.5);
+            padding: 0 15px 3px 15px;
+            border-radius: 40px;
+            font-family: 'Cabin Sketch', cursive;
+            white-space: nowrap;
+        }
+        .global-timer {
+            background: #533e1f;
+            padding: 6px 12px;
+            border-radius: 40px;
+            box-shadow: 0 3px 0 #2b1d0d;
+            color: #ffefcb;
+            font-weight: bold;
+            font-size: 1.3rem;
+            border: 2px solid #fccc7e;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.3s ease;
+        }
+        .global-timer.low-time {
+            background: #a13d2f;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; transform: scale(1.05); }
+            100% { opacity: 1; }
+        }
+
+        /* countdown badge */
+        .countdown-badge {
+            background: #ffbba0;
+            color: #3d250b;
+            font-size: 1.8rem;
+            font-weight: 800;
+            border-radius: 50px;
+            padding: 6px 18px;
+            display: inline-block;
+            margin: 0 auto 5px;
+            border: 3px solid #ffecb3;
+            box-shadow: 0 5px 0 #9f6843;
+            text-align: center;
+            width: fit-content;
+        }
+
+        /* board */
+        .board {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            margin: 4px 0;
+        }
+        .row-label {
+            font-size: 0.9rem;
+            color: #6b4f2b;
+            font-weight: 600;
+            background: #ffeeccd0;
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            backdrop-filter: blur(2px);
+            margin-bottom: 2px;
+        }
+        .card-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 5px 0;
+            min-height: 100px;
+        }
+        /* base card */
+        .card {
+            width: 70px;
+            height: 90px;
+            background: #fef7e9;
+            border-radius: 16px;
+            box-shadow: 0 8px 0 #9f7e55, 0 10px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 2.8rem;
+            border: 3px solid #efd29e;
+            position: relative;
+            cursor: grab;
+            touch-action: pan-y;
+            user-select: none;
+        }
+        .card.back-side {
+            background: #fffaf0;
+            background-image: radial-gradient(circle at 20px 30px, #ffdbb5 4px, transparent 4px), 
+                radial-gradient(circle at 50px 60px, #f3b186 6px, transparent 6px);
+            background-size: 40px 40px, 80px 80px;
+            color: transparent;
+            border: 3px solid #dbb47a;
+        }
+        .card.back-side::after {
+            content: "🍣";
+            opacity: 0.2;
+            font-size: 2.2rem;
+        }
+        /* dropzone empty slot */
+        .card.empty-slot {
+            background: #ecdbba;
+            border: 3px dashed #b48b54;
+            box-shadow: 0 4px 0 #7a623f;
+            color: transparent;
+            cursor: pointer;
+        }
+        .card.empty-slot::after {
+            content: "?";
+            font-size: 2rem;
+            opacity: 0.4;
+            color: #6b4f2b;
+        }
+        /* result borders */
+        .card.correct-position {
+            border: 5px solid #3bb86b;
+            box-shadow: 0 5px 0 #1c7a3f, 0 8px 12px rgba(0,0,0,0.2);
+        }
+        .card.wrong-position {
+            border: 5px solid #e4572e;
+            box-shadow: 0 5px 0 #a33c1e, 0 8px 12px rgba(0,0,0,0.2);
+        }
+        /* dragging visual */
+        .card.dragging {
+            opacity: 0.6;
+            transform: scale(1.05);
+            z-index: 10;
+        }
+        .drag-zone {
+            background: rgba(238, 206, 164, 0.3);
+            border-radius: 40px;
+            padding: 12px 5px;
+            backdrop-filter: blur(2px);
+            border: 2px dashed #b38b5b;
+        }
+        /* bottom bar */
+        .bottom-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 6px 0 5px;
+        }
+        #submitBtn {
+            background: #f0c48b;
+            border: none;
+            font-weight: bold;
+            font-size: 1.6rem;
+            padding: 12px 28px;
+            border-radius: 60px;
+            box-shadow: 0 6px 0 #9f7248, 0 8px 10px #0000001a;
+            color: #2f1e0e;
+            border: 2px solid #ffddb0;
+            cursor: pointer;
+            min-width: 150px;
+        }
+        #submitBtn:active {
+            transform: translateY(5px);
+            box-shadow: 0 2px 0 #9f7248;
+        }
+        #submitBtn:disabled {
+            opacity: 0.3;
+            transform: translateY(3px);
+            box-shadow: 0 3px 0 #7a5d3e;
+            pointer-events: none;
+        }
+        .score-panel {
+            background: #2e1f0f;
+            border-radius: 40px;
+            padding: 8px 20px;
+            color: #f8e2b0;
+            font-weight: bold;
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 2px solid #cf9f64;
+        }
+        .footer-message {
+            text-align: center;
+            color: #572f0e;
+            font-size: 1rem;
+            background: #efdbbaa0;
+            border-radius: 30px;
+            padding: 4px;
+            margin-top: 3px;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+<div class="game-frame">
+    <!-- START SCREEN -->
+    <div class="start-screen" id="startScreen">
+        <div class="big-title">🍣 SUSHI<br><span>memory</span></div>
+        <button class="start-btn" id="startBtn">click to begin</button>
+    </div>
+
+    <!-- GAME HEADER -->
+    <div class="game-header">
+        <div class="game-title-small">🍱 sushi memo</div>
+        <div class="global-timer" id="globalTimer">⏳ 02:00</div>
+    </div>
+
+    <!-- COUNTDOWN (visible during memory) -->
+    <div id="countdownArea" class="countdown-badge" style="margin:0 auto 5px; display:none;">5</div>
+
+    <!-- BOARD -->
+    <div class="board">
+        <div class="row-label" id="memoryLabel">✨ hidden order (drag below)</div>
+        <!-- top row: drop targets (empty slots) -->
+        <div class="card-row" id="dropRow"></div>
+
+        <div class="row-label" style="margin-top:8px;">🍣 your cards</div>
+        <!-- bottom row: draggable cards -->
+        <div class="card-row drag-zone" id="dragRow"></div>
+    </div>
+
+    <!-- BOTTOM BAR -->
+    <div class="bottom-bar">
+        <button id="submitBtn" disabled>✅ submit</button>
+        <div class="score-panel"><span>🍣</span> <span id="scoreValue">0</span></div>
+    </div>
+    <div class="footer-message" id="gameMessage"></div>
+</div>
+
+<script>
+    (function() {
+        // ---------- emoji pool ----------
+        const EMOJIS = ['🍣', '🍱', '🍜', '🐟', '🍤', '🍙', '🥢', '🍚'];
+
+        // DOM
+        const startScreen = document.getElementById('startScreen');
+        const startBtn = document.getElementById('startBtn');
+        const globalTimerSpan = document.getElementById('globalTimer');
+        const countdownArea = document.getElementById('countdownArea');
+        const dropRow = document.getElementById('dropRow');
+        const dragRow = document.getElementById('dragRow');
+        const submitBtn = document.getElementById('submitBtn');
+        const scoreSpan = document.getElementById('scoreValue');
+        const gameMessage = document.getElementById('gameMessage');
+
+        // state
+        let totalScore = 0;
+        let currentCorrectEmojis = [];
+        let dropSlots = ['', '', '', ''];
+        let dragCards = [];
+        let dragCardElements = [];
+        let dropElements = [];
+
+        // timers
+        let globalSeconds = 120;
+        let globalTimerInterval = null;
+        let countdownInterval = null;
+        let countdownValue = 5;
+
+        // flags
+        let gameActive = false;
+        let memoryPhase = false;
+        let flipped = false;
+        let roundFinished = false;
+
+        // drag & drop state
+        let draggedElement = null;
+        let touchDraggedCard = null;
+
+        // ---------- helper ----------
+        function clearAllTimers() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+            if (globalTimerInterval) {
+                clearInterval(globalTimerInterval);
+                globalTimerInterval = null;
+            }
+        }
+
+        function stopMainTimer() {
+    if (globalTimerInterval) {
+        clearInterval(globalTimerInterval);
+        globalTimerInterval = null;
+    }
+}
+
+function startMainTimer() {
+    if (!gameActive) return;
+    if (globalTimerInterval) clearInterval(globalTimerInterval);
+    globalTimerInterval = setInterval(() => {
+        if (!gameActive) return;
+        
+        globalSeconds -= 1;
+        if (globalSeconds < 0) globalSeconds = 0;
+        
+        updateTimerDisplay();
+        
+        if (globalSeconds <= 0) {
+            gameOver('⏰ time’s up!');
+        }
+    }, 1000);
+}
+
+        function formatTime(sec) {
+            let m = Math.floor(sec / 60);
+            let s = sec % 60;
+            return `⏳ ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        }
+
+        function updateTimerDisplay() {
+            globalTimerSpan.innerText = formatTime(globalSeconds);
+            // Add visual warning when time is low
+            if (globalSeconds <= 30) {
+                globalTimerSpan.classList.add('low-time');
+            } else {
+                globalTimerSpan.classList.remove('low-time');
+            }
+        }
+
+        function startGlobalTimer() {
+            if (globalTimerInterval) clearInterval(globalTimerInterval);
+            globalTimerInterval = setInterval(() => {
+                if (!gameActive) return; // Only stop if game is not active
+                
+                globalSeconds -= 1;
+                if (globalSeconds < 0) globalSeconds = 0;
+                
+                updateTimerDisplay();
+                
+                if (globalSeconds <= 0) {
+                    gameOver('⏰ time’s up!');
+                }
+            }, 1000);
+        }
+
+        function gameOver(msg) {
+            clearAllTimers();
+            gameActive = false;
+            memoryPhase = false;
+            roundFinished = true;
+            flipped = false;
+            submitBtn.disabled = true;
+            gameMessage.innerText = msg || 'game over';
+            startScreen.classList.remove('hidden');
+            
+            // Reset timer display
+            globalSeconds = 60;
+            updateTimerDisplay();
+        }
+
+        // reset for a new round
+        function resetRound() {
+            // Clean up
+            dropRow.innerHTML = '';
+            dragRow.innerHTML = '';
+            dropElements = [];
+            dragCardElements = [];
+            dropSlots = ['', '', '', ''];
+            
+            roundFinished = false;
+            flipped = false;
+            memoryPhase = true;
+            countdownValue = 5;
+            countdownArea.style.display = 'block';
+            countdownArea.innerText = countdownValue;
+            gameMessage.innerText = 'remember the order';
+
+            // Generate new correct set
+            let shuffled = [...EMOJIS].sort(() => Math.random() - 0.5);
+            currentCorrectEmojis = shuffled.slice(0, 4);
+
+            // Show memory row
+            dropRow.innerHTML = '';
+            currentCorrectEmojis.forEach(emoji => {
+                let card = document.createElement('div');
+                card.className = 'card';
+                card.innerText = emoji;
+                dropRow.appendChild(card);
+            });
+            dragRow.innerHTML = '';
+
+            stopMainTimer(); // PAUSE main timer during memory phase
+
+            // Start countdown
+            if (countdownInterval) clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                countdownValue -= 1;
+                countdownArea.innerText = countdownValue;
+                
+                if (countdownValue <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                    if (gameActive && memoryPhase) {
+                        flipToEmptySlots();
+                    }
+                }
+            }, 1000);
+        }
+
+        function flipToEmptySlots() {
+            startMainTimer();
+            if (!gameActive) return;
+            
+            // Replace top row with empty slots
+            dropRow.innerHTML = '';
+            dropSlots = ['', '', '', ''];
+            dropElements = [];
+            
+            for (let i = 0; i < 4; i++) {
+                let slot = document.createElement('div');
+                slot.className = 'card empty-slot';
+                slot.setAttribute('data-index', i);
+                slot.addEventListener('dragover', handleDragOver);
+                slot.addEventListener('drop', handleDrop);
+                slot.addEventListener('touchmove', handleTouchMove, { passive: false });
+                slot.addEventListener('touchend', handleTouchEnd);
+                dropRow.appendChild(slot);
+                dropElements.push(slot);
+            }
+
+            // Create bottom row draggable cards
+            let dragEmojis = [...currentCorrectEmojis].sort(() => Math.random() - 0.5);
+            dragCards = [...dragEmojis];
+            dragRow.innerHTML = '';
+            dragCardElements = [];
+            
+            dragEmojis.forEach((emoji, idx) => {
+                let card = document.createElement('div');
+                card.className = 'card';
+                card.innerText = emoji;
+                card.setAttribute('data-emoji', emoji);
+                card.setAttribute('data-index', idx);
+                card.setAttribute('draggable', 'true');
+                card.addEventListener('dragstart', handleDragStart);
+                card.addEventListener('dragend', handleDragEnd);
+                card.addEventListener('touchstart', handleTouchStart, { passive: false });
+                card.addEventListener('touchmove', handleTouchMove, { passive: false });
+                card.addEventListener('touchend', handleTouchEnd);
+                dragRow.appendChild(card);
+                dragCardElements.push(card);
+            });
+
+            countdownArea.style.display = 'none';
+            flipped = true;
+            memoryPhase = false;
+            gameMessage.innerText = 'drag cards to top slots';
+            submitBtn.disabled = false;
+        }
+
+        // ---------- DRAG & DROP HANDLERS ----------
+        function handleDragStart(e) {
+            if (!gameActive || !flipped || roundFinished) {
+                e.preventDefault();
+                return false;
+            }
+            const card = e.target;
+            if (!card.classList.contains('card') || card.classList.contains('empty-slot')) return;
+            
+            draggedElement = card;
+            e.dataTransfer.setData('text/plain', card.getAttribute('data-index'));
+            e.dataTransfer.effectAllowed = 'move';
+            card.classList.add('dragging');
+        }
+
+        function handleDragEnd(e) {
+            if (draggedElement) {
+                draggedElement.classList.remove('dragging');
+                draggedElement = null;
+            }
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            if (!gameActive || !flipped || roundFinished) return;
+            
+            const targetSlot = e.target.closest('.card.empty-slot');
+            if (!targetSlot) return;
+            
+            const slotIndex = parseInt(targetSlot.getAttribute('data-index'));
+            if (dropSlots[slotIndex] !== '') return;
+
+            const sourceIndex = e.dataTransfer.getData('text/plain');
+            if (sourceIndex === '') return;
+            
+            const sourceCard = dragCardElements.find(el => 
+                parseInt(el.getAttribute('data-index')) === parseInt(sourceIndex)
+            );
+            if (!sourceCard) return;
+
+            const emoji = sourceCard.getAttribute('data-emoji');
+            
+            // Place emoji into slot
+            dropSlots[slotIndex] = emoji;
+            targetSlot.innerText = emoji;
+            targetSlot.classList.remove('empty-slot');
+            
+            // Remove source card
+            sourceCard.remove();
+            dragCardElements = dragCardElements.filter(el => el !== sourceCard);
+            dragCards = dragCardElements.map(el => el.getAttribute('data-emoji'));
+        }
+
+        // ---------- TOUCH HANDLERS ----------
+        function handleTouchStart(e) {
+            if (!gameActive || !flipped || roundFinished) return;
+            const card = e.target.closest('.card');
+            if (!card || card.classList.contains('empty-slot') || !card.getAttribute('draggable')) return;
+            
+            e.preventDefault();
+            touchDraggedCard = card;
+            card.classList.add('dragging');
+        }
+
+        function handleTouchMove(e) {
+            if (!touchDraggedCard) return;
+            e.preventDefault();
+        }
+
+        function handleTouchEnd(e) {
+            if (!touchDraggedCard || !gameActive || !flipped || roundFinished) {
+                if (touchDraggedCard) {
+                    touchDraggedCard.classList.remove('dragging');
+                    touchDraggedCard = null;
+                }
+                return;
+            }
+
+            e.preventDefault();
+            const touch = e.changedTouches[0];
+            if (!touch) return;
+
+            const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+            const targetSlot = elemBelow?.closest('.card.empty-slot');
+            
+            if (targetSlot) {
+                const slotIndex = parseInt(targetSlot.getAttribute('data-index'));
+                if (dropSlots[slotIndex] === '') {
+                    const emoji = touchDraggedCard.getAttribute('data-emoji');
+                    
+                    dropSlots[slotIndex] = emoji;
+                    targetSlot.innerText = emoji;
+                    targetSlot.classList.remove('empty-slot');
+                    
+                    touchDraggedCard.remove();
+                    dragCardElements = dragCardElements.filter(el => el !== touchDraggedCard);
+                    dragCards = dragCardElements.map(el => el.getAttribute('data-emoji'));
+                }
+            }
+            
+            touchDraggedCard.classList.remove('dragging');
+            touchDraggedCard = null;
+        }
+
+        // ---------- SUBMIT ----------
+        submitBtn.addEventListener('click', () => {
+            if (!gameActive || !flipped || roundFinished) return;
+            
+            if (dropSlots.includes('')) {
+                gameMessage.innerText = 'fill all slots first';
+                return;
+            }
+
+            let correctCount = 0;
+            dropElements.forEach(el => el.classList.remove('correct-position', 'wrong-position'));
+
+            dropElements.forEach((el, idx) => {
+                const emoji = el.innerText;
+                if (emoji === currentCorrectEmojis[idx]) {
+                    el.classList.add('correct-position');
+                    correctCount++;
+                } else {
+                    el.classList.add('wrong-position');
+                }
+            });
+
+            totalScore += correctCount;
+            scoreSpan.innerText = totalScore;
+            roundFinished = true;
+            gameMessage.innerText = `+${correctCount} points, next round...`;
+            submitBtn.disabled = true;
+
+            // Next round after delay
+            setTimeout(() => {
+                if (gameActive && globalSeconds > 0) {
+                    resetRound();
+                } else if (globalSeconds <= 0) {
+                    gameOver('time over');
+                }
+            }, 1500);
+        });
+
+        // ---------- START ----------
+        startBtn.addEventListener('click', () => {
+            startScreen.classList.add('hidden');
+            totalScore = 0;
+            scoreSpan.innerText = '0';
+            globalSeconds = 60;
+            updateTimerDisplay();
+            gameActive = true;
+            roundFinished = false;
+            
+            clearAllTimers();
+            startGlobalTimer();
+            resetRound();
+        });
+
+        // Prevent default drag on images
+        window.addEventListener('dragstart', (e) => {
+            if (e.target.tagName === 'IMG') e.preventDefault();
+        });
+    })();
+</script>
+</body>
+</html>
