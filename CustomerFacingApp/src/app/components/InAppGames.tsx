@@ -30,6 +30,11 @@ type Game2WinMessage = {
   score: number;
 };
 
+type Game3WinMessage = {
+  type: "GAME3_ROUND_WIN";
+  score: number;
+};
+
 const SCORE_TO_EARN_POINTS = 3000;
 
 const EMPTY_LEADERBOARDS: Record<GameKey, GameLeaderboardEntry[]> = {
@@ -49,6 +54,8 @@ export function InAppGames({
   const [lastAwarded, setLastAwarded] = useState(false);
   const [game2Wins, setGame2Wins] = useState(0);
   const [game2LastScore, setGame2LastScore] = useState<number | null>(null);
+  const [game3Wins, setGame3Wins] = useState(0);
+  const [game3LastScore, setGame3LastScore] = useState<number | null>(null);
   const [leaderboards, setLeaderboards] =
     useState<Record<GameKey, GameLeaderboardEntry[]>>(EMPTY_LEADERBOARDS);
 
@@ -72,7 +79,7 @@ export function InAppGames({
     const handleMessage = (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
 
-      const data = event.data as GameOverMessage | Game2WinMessage | undefined;
+      const data = event.data as GameOverMessage | Game2WinMessage | Game3WinMessage | undefined;
       if (!data) return;
 
       if (data.type === "SAKE_POUR_ROUND_WIN") {
@@ -102,6 +109,16 @@ export function InAppGames({
             onEarnPoints(5, "Game 2 Win");
           }
         })();
+        return;
+      }
+
+      if (data.type === "GAME3_ROUND_WIN") {
+        const winScore = Number(data.score);
+        if (!Number.isFinite(winScore)) return;
+
+        setGame3Wins((prev) => prev + 1);
+        setGame3LastScore(winScore);
+        onEarnPoints(5, "Game 3 Win");
         return;
       }
 

@@ -379,6 +379,17 @@
         let draggedElement = null;
         let touchDraggedCard = null;
 
+        function notifyParentGame3RoundWin(score) {
+            if (window.parent === window) return;
+            window.parent.postMessage(
+                {
+                    type: "GAME3_ROUND_WIN",
+                    score,
+                },
+                window.location.origin
+            );
+        }
+
         // ---------- helper ----------
         function clearAllTimers() {
             if (countdownInterval) {
@@ -694,6 +705,9 @@ function startMainTimer() {
 
             totalScore += correctCount;
             scoreSpan.innerText = totalScore;
+            if (correctCount === currentCorrectEmojis.length) {
+                notifyParentGame3RoundWin(totalScore);
+            }
             roundFinished = true;
             gameMessage.innerText = `+${correctCount} points, next round...`;
             submitBtn.disabled = true;
