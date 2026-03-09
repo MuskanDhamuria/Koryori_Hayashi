@@ -1,7 +1,13 @@
 import type { FastifyPluginAsync } from "fastify";
-import { type MenuItem } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma.js";
+import {
+  buildOrderLineItems,
+  calculateOrderPricing,
+  getSelectedDiscount,
+  getTierFromPoints,
+  getTierMultiplier,
+} from "./orderHelpers.js";
 
 const createOrderSchema = z.object({
   customerName: z.string().min(1),
@@ -32,65 +38,6 @@ class RouteError extends Error {
   constructor(statusCode: number, message: string) {
     super(message);
     this.statusCode = statusCode;
-  }
-}
-
-function roundCurrency(value: number) {
-  return Number(value.toFixed(2));
-}
-
-function getTierMultiplier(tier: string | null | undefined) {
-  if (tier === "platinum") {
-    return 2;
-  }
-
-  if (tier === "gold") {
-    return 1.5;
-  }
-
-  return 1;
-}
-
-function getTierFromPoints(points: number) {
-  if (points >= 1500) {
-    return "platinum";
-  }
-
-  if (points >= 500) {
-    return "gold";
-  }
-
-  return "silver";
-}
-
-function getSelectedDiscount(payload: {
-  selectedDiscountId?: "points-5" | "points-10" | "points-15" | "first-time" | "referral" | null;
-  totalBeforeSelectedDiscount: number;
-  currentPoints: number;
-  currentTier: string;
-}) {
-  switch (payload.selectedDiscountId) {
-    case "points-5":
-      return payload.currentPoints >= 100
-        ? { amount: 5, pointsCost: 100 }
-        : { amount: 0, pointsCost: 0 };
-    case "points-10":
-      return payload.currentPoints >= 200
-        ? { amount: 10, pointsCost: 200 }
-        : { amount: 0, pointsCost: 0 };
-    case "points-15":
-      return payload.currentPoints >= 300
-        ? { amount: 15, pointsCost: 300 }
-        : { amount: 0, pointsCost: 0 };
-    case "first-time":
-      return payload.currentTier === "silver" && payload.currentPoints === 0
-        ? {
-            amount: roundCurrency(Math.min(payload.totalBeforeSelectedDiscount * 0.1, 10)),
-            pointsCost: 0,
-          }
-        : { amount: 0, pointsCost: 0 };
-    default:
-      return { amount: 0, pointsCost: 0 };
   }
 }
 
@@ -144,41 +91,23 @@ export const ordersRoutes: FastifyPluginAsync = async (app) => {
           currentPoints = loyaltyAccount?.pointsBalance ?? 0;
         }
 
-        const itemMap = new Map<string, MenuItem>(menuItems.map((item) => [item.id, item]));
-        const lineItems = payload.items.map((item) => {
-          const menuItem = itemMap.get(item.menuItemId)!;
-          const unitPrice = Number(menuItem.price);
-          const lineTotal = unitPrice * item.quantity;
-
-          return {
-            menuItemId: item.menuItemId,
-            quantity: item.quantity,
-            unitPrice,
-            lineTotal,
-          };
+        const lineItems = buildOrderLineItems(menuItems, payload.items);
+        const preflightPricing = calculateOrderPricing({
+          lineItems,
+          birthdayDiscountPercent: payload.birthdayDiscountPercent,
+          selectedDiscount: { amount: 0, pointsCost: 0 },
         });
-
-        const subtotal = roundCurrency(lineItems.reduce((sum, item) => sum + item.lineTotal, 0));
-        const birthdayDiscountAmount = roundCurrency(
-          subtotal * (payload.birthdayDiscountPercent / 100),
-        );
-        const subtotalAfterBirthdayDiscount = roundCurrency(subtotal - birthdayDiscountAmount);
-        const taxAmount = roundCurrency(subtotalAfterBirthdayDiscount * 0.1);
-        const totalBeforeSelectedDiscount = roundCurrency(
-          subtotalAfterBirthdayDiscount + taxAmount,
-        );
         const selectedDiscount = getSelectedDiscount({
           selectedDiscountId: payload.selectedDiscountId,
-          totalBeforeSelectedDiscount,
+          totalBeforeSelectedDiscount: preflightPricing.totalBeforeSelectedDiscount,
           currentPoints,
           currentTier,
         });
-        const totalAmount = roundCurrency(
-          Math.max(0, totalBeforeSelectedDiscount - selectedDiscount.amount),
-        );
-        const discountAmount = roundCurrency(
-          birthdayDiscountAmount + selectedDiscount.amount,
-        );
+        const pricing = calculateOrderPricing({
+          lineItems,
+          birthdayDiscountPercent: payload.birthdayDiscountPercent,
+          selectedDiscount,
+        });
         const orderNumber = `KH-${Date.now().toString().slice(-8)}`;
 
         const order = await tx.order.create({
@@ -188,10 +117,10 @@ export const ordersRoutes: FastifyPluginAsync = async (app) => {
             tableId: table.id,
             notes: payload.notes,
             status: "CONFIRMED",
-            subtotalAmount: subtotal,
-            discountAmount,
-            taxAmount,
-            totalAmount,
+            subtotalAmount: pricing.subtotal,
+            discountAmount: pricing.discountAmount,
+            taxAmount: pricing.taxAmount,
+            totalAmount: pricing.totalAmount,
             orderItems: {
               create: lineItems.map((item) => ({
                 menuItemId: item.menuItemId,
@@ -204,7 +133,7 @@ export const ordersRoutes: FastifyPluginAsync = async (app) => {
               create: {
                 method: payload.paymentMethod,
                 status: payload.paymentMethod === "CASH" ? "PENDING" : "PAID",
-                amount: totalAmount,
+                amount: pricing.totalAmount,
                 paidAt: payload.paymentMethod === "CASH" ? null : new Date(),
               },
             },
@@ -223,7 +152,7 @@ export const ordersRoutes: FastifyPluginAsync = async (app) => {
         let loyalty = null;
 
         if (customer) {
-          const earnedPoints = Math.floor(totalAmount * getTierMultiplier(currentTier));
+          const earnedPoints = Math.floor(pricing.totalAmount * getTierMultiplier(currentTier));
 
           if (selectedDiscount.pointsCost > 0) {
             const existingAccount = await tx.loyaltyAccount.findUnique({

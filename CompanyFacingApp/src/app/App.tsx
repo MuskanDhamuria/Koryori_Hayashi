@@ -47,9 +47,19 @@ import {
   fetchMenuCatalog,
   fetchOrders,
   staffLogin,
-  type BackendOrder,
   type DashboardAnalyticsResponse,
 } from './services/api';
+import {
+  buildCategoryData,
+  buildComboData,
+  buildComparisonData,
+  buildHeatMapData,
+  buildInventoryAlerts,
+  buildMenuCatalog,
+  buildRevenueChartData,
+  buildSalesRecords,
+  buildSeasonalData,
+} from './lib/dashboardData';
 
 const STORAGE_KEY = 'koryori-staff-token';
 const authStorage = window.sessionStorage;
@@ -62,66 +72,12 @@ function isAuthError(error: unknown) {
   return /401|403|unauthorized|forbidden/i.test(error.message);
 }
 
-function buildMenuCatalog(
-  categories: Array<{
-    slug: string;
-    name: string;
-    items: Array<{
-      id: string;
-      name: string;
-      price: string | number;
-      cost: string | number;
-      inventoryItem: {
-        stockOnHand: number;
-        reorderPoint: number;
-      } | null;
-    }>;
-  }>
-): MenuItem[] {
-  return categories.flatMap((category) =>
-    category.items.map((item) => ({
-      id: item.id,
-      name: item.name,
-      category: category.name,
-      price: Number(item.price),
-      cost: Number(item.cost),
-      stock: item.inventoryItem?.stockOnHand ?? 0,
-      reorderPoint: item.inventoryItem?.reorderPoint ?? 0
-    }))
-  );
-}
-
-function buildSalesRecords(
-  orders: Array<{
-    orderedAt: string;
-    orderItems: Array<{
-      quantity: number;
-      lineTotal: string | number;
-      menuItem: {
-        id: string;
-      };
-    }>;
-  }>
-): SalesRecord[] {
-  return orders.flatMap((order) => {
-    const date = new Date(order.orderedAt);
-
-    return order.orderItems.map((item) => ({
-      date,
-      hour: date.getHours(),
-      itemId: item.menuItem.id,
-      quantity: item.quantity,
-      revenue: Number(item.lineTotal)
-    }));
-  });
-}
-
 export default function App() {
   const [selectedPeriod, setSelectedPeriod] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
-  const [orders, setOrders] = useState<BackendOrder[]>([]);
+  const [orders, setOrders] = useState<Awaited<ReturnType<typeof fetchOrders>>["orders"]>([]);
   const [historicalSales, setHistoricalSales] = useState<SalesRecord[]>([]);
   const [menuCatalog, setMenuCatalog] = useState<MenuItem[]>([]);
-  const [inventoryAlerts, setInventoryAlerts] = useState<Array<{ item: { id: string; name: string; category: string; stock: number; reorderPoint: number }; daysUntilStockout: number; suggestedOrder: number }>>([]);
+  const [inventoryAlerts, setInventoryAlerts] = useState<ReturnType<typeof buildInventoryAlerts>>([]);
   const [dashboardAnalytics, setDashboardAnalytics] = useState<DashboardAnalyticsResponse | null>(null);
   const [authToken, setAuthToken] = useState<string>(() => authStorage.getItem(STORAGE_KEY) ?? '');
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -160,19 +116,7 @@ export default function App() {
         setHistoricalSales(buildSalesRecords(ordersResponse.orders));
         setDashboardAnalytics(analyticsResponse);
         setLastUpdatedAt(new Date().toLocaleString());
-        setInventoryAlerts(
-          inventoryResponse.alerts.map((alert) => ({
-            item: {
-              id: alert.menuItem.id,
-              name: alert.menuItem.name,
-              category: alert.menuItem.category?.name ?? "Uncategorized",
-              stock: alert.stockOnHand,
-              reorderPoint: alert.reorderPoint
-            },
-            daysUntilStockout: Math.max(1, Math.floor(alert.stockOnHand / Math.max(1, alert.reorderPoint / 3 || 1))),
-            suggestedOrder: Math.max(alert.reorderPoint * 3 - alert.stockOnHand, 0)
-          }))
-        );
+        setInventoryAlerts(buildInventoryAlerts(inventoryResponse.alerts));
         setAuthError('');
         setDashboardError('');
       } catch (error) {
@@ -201,113 +145,21 @@ export default function App() {
 
   // Category breakdown
   const categoryData = useMemo(() => {
-    if (historicalSales.length === 0) return [];
-
-    const categoryStats: { [key: string]: { revenue: number; orders: number } } = {};
-    
-    historicalSales.forEach(sale => {
-      const item = menuCatalog.find(m => m.id === sale.itemId);
-      if (item) {
-        if (!categoryStats[item.category]) {
-          categoryStats[item.category] = { revenue: 0, orders: 0 };
-        }
-        categoryStats[item.category].revenue += sale.revenue;
-        categoryStats[item.category].orders += 1;
-      }
-    });
-
-    return Object.entries(categoryStats).map(([category, stats]) => ({
-      category,
-      revenue: stats.revenue,
-      orders: stats.orders,
-    }));
+    return buildCategoryData(historicalSales, menuCatalog);
   }, [historicalSales, menuCatalog]);
 
   // Heat map data
   const heatMapData = useMemo(() => {
-    if (historicalSales.length === 0) return [];
-
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const hours = [11, 12, 13, 14, 15];
-    
-    const weekData: { [day: number]: { [hour: number]: number } } = {};
-    
-    historicalSales.forEach(sale => {
-      const day = sale.date.getDay();
-      if (!weekData[day]) weekData[day] = {};
-      if (!weekData[day][sale.hour]) weekData[day][sale.hour] = 0;
-      weekData[day][sale.hour] += sale.revenue;
-    });
-
-    return dayNames.map((day, dayIndex) => ({
-      day,
-      hours: hours.map(hour => ({
-        hour,
-        value: weekData[dayIndex]?.[hour] || 0,
-      })),
-    }));
+    return buildHeatMapData(historicalSales);
   }, [historicalSales]);
 
   // Combo chart data
   const comboData = useMemo(() => {
-    if (orders.length === 0) return [];
-
-    const dailyStats: { [key: string]: { revenue: number; orders: number; customers: number } } = {};
-    
-    orders.forEach(order => {
-      const orderDate = new Date(order.orderedAt);
-      const dateKey = orderDate.toISOString().split('T')[0];
-      if (!dailyStats[dateKey]) {
-        dailyStats[dateKey] = { revenue: 0, orders: 0, customers: 0 };
-      }
-      dailyStats[dateKey].revenue += Number(order.totalAmount);
-      dailyStats[dateKey].orders += 1;
-      dailyStats[dateKey].customers += 1;
-    });
-
-    return Object.keys(dailyStats).sort().slice(-14).map(date => ({
-      date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      revenue: dailyStats[date].revenue,
-      orders: dailyStats[date].orders,
-      customers: dailyStats[date].customers,
-    }));
+    return buildComboData(orders);
   }, [orders]);
 
   const revenueChartData = useMemo(() => {
-    if (historicalSales.length === 0) return [];
-
-    const dailyRevenue: { [key: string]: number } = {};
-    historicalSales.forEach(sale => {
-      const dateKey = sale.date.toISOString().split('T')[0];
-      dailyRevenue[dateKey] = (dailyRevenue[dateKey] || 0) + sale.revenue;
-    });
-
-    const sortedDates = Object.keys(dailyRevenue).sort();
-    
-    if (selectedPeriod === 'daily') {
-      return sortedDates.slice(-7).map(date => ({
-        date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        revenue: dailyRevenue[date],
-      }));
-    } else if (selectedPeriod === 'weekly') {
-      const weeklyData: { [key: string]: number } = {};
-      sortedDates.forEach(date => {
-        const weekStart = new Date(date);
-        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-        const weekKey = weekStart.toISOString().split('T')[0];
-        weeklyData[weekKey] = (weeklyData[weekKey] || 0) + dailyRevenue[date];
-      });
-      
-      return Object.keys(weeklyData).sort().slice(-4).map(week => ({
-        date: `Week ${new Date(week).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
-        revenue: weeklyData[week],
-      }));
-    } else {
-      return sortedDates.map(date => ({
-        date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        revenue: dailyRevenue[date],
-      }));
-    }
+    return buildRevenueChartData(historicalSales, selectedPeriod);
   }, [historicalSales, selectedPeriod]);
 
   const hourlySalesData = useMemo(() => {
@@ -364,46 +216,12 @@ export default function App() {
   }, [historicalSales, topItems]);
 
   const seasonalData = useMemo(() => {
-    if (historicalSales.length === 0) return [];
-
-    const weeklyData: { [key: string]: { revenue: number; orders: number } } = {};
-    
-    historicalSales.forEach(sale => {
-      const weekStart = new Date(sale.date);
-      weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-      const weekKey = weekStart.toISOString().split('T')[0];
-      
-      if (!weeklyData[weekKey]) {
-        weeklyData[weekKey] = { revenue: 0, orders: 0 };
-      }
-      weeklyData[weekKey].revenue += sale.revenue;
-      weeklyData[weekKey].orders += 1;
-    });
-
-    return Object.keys(weeklyData)
-      .sort()
-      .slice(-4)
-      .map(week => ({
-        period: `Week ${new Date(week).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
-        revenue: weeklyData[week].revenue,
-        orders: weeklyData[week].orders,
-        avgOrderValue: weeklyData[week].revenue / weeklyData[week].orders,
-      }));
+    return buildSeasonalData(historicalSales);
   }, [historicalSales]);
 
   // Comparison data for previous period
   const comparisonData = useMemo(() => {
-    if (!dashboardAnalytics) return null;
-
-    return {
-      currentPeriod: dashboardAnalytics.comparison.currentPeriod,
-      previousPeriod: dashboardAnalytics.comparison.previousPeriod,
-      industryBenchmark: {
-        avgOrderValue: dashboardAnalytics.comparison.benchmark.avgOrderValue,
-        margin: dashboardAnalytics.comparison.benchmark.margin,
-        peakHourRevenue: dashboardAnalytics.comparison.benchmark.peakHourRevenue,
-      },
-    };
+    return buildComparisonData(dashboardAnalytics);
   }, [dashboardAnalytics]);
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {

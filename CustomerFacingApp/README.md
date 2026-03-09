@@ -1,10 +1,24 @@
 
-  # Japanese Restaurant QR Ordering
+# CustomerFacingApp
 
+Customer ordering experience for menu browsing, loyalty, recommendations, and in-app games.
 
-  ## Running the code
+## Run
 
-  Run `npm i` to install the dependencies.
+```powershell
+cd CustomerFacingApp
+npm install
+npm run dev
+```
 
-  Run `npm run dev` to start the development server.
-  
+## Backend Dependency
+
+This app expects the backend to be running for menu, order, loyalty, and game functionality.
+
+## Current Scope
+
+- Customer login and quick-access flow
+- QR/table ordering flow
+- Loyalty and taste preference persistence
+- Recommendations and pricing-driven menu display
+- In-app games and rewards
