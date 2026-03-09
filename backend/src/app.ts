@@ -12,6 +12,7 @@ import { inventoryRoutes } from "./modules/inventory/routes.js";
 import { loyaltyRoutes } from "./modules/loyalty/routes.js";
 import { gamesRoutes } from "./modules/games/routes.js";
 import { aiRoutes } from "./modules/ai/routes.js";
+import { integrationRoutes } from "./modules/integrations/routes.js";
 
 export function buildApp() {
   const allowedOrigins = new Set([
@@ -56,6 +57,7 @@ export function buildApp() {
   app.register(loyaltyRoutes, { prefix: "/api/loyalty" });
   app.register(gamesRoutes, { prefix: "/api/games" });
   app.register(aiRoutes, { prefix: "/api/ai" });
+  app.register(integrationRoutes, { prefix: "/api/integrations" });
 
   return app;
 }
