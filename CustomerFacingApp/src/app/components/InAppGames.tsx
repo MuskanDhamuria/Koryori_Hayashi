@@ -189,7 +189,7 @@ export function InAppGames({
             </p>
           </div>
           <div className="mt-4 rounded-md border border-[#E5E7EB] bg-[#F9FAFB] p-3">
-            <p className="mb-2 text-sm font-semibold text-[#0F1729]">Plate Dash Leaderboard</p>
+            <p className="mb-2 text-sm font-semibold text-[#0F1729]">Sushi Catch Leaderboard</p>
             <div className="space-y-1 text-xs text-[#6B7280]">
               {leaderboards.PLATE_DASH.length === 0 ? (
                 <p>No scores yet.</p>
@@ -207,7 +207,7 @@ export function InAppGames({
 
         <Card className="p-4 border-2 border-[#E5E7EB]">
           <div className="mb-3">
-            <p className="font-semibold text-[#0F1729]">Game 2</p>
+            <p className="font-semibold text-[#0F1729]">SAKE POUR</p>
             <p className="text-xs text-[#6B7280]">
               Earn <span className="font-semibold">+5</span> loyalty points every time you win one round.
             </p>
@@ -235,6 +235,24 @@ export function InAppGames({
                 ))
               )}
             </div>
+          </div>
+        </Card>
+
+        <Card className="p-4 border-2 border-[#E5E7EB]">
+          <div className="mb-3">
+            <p className="font-semibold text-[#0F1729]">SUSHI memory</p>
+            <p className="text-xs text-[#6B7280]">
+              Earn <span className="font-semibold">+5</span> loyalty points every time you win one round.
+            </p>
+          </div>
+          <iframe
+            src="/games/game3.html"
+            title="Game 3"
+            className="w-full h-[600px] rounded-md border border-[#E5E7EB]"
+          />
+          <div className="mt-4 flex items-center justify-between gap-3 text-xs text-[#6B7280]">
+            <p>Round wins: {game3Wins}</p>
+            <p>Last winning score: {game3LastScore ?? "-"}</p>
           </div>
         </Card>
       </div>
