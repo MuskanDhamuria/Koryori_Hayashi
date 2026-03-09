@@ -822,7 +822,7 @@ const handleAddFromDialog = (item: MenuItemType) => {
                 }`}
               >
                 <span className="text-base mr-1.5">🍜</span>
-                <span className="text-xs truncate">Ramen</span>
+                <span className="text-xs truncate">Udon</span>
               </button>
               <button
                 onClick={() => setActiveCategory("desserts")}
