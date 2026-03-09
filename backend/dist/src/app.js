@@ -10,8 +10,17 @@ import { ordersRoutes } from "./modules/orders/routes.js";
 import { analyticsRoutes } from "./modules/analytics/routes.js";
 import { inventoryRoutes } from "./modules/inventory/routes.js";
 import { loyaltyRoutes } from "./modules/loyalty/routes.js";
+import { gamesRoutes } from "./modules/games/routes.js";
 import { aiRoutes } from "./modules/ai/routes.js";
 export function buildApp() {
+    const allowedOrigins = new Set([
+        env.CUSTOMER_APP_ORIGIN,
+        env.COMPANY_APP_ORIGIN,
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174",
+    ]);
     const app = Fastify({
         logger: {
             level: env.LOG_LEVEL,
@@ -23,7 +32,13 @@ export function buildApp() {
         }
     });
     app.register(cors, {
-        origin: [env.CUSTOMER_APP_ORIGIN, env.COMPANY_APP_ORIGIN]
+        origin: (origin, callback) => {
+            if (!origin || allowedOrigins.has(origin)) {
+                callback(null, true);
+                return;
+            }
+            callback(new Error(`Origin ${origin} is not allowed`), false);
+        },
     });
     app.register(swaggerPlugin);
     app.register(authPlugin);
@@ -34,6 +49,7 @@ export function buildApp() {
     app.register(analyticsRoutes, { prefix: "/api/analytics" });
     app.register(inventoryRoutes, { prefix: "/api/inventory" });
     app.register(loyaltyRoutes, { prefix: "/api/loyalty" });
+    app.register(gamesRoutes, { prefix: "/api/games" });
     app.register(aiRoutes, { prefix: "/api/ai" });
     return app;
 }

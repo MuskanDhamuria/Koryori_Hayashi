@@ -9,6 +9,7 @@ import { ShoppingCart } from "./ShoppingCart";
 import { PaymentDialog } from "./PaymentDialog";
 import { LoyaltyCard, LoyaltyProfile } from "./LoyaltyCard";
 import {InAppGames} from "./InAppGames";
+import { Skeleton } from "./ui/skeleton";
 import { QrCode, UtensilsCrossed, Sparkles, CloudRain, Sun, Cloud, Info, Gift, Users, Star, Plus, Flame } from "lucide-react";
 import { toast } from "sonner";
 import { CherryBlossom } from "./JapanesePattern";
@@ -381,15 +382,24 @@ export function OrderingPage({
   flavorPreferences,
   onUpdateFlavorPreferences,
 }: OrderingPageProps) {
+  const initialLoyaltyProfile: LoyaltyProfile = {
+    tier: "silver",
+    points: 0,
+    name: userName || "Guest",
+    isBirthday: phoneNumber === "+1 (555) 123-4567",
+    referralCode: phoneNumber === "+1 (555) 123-4567" ? "YUKI2026" : "WELCOME2026",
+  };
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [loyaltyInfoOpen, setLoyaltyInfoOpen] = useState(false);
   const [currentView, setCurrentView] = useState<"ordering" | "games">("ordering");
   const [hasPlacedOrder, setHasPlacedOrder] = useState(false);
   const [recommendations, setRecommendations] = useState<Array<{ item: MenuItemType; reason: string }>>([]);
-  const [loyaltyProfile, setLoyaltyProfile] = useState<LoyaltyProfile>(getUserProfile(phoneNumber));
+  const [loyaltyProfile, setLoyaltyProfile] = useState<LoyaltyProfile>(initialLoyaltyProfile);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItemType[]>(BASE_MENU_ITEMS);
+  const [isMenuLoading, setIsMenuLoading] = useState(true);
+  const [isLoyaltyLoading, setIsLoyaltyLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("mains");
   const [selectedItem, setSelectedItem] = useState<MenuItemType | null>(null);
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
@@ -413,6 +423,8 @@ export function OrderingPage({
         }
       } catch {
         setMenuItems(applyDynamicPricing(BASE_MENU_ITEMS));
+      } finally {
+        setIsMenuLoading(false);
       }
     };
 
@@ -427,10 +439,13 @@ export function OrderingPage({
       } else {
         setLoyaltyProfile(getUserProfile(phoneNumber));
       }
+      setIsLoyaltyLoading(false);
     };
 
     void loadLoyaltyProfile();
   }, [phoneNumber]);
+
+  const isInitialDataLoading = isMenuLoading || isLoyaltyLoading;
 
   const handleItemClick = (item: MenuItemType) => {
   setSelectedItem(item);
@@ -501,12 +516,27 @@ const handleAddFromDialog = (item: MenuItemType) => {
     setPaymentDialogOpen(true);
   };
 
-  const addLoyaltyPoints = (pointsToAdd: number, source: string) => {
-    if (pointsToAdd <= 0) {
+  const addLoyaltyPoints = (
+    pointsToAdd: number,
+    source: string,
+    updatedLoyalty?: {
+      pointsBalance: number;
+      tier: LoyaltyProfile["tier"];
+    },
+  ) => {
+    if (pointsToAdd <= 0 && !updatedLoyalty) {
       return;
     }
 
     setLoyaltyProfile((current) => {
+      if (updatedLoyalty) {
+        return {
+          ...current,
+          points: updatedLoyalty.pointsBalance,
+          tier: updatedLoyalty.tier,
+        };
+      }
+
       const updatedPoints = current.points + pointsToAdd;
 
       return {
@@ -622,6 +652,8 @@ const handleAddFromDialog = (item: MenuItemType) => {
          {currentView === "games" ? (
         <InAppGames
           currentPoints={loyaltyProfile.points}
+          phoneNumber={phoneNumber}
+          userName={userName}
           onEarnPoints={addLoyaltyPoints}
           onBackToOrdering={() => setCurrentView("ordering")}
         />
@@ -629,6 +661,48 @@ const handleAddFromDialog = (item: MenuItemType) => {
       <>
             {/* Main Content */}
       <main className="container mx-auto px-6 py-8 pt-16 relative">
+        {isInitialDataLoading ? (
+          <div className="space-y-6">
+            <div className="max-w-md rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
+              <div className="mb-3 flex items-center gap-3">
+                <Skeleton className="h-12 w-12 rounded-full bg-[#F3F4F6]" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32 bg-[#F3F4F6]" />
+                  <Skeleton className="h-3 w-24 bg-[#F3F4F6]" />
+                </div>
+              </div>
+              <Skeleton className="h-20 w-full bg-[#F3F4F6]" />
+            </div>
+
+            <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-[#0F1729]">Syncing your menu and rewards</p>
+                  <p className="text-xs text-[#6B7280]">Pulling the latest backend data for this session.</p>
+                </div>
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#D4AF37]/30 border-t-[#D4AF37]" />
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {Array.from({ length: 6 }, (_, index) => (
+                  <div
+                    key={`menu-skeleton-${index}`}
+                    className="rounded-2xl border border-[#E5E7EB] p-4"
+                  >
+                    <Skeleton className="mb-4 h-40 w-full rounded-xl bg-[#F3F4F6]" />
+                    <Skeleton className="mb-2 h-4 w-2/3 bg-[#F3F4F6]" />
+                    <Skeleton className="mb-4 h-3 w-full bg-[#F3F4F6]" />
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="h-4 w-16 bg-[#F3F4F6]" />
+                      <Skeleton className="h-9 w-24 rounded-lg bg-[#F3F4F6]" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+        <>
         <div className="mb-6 max-w-md">
           <LoyaltyCard profile={loyaltyProfile} />
         </div>
@@ -645,8 +719,12 @@ const handleAddFromDialog = (item: MenuItemType) => {
             <span className="text-[#0F1729] font-medium">{userName}</span>
             <span className="text-[#6B7280]">•</span>
             <span className="text-[#D4AF37]">⭐</span>
-            <span className="text-[#0F1729] font-medium">{loyaltyProfile.points}</span>
-             <span className="text-[#6B7280] text-[10px] capitalize">({loyaltyProfile.tier})</span>
+            <span className="text-[#0F1729] font-medium">
+              {isLoyaltyLoading ? "Syncing..." : loyaltyProfile.points}
+            </span>
+             <span className="text-[#6B7280] text-[10px] capitalize">
+              {isLoyaltyLoading ? "(loading)" : `(${loyaltyProfile.tier})`}
+             </span>
           </button>
 
           {hasPlacedOrder && (
@@ -922,16 +1000,20 @@ const handleAddFromDialog = (item: MenuItemType) => {
             </div>
           </div>
         )}
+        </>
+        )}
       </main>
 
       {/* Shopping Cart */}
-      <ShoppingCart
-        items={cart}
-        onUpdateQuantity={handleUpdateQuantity}
-        onRemoveItem={handleRemoveItem}
-        onCheckout={handleCheckout}
-        loyaltyProfile={loyaltyProfile}
-      />
+      {!isInitialDataLoading && (
+        <ShoppingCart
+          items={cart}
+          onUpdateQuantity={handleUpdateQuantity}
+          onRemoveItem={handleRemoveItem}
+          onCheckout={handleCheckout}
+          loyaltyProfile={loyaltyProfile}
+        />
+      )}
 
       {/* Payment Dialog */}
       <PaymentDialog

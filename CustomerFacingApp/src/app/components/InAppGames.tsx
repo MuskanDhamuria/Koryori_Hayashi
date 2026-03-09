@@ -2,10 +2,21 @@ import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { ArrowLeft, Gamepad2 } from "lucide-react";
+import { fetchGameLeaderboards, submitGameScore } from "../services/api";
+import type { GameKey, GameLeaderboardEntry } from "../types";
 
 interface InAppGamesProps {
   currentPoints: number;
-  onEarnPoints: (points: number, source: string) => void;
+  phoneNumber: string;
+  userName: string;
+  onEarnPoints: (
+    points: number,
+    source: string,
+    updatedLoyalty?: {
+      pointsBalance: number;
+      tier: "silver" | "gold" | "platinum";
+    },
+  ) => void;
   onBackToOrdering: () => void;
 }
 
@@ -21,12 +32,41 @@ type Game2WinMessage = {
 
 const SCORE_TO_EARN_POINTS = 3000;
 
-export function InAppGames({ currentPoints, onEarnPoints, onBackToOrdering }: InAppGamesProps) {
+const EMPTY_LEADERBOARDS: Record<GameKey, GameLeaderboardEntry[]> = {
+  PLATE_DASH: [],
+  SAKE_POUR: [],
+};
+
+export function InAppGames({
+  currentPoints,
+  phoneNumber,
+  userName,
+  onEarnPoints,
+  onBackToOrdering,
+}: InAppGamesProps) {
   const [plays, setPlays] = useState(0);
   const [lastScore, setLastScore] = useState<number | null>(null);
   const [lastAwarded, setLastAwarded] = useState(false);
   const [game2Wins, setGame2Wins] = useState(0);
   const [game2LastScore, setGame2LastScore] = useState<number | null>(null);
+  const [leaderboards, setLeaderboards] =
+    useState<Record<GameKey, GameLeaderboardEntry[]>>(EMPTY_LEADERBOARDS);
+
+  useEffect(() => {
+    const loadLeaderboards = async () => {
+      try {
+        const response = await fetchGameLeaderboards();
+        setLeaderboards({
+          PLATE_DASH: response.PLATE_DASH ?? [],
+          SAKE_POUR: response.SAKE_POUR ?? [],
+        });
+      } catch {
+        setLeaderboards(EMPTY_LEADERBOARDS);
+      }
+    };
+
+    void loadLeaderboards();
+  }, []);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -36,33 +76,76 @@ export function InAppGames({ currentPoints, onEarnPoints, onBackToOrdering }: In
       if (!data) return;
 
       if (data.type === "SAKE_POUR_ROUND_WIN") {
-        const winScore = Number(data.score);
-        if (!Number.isFinite(winScore)) return;
-        setGame2Wins((prev) => prev + 1);
-        setGame2LastScore(winScore);
-        onEarnPoints(5, "Game 2 Win");
+        void (async () => {
+          const winScore = Number(data.score);
+          if (!Number.isFinite(winScore)) return;
+
+          setGame2Wins((prev) => prev + 1);
+          setGame2LastScore(winScore);
+
+          try {
+            const response = await submitGameScore({
+              phoneNumber,
+              fullName: userName,
+              gameKey: "SAKE_POUR",
+              score: winScore,
+              rewardPoints: 5,
+              rewardReason: "Game 2 round win",
+            });
+
+            setLeaderboards((current) => ({
+              ...current,
+              SAKE_POUR: response.leaderboard,
+            }));
+            onEarnPoints(5, "Game 2 Win", response.loyalty ?? undefined);
+          } catch {
+            onEarnPoints(5, "Game 2 Win");
+          }
+        })();
         return;
       }
 
       if (data.type !== "PLATE_DASH_GAME_OVER") return;
 
-      const score = Number(data.score);
-      if (!Number.isFinite(score)) return;
+      void (async () => {
+        const score = Number(data.score);
+        if (!Number.isFinite(score)) return;
 
-      setPlays((prev) => prev + 1);
-      setLastScore(score);
+        setPlays((prev) => prev + 1);
+        setLastScore(score);
 
-      if (score >= SCORE_TO_EARN_POINTS) {
-        onEarnPoints(5, "In-App Game (3000+ score)");
-        setLastAwarded(true);
-      } else {
-        setLastAwarded(false);
-      }
+        const rewardPoints = score >= SCORE_TO_EARN_POINTS ? 5 : 0;
+        setLastAwarded(rewardPoints > 0);
+
+        try {
+          const response = await submitGameScore({
+            phoneNumber,
+            fullName: userName,
+            gameKey: "PLATE_DASH",
+            score,
+            rewardPoints,
+            rewardReason: "Plate Dash score submission",
+          });
+
+          setLeaderboards((current) => ({
+            ...current,
+            PLATE_DASH: response.leaderboard,
+          }));
+
+          if (rewardPoints > 0) {
+            onEarnPoints(5, "In-App Game (3000+ score)", response.loyalty ?? undefined);
+          }
+        } catch {
+          if (rewardPoints > 0) {
+            onEarnPoints(5, "In-App Game (3000+ score)");
+          }
+        }
+      })();
     };
 
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [onEarnPoints]);
+  }, [onEarnPoints, phoneNumber, userName]);
 
   return (
     <main className="container mx-auto px-6 py-8">
@@ -105,6 +188,21 @@ export function InAppGames({ currentPoints, onEarnPoints, onBackToOrdering }: In
               {lastScore !== null && (lastAwarded ? " (Reward earned +5)" : " (No reward)")}
             </p>
           </div>
+          <div className="mt-4 rounded-md border border-[#E5E7EB] bg-[#F9FAFB] p-3">
+            <p className="mb-2 text-sm font-semibold text-[#0F1729]">Plate Dash Leaderboard</p>
+            <div className="space-y-1 text-xs text-[#6B7280]">
+              {leaderboards.PLATE_DASH.length === 0 ? (
+                <p>No scores yet.</p>
+              ) : (
+                leaderboards.PLATE_DASH.slice(0, 5).map((entry) => (
+                  <div key={`${entry.playerName}-${entry.rank}-${entry.score}`} className="flex items-center justify-between">
+                    <span>#{entry.rank} {entry.playerName}</span>
+                    <span className="font-medium text-[#0F1729]">{entry.score}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </Card>
 
         <Card className="p-4 border-2 border-[#E5E7EB]">
@@ -122,6 +220,21 @@ export function InAppGames({ currentPoints, onEarnPoints, onBackToOrdering }: In
           <div className="mt-4 flex items-center justify-between gap-3 text-xs text-[#6B7280]">
             <p>Round wins: {game2Wins}</p>
             <p>Last winning score: {game2LastScore ?? "-"}</p>
+          </div>
+          <div className="mt-4 rounded-md border border-[#E5E7EB] bg-[#F9FAFB] p-3">
+            <p className="mb-2 text-sm font-semibold text-[#0F1729]">Sake Pour Leaderboard</p>
+            <div className="space-y-1 text-xs text-[#6B7280]">
+              {leaderboards.SAKE_POUR.length === 0 ? (
+                <p>No scores yet.</p>
+              ) : (
+                leaderboards.SAKE_POUR.slice(0, 5).map((entry) => (
+                  <div key={`${entry.playerName}-${entry.rank}-${entry.score}`} className="flex items-center justify-between">
+                    <span>#{entry.rank} {entry.playerName}</span>
+                    <span className="font-medium text-[#0F1729]">{entry.score}</span>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </Card>
       </div>

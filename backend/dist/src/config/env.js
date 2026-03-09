@@ -14,7 +14,8 @@ const envSchema = z.object({
     SEED_STAFF_EMAIL: z.string().email(),
     SEED_STAFF_PASSWORD: z.string().min(8),
     GEMINI_API_KEY: z.string().min(1).optional(),
-    GEMINI_MODEL: z.string().min(1).default("gemini-2.0-flash")
+    GEMINI_MODEL: z.string().min(1).default("gemini-3-flash-preview"),
+    GEMINI_TIMEOUT_MS: z.coerce.number().int().positive().max(120000).default(60000)
 });
 const parsed = envSchema.safeParse(process.env);
 if (!parsed.success) {

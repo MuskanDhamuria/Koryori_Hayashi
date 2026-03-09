@@ -449,18 +449,18 @@ async function main() {
             referralCode: "YUKI2026"
         }
     });
-    await prisma.loyaltyAccount.upsert({
-        where: { userId: customer.id },
-        update: {
-            pointsBalance: 850,
-            tier: "gold"
-        },
-        create: {
-            userId: customer.id,
-            pointsBalance: 850,
-            tier: "gold"
-        }
+    const existingLoyaltyAccount = await prisma.loyaltyAccount.findUnique({
+        where: { userId: customer.id }
     });
+    if (!existingLoyaltyAccount) {
+        await prisma.loyaltyAccount.create({
+            data: {
+                userId: customer.id,
+                pointsBalance: 850,
+                tier: "gold"
+            }
+        });
+    }
     const existingOrders = await prisma.order.count();
     if (existingOrders === 0) {
         const seededMenuItems = await prisma.menuItem.findMany({
