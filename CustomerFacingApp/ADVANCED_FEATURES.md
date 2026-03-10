@@ -201,8 +201,9 @@ The system provides contextual explanations:
 ```
 
 ### Storage
-Currently in-memory (demo):
+Currently (demo/prototype):
 - MAB statistics: `Map<itemId, { alpha, beta }>`
+- Persisted to browser `localStorage` (survives refresh)
 - Flash sale counts: `Map<itemId, ordersUsed>`
 - Flavor preferences: Passed through app state
 
@@ -220,7 +221,7 @@ For production:
 - Weather data fetched once on mount
 - Dynamic pricing calculated once on mount
 - Recommendations memoized and only update when cart changes
-- MAB statistics use in-memory cache
+- MAB statistics use in-memory cache (with `localStorage` persistence)
 
 ### Lazy Loading
 - Recommendations only render when cart has items
