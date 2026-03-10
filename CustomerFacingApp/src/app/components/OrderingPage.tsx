@@ -999,10 +999,10 @@ const handleAddFromDialog = (item: MenuItemType) => {
         </section>
       </div>
 
-        {/* AI Recommendations - Enhanced with MAB */}
+        {/* Recommendations */}
         {recommendations.length > 0 && (
           <div className="mt-16 relative">
-            {/* Elegant divider */}
+            {/* Divider */}
             <div className="absolute -top-8 left-0 right-0 flex items-center justify-center">
               <div className="flex items-center gap-3">
                 <div className="h-px w-20 bg-gradient-to-r from-transparent to-[#7C8A7A]/30" />
@@ -1034,16 +1034,13 @@ const handleAddFromDialog = (item: MenuItemType) => {
               </div>
               
               <div className="flex-1">
-                <h2 className="text-4xl font-bold text-[#4A5548] mb-1" style={{ fontFamily: 'serif' }}>おすすめ</h2>
+                <h2 className="text-4xl font-bold text-[#4A5548] mb-1" style={{ fontFamily: 'serif' }}> Recommendations おすすめ</h2>
                 <p className="text-sm text-[#6B7669] font-light tracking-wide">
-                  Multi-Armed Bandit AI • Thompson Sampling • Weather-Aware • Flavor-Matched
+                  Multi-Armed Bandit • Thompson Sampling • Weather-Aware • Flavor-Matched • User History •  Recommended Pairing
                 </p>
               </div>
               
-              <Badge variant="secondary" className="bg-gradient-to-r from-[#7C8A7A]/15 to-[#9BA89A]/15 text-[#4A5548] border-2 border-[#7C8A7A]/30 backdrop-blur-sm font-semibold px-4 py-2 shadow-sm">
-                <Sparkles className="w-3.5 h-3.5 mr-1.5" strokeWidth={2} />
-                AI Powered
-              </Badge>
+              
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
               {recommendations.map((rec) => (
