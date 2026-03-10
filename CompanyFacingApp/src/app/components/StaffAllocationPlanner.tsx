@@ -67,26 +67,23 @@ export function StaffAllocationPlanner({ peakHours }: StaffAllocationPlannerProp
           </div>
 
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h4 className="font-semibold mb-3">Shift Recommendations (Small Shop)</h4>
+            <h4 className="font-semibold mb-3 text-black">Shift Recommendations (Small Shop)</h4>
             <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between text-black">
                 <span>Opening (11:00 AM):</span>
                 <span className="font-semibold">2-3 staff</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between text-black">
                 <span>Peak Rush (12:00 - 1:00 PM):</span>
                 <span className="font-semibold text-red-600">5 staff (All Hands)</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between text-black">
                 <span>Closing (2:00 - 3:00 PM):</span>
                 <span className="font-semibold">3-4 staff</span>
               </div>
             </div>
           </div>
 
-          <div className="text-xs text-muted-foreground mt-4">
-            * Max capacity: 5 employees | Based on $200 sales per staff member
-          </div>
         </div>
       </CardContent>
     </Card>

@@ -77,23 +77,23 @@ export function InventoryAlerts({ alerts }: InventoryAlertsProps) {
                 </h4>
                 {warningAlerts.map(alert => (
                   <Alert key={alert.item.id} className="mb-2 border-yellow-200 bg-yellow-50">
-                    <AlertTitle className="flex items-center justify-between">
+                    <AlertTitle className="flex items-center justify-between text-black font-bold">
                       <span>{alert.item.name}</span>
                       <Badge variant="outline" className="border-yellow-600 text-yellow-600">
                         {alert.daysUntilStockout} days left
                       </Badge>
                     </AlertTitle>
                     <AlertDescription className="mt-2 space-y-1">
-                      <div className="flex justify-between text-sm">
-                        <span>Current Stock:</span>
-                        <span className="font-medium">{alert.item.stock} units</span>
+                      <div className="flex justify-between text-sm text-black">
+                        <span className="font-semibold">Current Stock: </span>
+                        <span> {alert.item.stock} units</span>
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span>Reorder Point:</span>
-                        <span className="font-medium">{alert.item.reorderPoint} units</span>
+                      <div className="flex justify-between text-sm text-black">
+                        <span className="font-semibold">Reorder Point:</span>
+                        <span>{alert.item.reorderPoint} units</span>
                       </div>
                       {alert.suggestedOrder > 0 && (
-                        <div className="flex justify-between text-sm pt-2 border-t">
+                        <div className="flex justify-between text-sm pt-2 border-t text-black">
                           <span className="font-semibold">Suggested Order:</span>
                           <span className="font-bold text-yellow-700">{alert.suggestedOrder} units</span>
                         </div>
