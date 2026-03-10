@@ -3,6 +3,49 @@ import { z } from "zod";
 import { prisma } from "../../lib/prisma.js";
 
 export const loyaltyRoutes: FastifyPluginAsync = async (app) => {
+  app.get("/:phoneNumber/history", async (request) => {
+    const { phoneNumber } = request.params as { phoneNumber: string };
+
+    const user = await prisma.user.findUnique({
+      where: { phoneNumber },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return { itemIds: [] as string[] };
+    }
+
+    const recentOrders = await prisma.order.findMany({
+      where: { userId: user.id },
+      select: {
+        orderedAt: true,
+        orderItems: {
+          select: {
+            menuItemId: true,
+            quantity: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+      orderBy: { orderedAt: "desc" },
+      take: 25,
+    });
+
+    // Convert to "most-recent last" item IDs (repeated by quantity).
+    const itemIds: string[] = [];
+    for (const order of [...recentOrders].reverse()) {
+      for (const orderItem of order.orderItems) {
+        const repeats = Math.max(1, orderItem.quantity);
+        for (let i = 0; i < repeats; i += 1) {
+          itemIds.push(orderItem.menuItemId);
+        }
+      }
+    }
+
+    return { itemIds: itemIds.slice(-500) };
+  });
+
   app.get("/:phoneNumber", async (request, reply) => {
     const { phoneNumber } = request.params as { phoneNumber: string };
 

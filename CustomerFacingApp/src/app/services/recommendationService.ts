@@ -2,23 +2,47 @@ import { MenuItem, CartItem, FlavorPreferences, WeatherData } from '../types';
 import { getThompsonScore, shouldExplore, getUncertaintyScore } from './mabService';
 import { getWeatherBoostScore } from './weatherService';
 
+export type MenuItemPairingRule = {
+  sourceMenuItemId: string;
+  targetMenuItemId: string;
+  weight?: number;
+  reason?: string | null;
+};
+
 interface RecommendationContext {
   cartItems: CartItem[];
   flavorPreferences?: FlavorPreferences;
   weather?: WeatherData;
-  userHistory?: string[]; // Past order IDs
+  userHistory?: string[]; // Past ordered item IDs (most-recent last)
+  menuItemPairings?: MenuItemPairingRule[];
 }
 
-// Basic pairing rules
-const PAIRING_RULES: Record<string, string[]> = {
-  '1': ['12', '13'], // Deluxe Sushi -> Green Tea, Sake
-  '2': ['12', '10'], // California Roll -> Green Tea, Miso Soup
-  '3': ['13', '10'], // Salmon Sashimi -> Sake, Miso Soup
-  '4': ['7', '8'],   // Tonkotsu Ramen -> Gyoza, Edamame
-  '5': ['7', '8'],   // Spicy Miso Ramen -> Gyoza, Edamame
-  '6': ['9', '7'],   // Udon -> Shrimp Tempura, Gyoza
-  '11': ['10', '12'], // Teriyaki Chicken -> Miso Soup, Green Tea
-};
+type PairingIndex = Map<string, Map<string, { weight: number; reason?: string | null }>>;
+
+function buildPairingIndex(rules?: MenuItemPairingRule[]): PairingIndex | undefined {
+  if (!rules || rules.length === 0) return undefined;
+  const index: PairingIndex = new Map();
+
+  for (const rule of rules) {
+    const source = rule.sourceMenuItemId?.trim();
+    const target = rule.targetMenuItemId?.trim();
+    if (!source || !target) continue;
+
+    const weight = typeof rule.weight === 'number' && Number.isFinite(rule.weight) ? rule.weight : 0.3;
+    if (!index.has(source)) index.set(source, new Map());
+    index.get(source)!.set(target, { weight, reason: rule.reason });
+  }
+
+  return index;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function clamp01(value: number): number {
+  return clamp(value, 0, 1);
+}
 
 /**
  * Calculate flavor match score based on user preferences
@@ -58,6 +82,66 @@ function calculateFlavorMatchScore(
   return Math.max(0, Math.min(1, score));
 }
 
+type UserHistoryInsights = {
+  counts: Map<string, number>;
+  maxCount: number;
+  recencyRank: Map<string, number>; // 1 = most recent
+};
+
+function buildUserHistoryInsights(userHistory: string[]): UserHistoryInsights {
+  const counts = new Map<string, number>();
+  const recencyRank = new Map<string, number>();
+
+  // Only the most recent N entries matter for recency signals.
+  const recentWindow = 25;
+  const normalized = userHistory
+    .map((id) => id.trim())
+    .filter((id) => id.length > 0)
+    .slice(-recentWindow);
+
+  // Count affinity across all provided history (bounded to avoid untrusted payload sizes).
+  const countWindow = 500;
+  const countNormalized = userHistory
+    .map((id) => id.trim())
+    .filter((id) => id.length > 0)
+    .slice(-countWindow);
+
+  let maxCount = 0;
+  for (const id of countNormalized) {
+    const next = (counts.get(id) ?? 0) + 1;
+    counts.set(id, next);
+    if (next > maxCount) maxCount = next;
+  }
+
+  // Most-recent last: assign ranks starting at 1 for last item.
+  for (let i = normalized.length - 1, rank = 1; i >= 0; i -= 1, rank += 1) {
+    const id = normalized[i]!;
+    if (!recencyRank.has(id)) recencyRank.set(id, rank);
+  }
+
+  return { counts, maxCount, recencyRank };
+}
+
+function getHistoryScore(
+  itemId: string,
+  insights: UserHistoryInsights | undefined
+): number {
+  if (!insights || !itemId) return 0;
+
+  const count = insights.counts.get(itemId) ?? 0;
+  if (count <= 0) return 0;
+
+  const countScore =
+    insights.maxCount > 0 ? clamp01(count / insights.maxCount) : 0;
+
+  // Recency: rank 1 = most recent. Map to [0,1] with a soft drop-off.
+  const rank = insights.recencyRank.get(itemId);
+  const recencyScore = rank ? clamp01(1 - (rank - 1) / 25) : 0.25;
+
+  // Keep this as a mild nudge; other signals should dominate.
+  return clamp01(countScore * 0.65 + recencyScore * 0.35);
+}
+
 type Candidate = {
   item: MenuItem;
   pairingScore: number;
@@ -65,6 +149,7 @@ type Candidate = {
   flavorScore: number;
   weatherScore: number;
   uncertaintyScore: number;
+  historyScore: number;
   mabScore: number;
   thompsonRankScore: number;
   weatherRankScore: number;
@@ -75,15 +160,17 @@ type Candidate = {
 
 /**
  * Generate recommendations with guaranteed strategy coverage:
- * 1 MAB, 1 Thompson, 1 Weather-aware, 1 Flavor-matched
+ * 1 MAB, 1 Thompson, 1 Weather-aware, 1 Flavor-matched, 1 Pairing, 1 History
  */
 export function generateRecommendations(
   allItems: MenuItem[],
   context: RecommendationContext,
-  maxRecommendations: number = 4
+  maxRecommendations: number = 6
 ): Array<{ item: MenuItem; reason: string }> {
-  const { cartItems, flavorPreferences, weather, userHistory = [] } = context;
-  void userHistory;
+  const { cartItems, flavorPreferences, weather, userHistory = [], menuItemPairings } = context;
+  const historyInsights = userHistory.length ? buildUserHistoryInsights(userHistory) : undefined;
+  const targetCount = Math.max(1, Math.floor(maxRecommendations));
+  const pairingIndex = buildPairingIndex(menuItemPairings);
 
   const cartItemIds = cartItems.map((item) => item.id);
   const candidates: Candidate[] = [];
@@ -95,11 +182,13 @@ export function generateRecommendations(
     let pairingReason: string | undefined;
 
     cartItems.forEach((cartItem) => {
-      const pairings = PAIRING_RULES[cartItem.id];
-      if (pairings?.includes(item.id)) {
-        pairingScore += 0.3;
-        pairingReason = `Pairs perfectly with ${cartItem.name}`;
-      }
+      const pairing = pairingIndex?.get(cartItem.id)?.get(item.id);
+      if (!pairing) return;
+
+      pairingScore += pairing.weight;
+      pairingReason =
+        pairing.reason?.trim() ||
+        `Pairs perfectly with ${cartItem.name}`;
     });
 
     const thompsonScore = getThompsonScore(item.id, item.isNew);
@@ -107,6 +196,7 @@ export function generateRecommendations(
     const weatherScore = weather ? getWeatherBoostScore(weather, item.weatherTags) : 0.5;
     const uncertaintyScore = getUncertaintyScore(item.id);
     const marginScore = item.isHighMargin ? 0.15 : 0;
+    const historyScore = getHistoryScore(item.id, historyInsights);
 
     // MAB emphasis = uncertainty + exploration value
     const mabScore =
@@ -121,7 +211,8 @@ export function generateRecommendations(
       thompsonScore * 0.65 +
       pairingScore * 0.15 +
       flavorScore * 0.1 +
-      weatherScore * 0.1;
+      weatherScore * 0.1 +
+      historyScore * 0.08;
 
     // Weather emphasis = weather alignment (prefer explicit weather-tagged dishes)
     const weatherTagBonus = item.weatherTags?.length ? 0.1 : -0.2;
@@ -130,21 +221,24 @@ export function generateRecommendations(
       thompsonScore * 0.1 +
       flavorScore * 0.1 +
       pairingScore * 0.1 +
-      weatherTagBonus;
+      weatherTagBonus +
+      historyScore * 0.05;
 
     // Flavor emphasis = flavor profile alignment
     const flavorRankScore =
       flavorScore * 0.7 +
       thompsonScore * 0.15 +
       pairingScore * 0.1 +
-      weatherScore * 0.05;
+      weatherScore * 0.05 +
+      historyScore * 0.05;
 
     const combinedScore =
       thompsonScore * 0.3 +
       pairingScore * 0.25 +
       flavorScore * 0.2 +
       weatherScore * 0.15 +
-      marginScore * 0.1;
+      marginScore * 0.1 +
+      historyScore * 0.05;
 
     candidates.push({
       item,
@@ -153,6 +247,7 @@ export function generateRecommendations(
       flavorScore,
       weatherScore,
       uncertaintyScore,
+      historyScore,
       mabScore,
       thompsonRankScore,
       weatherRankScore,
@@ -166,43 +261,59 @@ export function generateRecommendations(
   const usedIds = new Set<string>();
   const results: Array<{ item: MenuItem; reason: string }> = [];
 
+  const historyReason = (candidate: Candidate): string | undefined => {
+    if (candidate.historyScore < 0.65) return undefined;
+    return 'strong repeat favorite';
+  };
+
   const pushIfAvailable = (
     sorted: Candidate[],
-    reasonBuilder: (candidate: Candidate) => string
+    reasonBuilder: (candidate: Candidate) => string,
+    predicate?: (candidate: Candidate) => boolean
   ) => {
-    const candidate = sorted.find((entry) => !usedIds.has(entry.item.id));
+    if (results.length >= targetCount) return;
+    const candidate = sorted.find((entry) => {
+      if (usedIds.has(entry.item.id)) return false;
+      if (predicate && !predicate(entry)) return false;
+      return true;
+    });
     if (!candidate) return;
 
     usedIds.add(candidate.item.id);
     results.push({ item: candidate.item, reason: reasonBuilder(candidate) });
   };
 
-  // 1) MAB recommendation
-  pushIfAvailable(
-    [...candidates].sort((a, b) => b.mabScore - a.mabScore),
-    (candidate) =>
+  const mabSorted = [...candidates].sort((a, b) => b.mabScore - a.mabScore);
+  const thompsonSorted = [...candidates].sort((a, b) => b.thompsonRankScore - a.thompsonRankScore);
+  const weatherSorted = [...candidates].sort((a, b) => b.weatherRankScore - a.weatherRankScore);
+  const flavorSorted = [...candidates].sort((a, b) => b.flavorRankScore - a.flavorRankScore);
+  const pairingSorted = [...candidates].sort((a, b) => b.pairingScore - a.pairingScore);
+  const historySorted = [...candidates].sort((a, b) => b.historyScore - a.historyScore);
+
+  // Always prioritize MAB + Thompson when space is limited.
+  pushIfAvailable(mabSorted, (candidate) => {
+    const detail =
       candidate.pairingReason ??
+      historyReason(candidate) ??
       (candidate.item.isNew
-        ? 'MAB pick: explore this new dish with high learning value'
-        : 'MAB pick: high-uncertainty dish worth exploring')
-  );
+        ? 'explore this new dish with high learning value'
+        : 'New dish worth exploring');
+    return `MAB: ${detail}`;
+  });
 
-  // 2) Thompson Sampling recommendation
-  pushIfAvailable(
-    [...candidates].sort((a, b) => b.thompsonRankScore - a.thompsonRankScore),
-    (candidate) =>
+  pushIfAvailable(thompsonSorted, (candidate) => {
+    const detail =
       candidate.pairingReason ??
-      `Thompson pick: strongest conversion estimate (${Math.round(candidate.thompsonScore * 100)}%)`
-  );
+      historyReason(candidate) ??
+      `strongest conversion estimate (${Math.round(candidate.thompsonScore * 100)}%)`;
+    return `Thompson: ${detail}`;
+  });
 
-  // 3) Weather-aware recommendation
-  pushIfAvailable(
-    [...candidates].sort((a, b) => b.weatherRankScore - a.weatherRankScore),
-    (candidate) => {
-      if (!weather) return 'Weather-aware pick: suitable for current conditions';
-
+  // Add weather / flavor coverage when the caller provides the required context.
+  if (weather) {
+    pushIfAvailable(weatherSorted, (candidate) => {
       if (weather.condition === 'rainy' && candidate.item.weatherTags?.includes('rainy')) {
-        return 'Weather-aware pick: ideal for rainy weather';
+        return 'Weather: ideal for rainy weather';
       }
 
       if (
@@ -210,20 +321,36 @@ export function generateRecommendations(
         weather.temperature > 75 &&
         candidate.item.weatherTags?.includes('hot')
       ) {
-        return `Weather-aware pick: refreshing for ${weather.temperature}F weather`;
+        return `Weather: refreshing for ${weather.temperature}F weather`;
       }
 
-      return `Weather-aware pick: aligned with ${weather.description.toLowerCase()}`;
-    }
+      return `Weather: aligned with ${weather.description.toLowerCase()}`;
+    });
+  } else if (targetCount >= 4) {
+    pushIfAvailable(weatherSorted, () => 'Weather: suitable for current conditions');
+  }
+
+  if (flavorPreferences) {
+    pushIfAvailable(flavorSorted, (candidate) =>
+      `Flavor: ${candidate.pairingReason ?? historyReason(candidate) ?? 'strong fit for your taste profile'}`
+    );
+  } else if (!flavorPreferences && targetCount >= 4) {
+    // Preserve the original “coverage” slot when the caller expects 4 items.
+    pushIfAvailable(flavorSorted, () => 'Flavor: balanced flavor profile');
+  }
+
+  // 5) Menu-item pairing suggestion (only when cart has known pairings)
+  pushIfAvailable(
+    pairingSorted,
+    (candidate) => `Pairing: ${candidate.pairingReason ?? 'complements your current cart'}`,
+    (candidate) => candidate.pairingScore > 0
   );
 
-  // 4) Flavor-matched recommendation
+  // 6) History-based suggestion (only when we have order history)
   pushIfAvailable(
-    [...candidates].sort((a, b) => b.flavorRankScore - a.flavorRankScore),
-    () =>
-      flavorPreferences
-        ? 'Flavor-matched pick: strong fit for your taste profile'
-        : 'Flavor-matched pick: balanced flavor profile'
+    historySorted,
+    (candidate) => `History: ${historyReason(candidate) ?? 'a repeat favorite from your past orders'}`,
+    (candidate) => candidate.historyScore > 0
   );
 
   // Fill remaining slots if caller asks for >4 or collisions occur.
@@ -236,18 +363,19 @@ export function generateRecommendations(
     return b.combinedScore - a.combinedScore;
   });
 
-  while (results.length < maxRecommendations) {
+  while (results.length < targetCount) {
     const candidate = fallbackSorted.find((entry) => !usedIds.has(entry.item.id));
     if (!candidate) break;
 
     usedIds.add(candidate.item.id);
     results.push({
       item: candidate.item,
-      reason: candidate.pairingReason ?? "Chef's special recommendation",
+      reason:
+        ` ${candidate.pairingReason ?? historyReason(candidate) ?? "Chef's special recommendation"}`,
     });
   }
 
-  return results.slice(0, maxRecommendations);
+  return results.slice(0, targetCount);
 }
 
 /**

@@ -19,6 +19,19 @@ export const menuRoutes: FastifyPluginAsync = async (app) => {
     return { categories };
   });
 
+  app.get("/pairings", async () => {
+    const pairings = await (prisma as any).menuItemPairing.findMany({
+      select: {
+        sourceMenuItemId: true,
+        targetMenuItemId: true,
+        weight: true,
+        reason: true
+      }
+    });
+
+    return { pairings };
+  });
+
   app.get("/featured", async () => {
     const items = await prisma.menuItem.findMany({
       where: {

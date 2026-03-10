@@ -18,7 +18,7 @@ import { generateRecommendations } from "../services/recommendationService";
 import { applyDynamicPricing, recordFlashSaleOrder, hasActiveFlashSale } from "../services/dynamicPricingService";
 import { getCurrentWeather } from "../services/weatherService";
 import { recordSuccess } from "../services/mabService";
-import { createOrder, fetchLoyaltyProfile, fetchMenuItems } from "../services/api";
+import { createOrder, fetchCustomerOrderHistory, fetchLoyaltyProfile, fetchMenuItems, fetchMenuItemPairings, type BackendMenuItemPairing } from "../services/api";
 import { calculateCartSubtotal, calculatePricing, type DiscountId } from "../lib/pricing";
 import { getFallbackCustomerProfile } from "../lib/customerProfiles";
 
@@ -390,6 +390,8 @@ export function OrderingPage({
   const [recommendations, setRecommendations] = useState<Array<{ item: MenuItemType; reason: string }>>([]);
   const [loyaltyProfile, setLoyaltyProfile] = useState<LoyaltyProfile>(initialLoyaltyProfile);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [menuItemPairings, setMenuItemPairings] = useState<BackendMenuItemPairing[] | null>(null);
+  const [orderHistoryItemIds, setOrderHistoryItemIds] = useState<string[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItemType[]>(BASE_MENU_ITEMS);
   const [isMenuLoading, setIsMenuLoading] = useState(true);
   const [isLoyaltyLoading, setIsLoyaltyLoading] = useState(true);
@@ -406,6 +408,49 @@ export function OrderingPage({
     };
     fetchWeather();
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchMenuItemPairings()
+      .then((pairings) => {
+        if (cancelled) return;
+        setMenuItemPairings(pairings);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setMenuItemPairings(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!phoneNumber || phoneNumber.trim().length < 6) {
+      setOrderHistoryItemIds([]);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    fetchCustomerOrderHistory(phoneNumber)
+      .then((itemIds) => {
+        if (cancelled) return;
+        setOrderHistoryItemIds(itemIds);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setOrderHistoryItemIds([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [phoneNumber]);
 
   useEffect(() => {
     const loadMenuItems = async () => {
@@ -463,11 +508,13 @@ const handleAddFromDialog = (item: MenuItemType) => {
         cartItems: cart,
         flavorPreferences,
         weather: weatherData || undefined,
+        menuItemPairings: menuItemPairings || undefined,
+        userHistory: orderHistoryItemIds,
       },
-      4
+      6
     );
     setRecommendations(newRecommendations);
-  }, [cart, flavorPreferences, weatherData, menuItems]);
+  }, [cart, flavorPreferences, weatherData, menuItems, menuItemPairings, orderHistoryItemIds]);
 
   const handleAddToCart = (item: MenuItemType) => {
     // Record success for MAB algorithm
@@ -578,6 +625,12 @@ const handleAddFromDialog = (item: MenuItemType) => {
       cart.forEach((item) => {
         recordSuccess(item.id);
       });
+
+      if (phoneNumber && phoneNumber.trim().length >= 6) {
+        fetchCustomerOrderHistory(phoneNumber)
+          .then((itemIds) => setOrderHistoryItemIds(itemIds))
+          .catch(() => setOrderHistoryItemIds([]));
+      }
 
       if (response.loyalty) {
         setLoyaltyProfile((current) => ({

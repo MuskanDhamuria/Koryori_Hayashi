@@ -108,11 +108,29 @@ model MenuItem {
   flavorProfile        Json?
   categoryId           String
   category             Category              @relation(fields: [categoryId], references: [id])
+  pairingsFrom         MenuItemPairing[]     @relation("SourcePairings")
+  pairingsTo           MenuItemPairing[]     @relation("TargetPairings")
   orderItems           OrderItem[]
   inventoryItem        InventoryItem?
   recommendationEvents RecommendationEvent[]
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
+}
+
+model MenuItemPairing {
+  id               String   @id @default(cuid())
+  sourceMenuItemId String
+  targetMenuItemId String
+  weight           Float    @default(0.3)
+  reason           String?
+  sourceMenuItem   MenuItem @relation("SourcePairings", fields: [sourceMenuItemId], references: [id], onDelete: Cascade)
+  targetMenuItem   MenuItem @relation("TargetPairings", fields: [targetMenuItemId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([sourceMenuItemId, targetMenuItemId])
+  @@index([sourceMenuItemId])
+  @@index([targetMenuItemId])
 }
 
 model Order {

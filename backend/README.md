@@ -17,9 +17,9 @@ npm install
 
 ```powershell
 cd backend
-npm run prisma:generate
 npm run prisma:push
-npm run prisma:seed
+npm run prisma:generate
+npm run prisma:seed 
 ```
 
 ## Run

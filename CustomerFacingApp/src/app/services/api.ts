@@ -79,6 +79,20 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+export type BackendMenuItemPairing = {
+  sourceMenuItemId: string;
+  targetMenuItemId: string;
+  weight: number;
+  reason: string | null;
+};
+
+export async function fetchCustomerOrderHistory(phoneNumber: string): Promise<string[]> {
+  const response = await apiFetch<{ itemIds: string[] }>(
+    `/api/loyalty/${encodeURIComponent(phoneNumber)}/history`,
+  );
+  return response.itemIds;
+}
+
 export async function fetchMenuItems(): Promise<MenuItem[]> {
   const response = await apiFetch<{ categories: BackendMenuCategory[] }>("/api/menu");
 
@@ -97,6 +111,11 @@ export async function fetchMenuItems(): Promise<MenuItem[]> {
       weatherTags: item.weatherTags ?? []
     }))
   );
+}
+
+export async function fetchMenuItemPairings(): Promise<BackendMenuItemPairing[]> {
+  const response = await apiFetch<{ pairings: BackendMenuItemPairing[] }>("/api/menu/pairings");
+  return response.pairings;
 }
 
 export async function fetchLoyaltyProfile(phoneNumber: string): Promise<LoyaltyProfile | null> {
