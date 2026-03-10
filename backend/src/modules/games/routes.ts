@@ -1,12 +1,14 @@
 import type { FastifyPluginAsync } from "fastify";
-import { GameKey } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma.js";
+
+const GAME_KEYS = ["PLATE_DASH", "SAKE_POUR", "SUSHI_MEMORY"] as const;
+type GameKey = (typeof GAME_KEYS)[number];
 
 const submitGameScoreSchema = z.object({
   phoneNumber: z.string().min(6),
   fullName: z.string().min(1),
-  gameKey: z.nativeEnum(GameKey),
+  gameKey: z.enum(GAME_KEYS),
   score: z.number().int().nonnegative(),
   rewardPoints: z.number().int().nonnegative().default(0),
   rewardReason: z.string().min(1).max(120).optional(),
@@ -33,7 +35,7 @@ export const gamesRoutes: FastifyPluginAsync = async (app) => {
       orderBy: [{ gameKey: "asc" }, { score: "desc" }, { createdAt: "asc" }],
     });
 
-    const groupedScores = Object.values(GameKey).reduce<Record<string, Array<{
+    const groupedScores = GAME_KEYS.reduce<Record<GameKey, Array<{
       rank: number;
       playerName: string;
       score: number;
@@ -53,7 +55,11 @@ export const gamesRoutes: FastifyPluginAsync = async (app) => {
 
       accumulator[gameKey] = topScores;
       return accumulator;
-    }, {});
+    }, {
+      PLATE_DASH: [],
+      SAKE_POUR: [],
+      SUSHI_MEMORY: [],
+    });
 
     return { leaderboards: groupedScores };
   });
@@ -76,7 +82,7 @@ export const gamesRoutes: FastifyPluginAsync = async (app) => {
     const scoreEntry = await prisma.gameScore.create({
       data: {
         userId: user.id,
-        gameKey: payload.gameKey,
+        gameKey: payload.gameKey as any,
         score: payload.score,
         earnedPoints: payload.rewardPoints,
       },
@@ -134,7 +140,7 @@ export const gamesRoutes: FastifyPluginAsync = async (app) => {
 
     const higherScoresCount = await prisma.gameScore.count({
       where: {
-        gameKey: payload.gameKey,
+        gameKey: payload.gameKey as any,
         score: {
           gt: payload.score,
         },
@@ -143,7 +149,7 @@ export const gamesRoutes: FastifyPluginAsync = async (app) => {
 
     const latestTopScores = await prisma.gameScore.findMany({
       where: {
-        gameKey: payload.gameKey,
+        gameKey: payload.gameKey as any,
       },
       include: {
         user: true,

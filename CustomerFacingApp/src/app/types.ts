@@ -52,7 +52,7 @@ export interface MABItemStats {
   lastUpdated: Date;
 }
 
-export type GameKey = "PLATE_DASH" | "SAKE_POUR";
+export type GameKey = "PLATE_DASH" | "SAKE_POUR" | "SUSHI_MEMORY";
 
 export interface GameLeaderboardEntry {
   rank: number;

@@ -4,6 +4,7 @@ import { Card } from "./ui/card";
 import { ArrowLeft, Gamepad2 } from "lucide-react";
 import { fetchGameLeaderboards, submitGameScore } from "../services/api";
 import type { GameKey, GameLeaderboardEntry } from "../types";
+import { toast } from "sonner";
 
 interface InAppGamesProps {
   currentPoints: number;
@@ -40,6 +41,7 @@ const SCORE_TO_EARN_POINTS = 3000;
 const EMPTY_LEADERBOARDS: Record<GameKey, GameLeaderboardEntry[]> = {
   PLATE_DASH: [],
   SAKE_POUR: [],
+  SUSHI_MEMORY: [],
 };
 
 export function InAppGames({
@@ -66,6 +68,7 @@ export function InAppGames({
         setLeaderboards({
           PLATE_DASH: response.PLATE_DASH ?? [],
           SAKE_POUR: response.SAKE_POUR ?? [],
+          SUSHI_MEMORY: response.SUSHI_MEMORY ?? [],
         });
       } catch {
         setLeaderboards(EMPTY_LEADERBOARDS);
@@ -106,19 +109,39 @@ export function InAppGames({
             }));
             onEarnPoints(5, "Game 2 Win", response.loyalty ?? undefined);
           } catch {
-            onEarnPoints(5, "Game 2 Win");
+            toast.error("Score submission failed. Points were not awarded.");
           }
         })();
         return;
       }
 
       if (data.type === "GAME3_ROUND_WIN") {
-        const winScore = Number(data.score);
-        if (!Number.isFinite(winScore)) return;
+        void (async () => {
+          const winScore = Number(data.score);
+          if (!Number.isFinite(winScore)) return;
 
-        setGame3Wins((prev) => prev + 1);
-        setGame3LastScore(winScore);
-        onEarnPoints(5, "Game 3 Win");
+          setGame3Wins((prev) => prev + 1);
+          setGame3LastScore(winScore);
+
+          try {
+            const response = await submitGameScore({
+              phoneNumber,
+              fullName: userName,
+              gameKey: "SUSHI_MEMORY",
+              score: winScore,
+              rewardPoints: 5,
+              rewardReason: "Game 3 round win",
+            });
+
+            setLeaderboards((current) => ({
+              ...current,
+              SUSHI_MEMORY: response.leaderboard,
+            }));
+            onEarnPoints(5, "Game 3 Win", response.loyalty ?? undefined);
+          } catch {
+            toast.error("Score submission failed. Points were not awarded.");
+          }
+        })();
         return;
       }
 
@@ -154,7 +177,7 @@ export function InAppGames({
           }
         } catch {
           if (rewardPoints > 0) {
-            onEarnPoints(5, "In-App Game (3000+ score)");
+            toast.error("Score submission failed. Points were not awarded.");
           }
         }
       })();

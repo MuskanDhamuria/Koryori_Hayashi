@@ -52,6 +52,7 @@ enum InventoryMovementType {
 enum GameKey {
   PLATE_DASH
   SAKE_POUR
+  SUSHI_MEMORY
 }
 
 model User {
