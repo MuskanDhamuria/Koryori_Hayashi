@@ -198,7 +198,7 @@ export function InAppGames({
             title="Sushi Catch!"
             className="w-full h-[600px] rounded-md border border-[#E5E7EB]"
           />
-          <div className="mt-4 flex items-center justify-between gap-3 text-xs text-[#6B7280]">
+          {/* <div className="mt-4 flex items-center justify-between gap-3 text-xs text-[#6B7280]">
             <p>Game rounds: {plays}</p>
             <p>
               Last score: {lastScore ?? "-"}
@@ -219,7 +219,7 @@ export function InAppGames({
                 ))
               )}
             </div>
-          </div>
+          </div> */}
         </Card>
 
         <Card className="p-4 border-2 border-[#E5E7EB]">
@@ -234,7 +234,7 @@ export function InAppGames({
             title="Game 2"
             className="w-full h-[600px] rounded-md border border-[#E5E7EB]"
           />
-          <div className="mt-4 flex items-center justify-between gap-3 text-xs text-[#6B7280]">
+          {/* <div className="mt-4 flex items-center justify-between gap-3 text-xs text-[#6B7280]">
             <p>Round wins: {game2Wins}</p>
             <p>Last winning score: {game2LastScore ?? "-"}</p>
           </div>
@@ -252,7 +252,7 @@ export function InAppGames({
                 ))
               )}
             </div>
-          </div>
+          </div> */}
         </Card>
 
         <Card className="p-4 border-2 border-[#E5E7EB]">
@@ -267,10 +267,10 @@ export function InAppGames({
             title="Game 3"
             className="w-full h-[600px] rounded-md border border-[#E5E7EB]"
           />
-          <div className="mt-4 flex items-center justify-between gap-3 text-xs text-[#6B7280]">
+          {/* <div className="mt-4 flex items-center justify-between gap-3 text-xs text-[#6B7280]">
             <p>Round wins: {game3Wins}</p>
             <p>Last winning score: {game3LastScore ?? "-"}</p>
-          </div>
+          </div> */}
         </Card>
       </div>
     </main>
