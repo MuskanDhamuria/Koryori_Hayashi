@@ -32,6 +32,7 @@ export interface CartItem extends MenuItem {
   quantity: number;
 }
 
+
 export interface FlavorPreferences {
   umamiVsCitrus: 'umami' | 'citrus' | 'balanced';
   refreshingVsHearty: 'refreshing' | 'hearty' | 'balanced';
