@@ -106,6 +106,18 @@ cd CompanyFacingApp
 npm run dev
 ```
 
+Or from the repo root, launch everything with one command:
+
+```powershell
+.\run-all.cmd
+```
+
+If you also want the script to install dependencies and run the backend Prisma setup first:
+
+```powershell
+.\run-all.cmd -Setup
+```
+
 ## URLs
 
 - Backend health: `http://localhost:4000/health`
