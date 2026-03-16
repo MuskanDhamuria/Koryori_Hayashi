@@ -32,252 +32,289 @@ interface OrderingPageProps {
 
 // Enhanced menu items with flavor profiles, weather tags, and MAB properties
 const BASE_MENU_ITEMS: MenuItemType[] = [
-  // APPETIZERS / AGEMONO
   {
     id: "101",
-    name: "Geso Karaage",
-    description: "Fried squid leg",
-    price: 5.8,
-    category: "agemono",
-    image: "public/images/menu/geso-karaage.png",
+    name: "Japanese Fresh Oyster",
+    description: "Fresh Japanese oyster served chilled",
+    price: 3.8,
+    category: "appetizers",
+    image: "https://images.unsplash.com/photo-1604908177522-432b8d7a9c8d",
     isHighMargin: false,
-    flavorProfile: { umami: 0.8, citrus: 0.2, refreshing: 0.3, hearty: 0.6 },
+    flavorProfile: { umami: 0.9, citrus: 0.2, refreshing: 0.8, hearty: 0.2 },
+    weatherTags: ["sunny", "hot"],
   },
   {
     id: "102",
-    name: "Maitake Tempura",
-    description: "Fried mushroom",
+    name: "Crab Meat Cream Croquette",
+    description: "Crispy croquette filled with creamy crab meat",
     price: 4.8,
-    category: "agemono",
-    image: "public/images/menu/maitake-tempura.png",
-    isHighMargin: false,
-    flavorProfile: { umami: 0.6, citrus: 0.1, refreshing: 0.3, hearty: 0.5 },
+    category: "appetizers",
+    image: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092",
+    isHighMargin: true,
+    flavorProfile: { umami: 0.8, citrus: 0.1, refreshing: 0.2, hearty: 0.9 },
   },
   {
     id: "103",
-    name: "Amaebi Karaage",
-    description: "Fried sweet shrimp",
-    price: 5.8,
-    category: "agemono",
-    image: "public/images/menu/amaebi-karaage.png",
-    isHighMargin: false,
-    flavorProfile: { umami: 0.8, citrus: 0.2, refreshing: 0.4, hearty: 0.5 },
+    name: "Fried Oyster",
+    description: "Golden deep-fried oysters with crispy coating",
+    price: 3.8,
+    category: "appetizers",
+    image: "https://images.unsplash.com/photo-1544025162-d76694265947",
+    isHighMargin: true,
+    flavorProfile: { umami: 0.9, citrus: 0.1, refreshing: 0.3, hearty: 0.7 },
   },
   {
     id: "104",
-    name: "Aji Fry",
-    description: "Fried horse mackerel",
-    price: 5.8,
-    category: "agemono",
-    image: "public/images/menu/aji-fry.png",
-    isHighMargin: false,
-    flavorProfile: { umami: 0.7, citrus: 0.2, refreshing: 0.3, hearty: 0.6 },
+    name: "Geso Karaage (Squid)",
+    description: "Japanese fried squid karaage",
+    price: 4.8,
+    category: "appetizers",
+    image: "https://images.unsplash.com/photo-1625944525533-473f1c5c2a6a",
+    isHighMargin: true,
+    flavorProfile: { umami: 0.8, citrus: 0.1, refreshing: 0.4, hearty: 0.6 },
   },
   {
     id: "105",
-    name: "Cream Crab Croquette",
-    description: "Creamy crab croquette",
-    price: 4.8,
-    category: "agemono",
-    image: "public/images/menu/cream-crab-croquette.png",
+    name: "Aji Fry",
+    description: "Breaded and fried Japanese horse mackerel",
+    price: 3.8,
+    category: "appetizers",
+    image: "https://images.unsplash.com/photo-1598514982501-3b7b02c27d64",
     isHighMargin: true,
-    flavorProfile: { umami: 0.8, citrus: 0.1, refreshing: 0.2, hearty: 0.8 },
+    flavorProfile: { umami: 0.7, citrus: 0.2, refreshing: 0.3, hearty: 0.6 },
   },
   {
     id: "106",
-    name: "Kaki Fry (1 Piece)",
-    description: "Fried oyster",
-    price: 3.8,
-    category: "agemono",
-    image: "public/images/menu/kaki-fry.png",
+    name: "King Prawn",
+    description: "Large king prawn, lightly fried",
+    price: 7.8,
+    category: "appetizers",
+    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6c2c",
     isHighMargin: false,
-    flavorProfile: { umami: 0.9, citrus: 0.1, refreshing: 0.2, hearty: 0.6 },
+    flavorProfile: { umami: 0.8, citrus: 0.2, refreshing: 0.4, hearty: 0.5 },
   },
+
   {
     id: "107",
-    name: "Kaki Fry (2 Pieces)",
-    description: "Fried oyster",
-    price: 7.0,
-    category: "agemono",
-    image: "public/images/menu/kaki-fry.png",
-    isHighMargin: false,
-    flavorProfile: { umami: 0.9, citrus: 0.1, refreshing: 0.2, hearty: 0.7 },
+    name: "Mentaiko Pasta",
+    description: "Japanese pasta with creamy cod roe sauce",
+    price: 9.8,
+    category: "mains",
+    image: "https://images.unsplash.com/photo-1608756687911-aa1599ab3bd9",
+    isHighMargin: true,
+    flavorProfile: { umami: 0.9, citrus: 0.1, refreshing: 0.2, hearty: 0.8 },
   },
   {
     id: "108",
-    name: "Seafood Ajillo",
-    description: "Fresh seafood cooked in olive oil with garlic and chilli",
-    price: 15.8,
-    category: "appetizer",
-    image: "public/images/menu/seafood-ajillo.png",
+    name: "Creamy Truffle Mushroom Pasta",
+    description: "Rich truffle cream pasta with mushrooms",
+    price: 9.8,
+    category: "mains",
+    image: "https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5",
     isHighMargin: true,
-    spicy: 1,
-    flavorProfile: { umami: 0.9, citrus: 0.1, refreshing: 0.3, hearty: 0.7 },
+    flavorProfile: { umami: 0.9, citrus: 0.0, refreshing: 0.1, hearty: 0.9 },
   },
   {
     id: "109",
-    name: "Ikura Tamagoyaki",
-    description: "Japanese omelette topped with ikura",
-    price: 6.8,
-    category: "appetizer",
-    image: "public/images/menu/ikura-tamagoyaki.png",
-    isHighMargin: false,
-    flavorProfile: { umami: 0.7, citrus: 0.1, refreshing: 0.3, hearty: 0.4 },
+    name: "Chicken/Pork Katsu Don",
+    description: "Breaded cutlet served over rice with egg and sauce",
+    price: 8.8,
+    category: "mains",
+    image: "https://images.unsplash.com/photo-1604908177522-432b8d7a9c8d",
+    isHighMargin: true,
+    flavorProfile: { umami: 0.8, citrus: 0.1, refreshing: 0.2, hearty: 0.9 },
   },
   {
     id: "110",
-    name: "Aburi Mentai Tamagoyaki",
-    description: "Seared mentaiko Japanese omelette",
-    price: 5.8,
-    category: "appetizer",
-    image: "public/images/menu/aburi-mentai-tamagoyaki.png",
-    isHighMargin: false,
-    flavorProfile: { umami: 0.8, citrus: 0.1, refreshing: 0.2, hearty: 0.5 },
-  },
-
-  // MAINS / DONBURI
-  {
-    id: "201",
     name: "Chicken Nanban Don",
-    description: "Chicken nanban rice bowl",
-    price: 12.8,
-    category: "donburi",
-    image: "public/images/menu/chicken-nanban-don.png",
+    description: "Japanese fried chicken with tangy sauce over rice",
+    price: 8.8,
+    category: "mains",
+    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6c2c",
     isHighMargin: true,
-    flavorProfile: { umami: 0.8, citrus: 0.3, refreshing: 0.2, hearty: 0.8 },
+    flavorProfile: { umami: 0.8, citrus: 0.3, refreshing: 0.3, hearty: 0.8 },
   },
   {
-    id: "202",
-    name: "Pork Shogayaki Don",
-    description: "Pork ginger rice bowl",
-    price: 12.8,
-    category: "donburi",
-    image: "public/images/menu/pork-shogayaki-don.png",
-    isHighMargin: true,
-    flavorProfile: { umami: 0.8, citrus: 0.1, refreshing: 0.2, hearty: 0.8 },
-  },
-  {
-    id: "203",
+    id: "111",
     name: "Salmon Teriyaki Don",
-    description: "Salmon teriyaki rice bowl. Salmon belly add-on +$2.00",
-    price: 13.8,
-    category: "donburi",
-    image: "public/images/menu/salmon-teriyaki-don.png",
+    description: "Grilled salmon with teriyaki sauce over rice",
+    price: 9.8,
+    category: "mains",
+    image: "https://images.unsplash.com/photo-1598514982501-3b7b02c27d64",
+    isHighMargin: false,
+    flavorProfile: { umami: 0.9, citrus: 0.2, refreshing: 0.4, hearty: 0.7 },
+  },
+  {
+    id: "112",
+    name: "Kitsune Udon",
+    description: "Udon noodles with sweet fried tofu",
+    price: 7.8,
+    category: "ramen",
+    image: "https://images.unsplash.com/photo-1610554666975-339e1f736bc8",
     isHighMargin: true,
-    flavorProfile: { umami: 0.9, citrus: 0.1, refreshing: 0.3, hearty: 0.7 },
+    flavorProfile: { umami: 0.7, citrus: 0.1, refreshing: 0.3, hearty: 0.7 },
+    weatherTags: ["rainy", "cold"],
   },
   {
-    id: "204",
-    name: "Chicken Teriyaki Don",
-    description: "Chicken teriyaki rice bowl",
-    price: 12.8,
-    category: "donburi",
-    image: "public/images/menu/chicken-teriyaki-don.png",
+    id: "113",
+    name: "Sukiyaki Beef Udon",
+    description: "Udon noodles with sweet soy beef sukiyaki",
+    price: 9.8,
+    category: "ramen",
+    image: "https://images.unsplash.com/photo-1610554666975-339e1f736bc8",
     isHighMargin: false,
-    flavorProfile: { umami: 0.8, citrus: 0.1, refreshing: 0.2, hearty: 0.7 },
+    flavorProfile: { umami: 0.9, citrus: 0.1, refreshing: 0.2, hearty: 0.9 },
+    weatherTags: ["rainy", "cold"],
   },
   {
-    id: "205",
-    name: "Una Don",
-    description: "Grilled eel rice bowl",
-    price: 16.8,
-    category: "donburi",
-    image: "public/images/menu/una-don.png",
+    id: "114",
+    name: "Tempura Udon",
+    description: "Udon noodle soup served with crispy tempura",
+    price: 11.8,
+    category: "ramen",
+    image: "https://images.unsplash.com/photo-1610554666975-339e1f736bc8",
     isHighMargin: true,
-    flavorProfile: { umami: 0.9, citrus: 0.0, refreshing: 0.1, hearty: 0.9 },
-  },
-  {
-    id: "206",
-    name: "Unatama Don",
-    description: "Grilled eel and egg rice bowl",
-    price: 15.8,
-    category: "donburi",
-    image: "public/images/menu/unatama-don.png",
-    isHighMargin: false,
-    flavorProfile: { umami: 0.9, citrus: 0.0, refreshing: 0.1, hearty: 0.9 },
-  },
-  {
-    id: "207",
-    name: "Pork Katsu Curry Rice",
-    description: "Pork katsu served with curry rice",
-    price: 13.8,
-    category: "donburi",
-    image: "public/images/menu/pork-katsu-curry-rice.png",
-    isHighMargin: false,
-    flavorProfile: { umami: 0.8, citrus: 0.0, refreshing: 0.1, hearty: 0.9 },
-  },
-  {
-    id: "208",
-    name: "Chicken Katsu Curry Rice",
-    description: "Chicken katsu served with curry rice",
-    price: 12.8,
-    category: "donburi",
-    image: "public/images/menu/pork-katsu-curry-rice.png",
-    isHighMargin: false,
-    flavorProfile: { umami: 0.8, citrus: 0.0, refreshing: 0.1, hearty: 0.9 },
-  },
-  {
-    id: "209",
-    name: "Pork Katsu Don",
-    description: "Pork katsu rice bowl",
-    price: 13.8,
-    category: "donburi",
-    image: "public/images/menu/pork-katsu-don.png",
-    isHighMargin: true,
-    flavorProfile: { umami: 0.8, citrus: 0.0, refreshing: 0.1, hearty: 0.9 },
-  },
-  {
-    id: "210",
-    name: "Chicken Katsu Don",
-    description: "Chicken katsu rice bowl",
-    price: 12.8,
-    category: "donburi",
-    image: "public/images/menu/pork-katsu-don.png",
-    isHighMargin: false,
-    flavorProfile: { umami: 0.8, citrus: 0.0, refreshing: 0.1, hearty: 0.9 },
+    flavorProfile: { umami: 0.8, citrus: 0.1, refreshing: 0.3, hearty: 0.8 },
+    weatherTags: ["rainy", "cold"],
   },
 
-  // MINI DONBURI
   {
-    id: "211",
-    name: "Aburi Salmon Mentai Mini Don",
-    description: "Mini rice bowl with aburi salmon and mentaiko",
-    price: 11.8,
-    category: "mini_donburi",
-    image: "public/images/menu/aburi-salmon-mentai-mini-don.png",
-    isHighMargin: false,
-    flavorProfile: { umami: 0.9, citrus: 0.1, refreshing: 0.3, hearty: 0.6 },
-  },
-  {
-    id: "212",
-    name: "Bara Chirashi Mini Don",
-    description: "Mini chirashi rice bowl",
-    price: 13.8,
-    category: "mini_donburi",
-    image: "public/images/menu/bara-chirashi-mini-don.png",
+    id: "115",
+    name: "Ice Cream (Matcha/Yuzu/Black Sesame/Houjicha/Jersey Milk)",
+    description: "Japanese flavored ice cream selection",
+    price: 2.5,
+    category: "desserts",
+    image: "https://images.unsplash.com/photo-1563805042-7684c019e1cb",
     isHighMargin: true,
-    flavorProfile: { umami: 0.9, citrus: 0.2, refreshing: 0.5, hearty: 0.5 },
+    flavorProfile: { umami: 0.3, citrus: 0.6, refreshing: 0.8, hearty: 0.2 },
+    weatherTags: ["sunny", "hot"],
   },
   {
-    id: "213",
-    name: "Salmon Ikura Mini Don",
-    description: "Mini rice bowl with salmon and ikura",
-    price: 12.8,
-    category: "mini_donburi",
-    image: "public/images/menu/salmon-ikura-mini-don.png",
-    isHighMargin: false,
-    flavorProfile: { umami: 0.9, citrus: 0.1, refreshing: 0.5, hearty: 0.5 },
+    id: "116",
+    name: "Monaka Shell Ice Cream",
+    description: "Ice cream served in crispy monaka wafer shell",
+    price: 3.0,
+    category: "desserts",
+    image: "https://images.unsplash.com/photo-1505253216365-73a1f6e8b6af",
+    isHighMargin: true,
+    flavorProfile: { umami: 0.3, citrus: 0.4, refreshing: 0.7, hearty: 0.3 },
   },
   {
-    id: "214",
-    name: "Salmon Chilli Mini Don",
-    description: "Mini rice bowl with salmon and chilli sauce",
-    price: 10.8,
-    category: "mini_donburi",
-    image: "public/images/menu/salmon-chilli-mini-don.png",
-    isHighMargin: false,
+    id: "117",
+    name: "Tempura Ice Cream",
+    description: "Deep fried ice cream (vanilla or chocolate)",
+    price: 4.8,
+    category: "desserts",
+    image: "https://images.unsplash.com/photo-1551024601-bec78aea704b",
+    isHighMargin: true,
+    isNew: true,
+    flavorProfile: { umami: 0.2, citrus: 0.2, refreshing: 0.5, hearty: 0.7 },
+  },
+  {
+    id: "118",
+    name: "Spicy Tuna Roll",
+    description: "Fresh tuna mixed with spicy mayo and wrapped with rice and nori",
+    price: 14.99,
+    category: "appetizers",
+    image: "https://images.unsplash.com/photo-1617196034796-73dfa7b1fd56",
     spicy: 2,
-    flavorProfile: { umami: 0.8, citrus: 0.2, refreshing: 0.4, hearty: 0.5 },
+    isHighMargin: true,
+    flavorProfile: { umami: 0.8, citrus: 0.3, refreshing: 0.6, hearty: 0.4 },
+    weatherTags: ['sunny', 'hot'],
+  },
+
+  {
+    id: "119",
+    name: "Volcano Ramen",
+    description: "Extra spicy ramen with chili oil, minced pork, and soft boiled egg",
+    price: 17.99,
+    category: "mains",
+    image: "https://images.unsplash.com/photo-1617093727343-374698b1b08d",
+    spicy: 4,
+    isHighMargin: true,
+    flavorProfile: { umami: 0.9, citrus: 0.1, refreshing: 0.2, hearty: 1.0 },
+    weatherTags: ['rainy', 'cold'],
+  },
+
+  {
+    id: "120",
+    name: "Spicy Karaage Chicken",
+    description: "Japanese fried chicken tossed in spicy chili sauce",
+    price: 10.99,
+    category: "appetizers",
+    image: "https://images.unsplash.com/photo-1604908177522-040a5c1a3f10",
+    spicy: 3,
+    isHighMargin: true,
+    flavorProfile: { umami: 0.8, citrus: 0.2, refreshing: 0.3, hearty: 0.7 },
+  },
+
+  {
+    id: "121",
+    name: "Truffle Salmon Roll",
+    description: "NEW! Seared salmon sushi roll with truffle oil and avocado",
+    price: 18.99,
+    category: "appetizers",
+    image: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351",
+    isNew: true,
+    isHighMargin: true,
+    flavorProfile: { umami: 0.9, citrus: 0.2, refreshing: 0.6, hearty: 0.5 },
+    weatherTags: ['sunny'],
+  },
+
+  {
+    id: "122",
+    name: "Matcha Cheesecake",
+    description: "NEW! Creamy cheesecake infused with premium Japanese matcha",
+    price: 7.99,
+    category: "desserts",
+    image: "https://images.unsplash.com/photo-1586985289906-406988974504",
+    isNew: true,
+    isHighMargin: true,
+    flavorProfile: { umami: 0.3, citrus: 0.2, refreshing: 0.5, hearty: 0.6 },
+  },
+
+  {
+    id: "123",
+    name: "Yuzu Sparkling Soda",
+    description: "NEW! Refreshing Japanese citrus soda with yuzu flavor",
+    price: 4.99,
+    category: "drinks",
+    image: "https://images.unsplash.com/photo-1558640479-823d3b9c7c2d",
+    isNew: true,
+    isHighMargin: true,
+    flavorProfile: { umami: 0.1, citrus: 0.9, refreshing: 1.0, hearty: 0.1 },
+    weatherTags: ['sunny', 'hot'],
+  },
+
+  {
+    id: "124",
+    name: "Iced Lemon Tea",
+    description: "Refreshing black tea served over ice with fresh lemon slices for a light citrus taste.",
+    price: 3.50,
+    category: "drinks",
+    image: "images/drinks/iced-lemon-tea.jpg",
+    isHighMargin: true,
+    isNew: false
+  },
+  {
+    id: "125",
+    name: "Thai Milk Tea",
+    description: "Classic Thai-style tea brewed strong and blended with sweetened milk, served chilled.",
+    price: 4.50,
+    category: "drinks",
+    image: "images/drinks/thai-milk-tea.jpg",
+    isHighMargin: true,
+    isNew: false
+  },
+  {
+    id: "126",
+    name: "Fresh Watermelon Juice",
+    description: "Freshly blended watermelon juice with no added sugar, naturally sweet and hydrating.",
+    price: 5.50,
+    category: "drinks",
+    image: "images/drinks/watermelon-juice.jpg",
+    isHighMargin: false,
+    isNew: true
   },
 ];
 
@@ -358,7 +395,7 @@ export function OrderingPage({
   const [menuItems, setMenuItems] = useState<MenuItemType[]>(BASE_MENU_ITEMS);
   const [isMenuLoading, setIsMenuLoading] = useState(true);
   const [isLoyaltyLoading, setIsLoyaltyLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState("donburi");
+  const [activeCategory, setActiveCategory] = useState("mains");
   const [selectedItem, setSelectedItem] = useState<MenuItemType | null>(null);
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
@@ -416,9 +453,21 @@ export function OrderingPage({
   }, [phoneNumber]);
 
   useEffect(() => {
-    setMenuItems(applyDynamicPricing(BASE_MENU_ITEMS));
-    setActiveCategory("donburi");
-    setIsMenuLoading(false);
+    const loadMenuItems = async () => {
+      try {
+        const items = await fetchMenuItems();
+        if (items.length > 0) {
+          setMenuItems(applyDynamicPricing(mergeMenuImages(items)));
+          setActiveCategory(items[0]?.category ?? "mains");
+        }
+      } catch {
+        setMenuItems(applyDynamicPricing(BASE_MENU_ITEMS));
+      } finally {
+        setIsMenuLoading(false);
+      }
+    };
+
+    void loadMenuItems();
   }, []);
 
   useEffect(() => {
@@ -790,91 +839,100 @@ const handleAddFromDialog = (item: MenuItemType) => {
           </div>
         )}
         
-      {/* Main Content with Vertical Categories */}
+                   {/* Main Content with Vertical Categories */}
       <div className="flex gap-6">
-      {/* Left Sidebar - Vertical Categories */}
-        <aside className="w-32 shrink-0">
+               {/* Left Sidebar - Vertical Categories */}
+        <aside className="w-24 shrink-0">
           <div className="sticky top-20 bg-white rounded-xl border border-[#E5E7EB] p-2">
             <div className="flex flex-col gap-1">
               <button
-                onClick={() => setActiveCategory("donburi")}
-                title="Donburi"
+                onClick={() => setActiveCategory("mains")}
+                title="Mains"
                 className={`w-full flex items-center px-2 py-2.5 rounded-lg text-left transition-colors ${
-                  activeCategory === "donburi"
-                    ? "bg-[#0F1729] text-white"
+                  activeCategory === "mains" 
+                    ? "bg-[#0F1729] text-white" 
                     : "hover:bg-[#F3F4F6] text-[#0F1729]"
                 }`}
               >
                 <span className="text-base mr-1.5">🍱</span>
-                <span className="text-xs truncate">Donburi</span>
+                <span className="text-xs truncate">Mains</span>
               </button>
-
               <button
-                onClick={() => setActiveCategory("mini_donburi")}
-                title="Mini Donburi"
+                onClick={() => setActiveCategory("appetizers")}
+                title="Appetizers"
                 className={`w-full flex items-center px-2 py-2.5 rounded-lg text-left transition-colors ${
-                  activeCategory === "mini_donburi"
-                    ? "bg-[#0F1729] text-white"
+                  activeCategory === "appetizers" 
+                    ? "bg-[#0F1729] text-white" 
                     : "hover:bg-[#F3F4F6] text-[#0F1729]"
                 }`}
               >
-                <span className="text-base mr-1.5">🍚</span>
-                <span className="text-xs truncate">Mini Don</span>
+                <span className="text-base mr-1.5">🥟</span>
+                <span className="text-xs truncate">Appetizers</span>
               </button>
-
               <button
-                onClick={() => setActiveCategory("agemono")}
-                title="Agemono"
+                onClick={() => setActiveCategory("ramen")}
+                title="Ramen"
                 className={`w-full flex items-center px-2 py-2.5 rounded-lg text-left transition-colors ${
-                  activeCategory === "agemono"
-                    ? "bg-[#0F1729] text-white"
+                  activeCategory === "ramen" 
+                    ? "bg-[#0F1729] text-white" 
                     : "hover:bg-[#F3F4F6] text-[#0F1729]"
                 }`}
               >
-                <span className="text-base mr-1.5">🍤</span>
-                <span className="text-xs truncate">Agemono</span>
+                <span className="text-base mr-1.5">🍜</span>
+                <span className="text-xs truncate">Udon</span>
               </button>
-
               <button
-                onClick={() => setActiveCategory("appetizer")}
-                title="Appetizer"
+                onClick={() => setActiveCategory("desserts")}
+                title="Desserts"
                 className={`w-full flex items-center px-2 py-2.5 rounded-lg text-left transition-colors ${
-                  activeCategory === "appetizer"
-                    ? "bg-[#0F1729] text-white"
+                  activeCategory === "desserts" 
+                    ? "bg-[#0F1729] text-white" 
                     : "hover:bg-[#F3F4F6] text-[#0F1729]"
                 }`}
               >
-                <span className="text-base mr-1.5">🥢</span>
-                <span className="text-xs truncate">Appetizer</span>
+                <span className="text-base mr-1.5">🍦</span>
+                <span className="text-xs truncate">Desserts</span>
+              </button>
+              <button
+                onClick={() => setActiveCategory("drinks")}
+                title="Drinks"
+                className={`w-full flex items-center px-2 py-2.5 rounded-lg text-left transition-colors ${
+                  activeCategory === "drinks" 
+                    ? "bg-[#0F1729] text-white" 
+                    : "hover:bg-[#F3F4F6] text-[#0F1729]"
+                }`}
+              >
+                <span className="text-base mr-1.5">🍵</span>
+                <span className="text-xs truncate">Drinks</span>
               </button>
             </div>
           </div>
         </aside>
 
-          {/* Right Content - Menu Items */}
+                {/* Right Content - Menu Items */}
         <section className="flex-1 min-w-0">
-          {activeCategory === "donburi" && (
+          {activeCategory === "mains" && (
             <>
               <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Mains</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {menuItems.filter(item => item.category === 'donburi').map(item => (
+                {menuItems.filter(item => item.category === 'mains').map(item => (
                  <div 
-                key={item.id} 
-                className="w-full cursor-pointer transition-transform hover:scale-[1.02]"
-                onClick={() => handleItemClick(item)}
-              >
-                <MenuItem item={item} onAddToCart={handleAddToCart} />
-              </div>
+  key={item.id} 
+  className="w-full cursor-pointer transition-transform hover:scale-[1.02]"
+  onClick={() => handleItemClick(item)}
+>
+  <MenuItem item={item} onAddToCart={handleAddToCart} />
+</div>
                 ))}
               </div>
             </>
           )}
           
-                  {activeCategory === "appetizer" && (
+                  {activeCategory === "appetizers" && (
             <>
               <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Appetizers</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {menuItems.filter(item => item.category === 'appetizer').map(item => (
+                {menuItems.filter(item => item.category === 'appetizers').map(item => (
                   <div 
                     key={item.id} 
                     className="w-full cursor-pointer transition-transform hover:scale-[1.02]"
@@ -887,11 +945,11 @@ const handleAddFromDialog = (item: MenuItemType) => {
             </>
           )}
           
-                    {activeCategory === "mini_donburi" && (
+                    {activeCategory === "ramen" && (
             <>
-              <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Mini Donburi</h2>
+              <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Ramen</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {menuItems.filter(item => item.category === 'mini_donburi').map(item => (
+                {menuItems.filter(item => item.category === 'ramen').map(item => (
                   <div 
                     key={item.id} 
                     className="w-full cursor-pointer transition-transform hover:scale-[1.02]"
@@ -904,11 +962,11 @@ const handleAddFromDialog = (item: MenuItemType) => {
             </>
           )}
 
-                    {activeCategory === "agemono" && (
+                    {activeCategory === "desserts" && (
             <>
               <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Desserts</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {menuItems.filter(item => item.category === 'agemono').map(item => (
+                {menuItems.filter(item => item.category === 'desserts').map(item => (
                   <div 
                     key={item.id} 
                     className="w-full cursor-pointer transition-transform hover:scale-[1.02]"
@@ -921,7 +979,7 @@ const handleAddFromDialog = (item: MenuItemType) => {
             </>
           )}
           
-                    {/* {activeCategory === "drinks" && (
+                    {activeCategory === "drinks" && (
             <>
               <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Drinks</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
@@ -936,7 +994,7 @@ const handleAddFromDialog = (item: MenuItemType) => {
                 ))}
               </div>
             </>
-          )} */}
+          )}
 
         </section>
       </div>
