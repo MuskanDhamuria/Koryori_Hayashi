@@ -1,0 +1,672 @@
+{
+  "generatedAt": "2026-03-17T10:16:30.695Z",
+  "source": {
+    "xlsxPath": "C:\\Users\\65967\\OneDrive - Singapore Management University\\Documents\\GitHub\\Koryori_Hayashi\\Dashboard\\data\\data.xlsx",
+    "sheet": "sheet1"
+  },
+  "tables": {
+    "items": [
+      {
+        "item": "Chicken Nanban Don",
+        "quantityRank": 1,
+        "amountRank": 2,
+        "salesSummary": 420
+      },
+      {
+        "item": "Pork Shogayaki Don",
+        "quantityRank": 2,
+        "amountRank": 1,
+        "salesSummary": 450
+      },
+      {
+        "item": "Salmon Teriyaki Don",
+        "quantityRank": 3,
+        "amountRank": 3,
+        "salesSummary": 400
+      },
+      {
+        "item": "Salmon Belly Teriyaki Don",
+        "quantityRank": 4,
+        "amountRank": 4,
+        "salesSummary": 380
+      },
+      {
+        "item": "Chicken Teriyaki Don",
+        "quantityRank": 5,
+        "amountRank": 5,
+        "salesSummary": 360
+      },
+      {
+        "item": "Una Don",
+        "quantityRank": 6,
+        "amountRank": 6,
+        "salesSummary": 340
+      },
+      {
+        "item": "Unatama Don",
+        "quantityRank": 7,
+        "amountRank": 7,
+        "salesSummary": 320
+      },
+      {
+        "item": "Pork Katsu Curry Rice",
+        "quantityRank": 8,
+        "amountRank": 8,
+        "salesSummary": 300
+      },
+      {
+        "item": "Chicken Katsu Curry Rice",
+        "quantityRank": 9,
+        "amountRank": 9,
+        "salesSummary": 280
+      },
+      {
+        "item": "Aburi Salmon Mentai Mini Don",
+        "quantityRank": 10,
+        "amountRank": 10,
+        "salesSummary": 260
+      },
+      {
+        "item": "Aburi Salmon Mentai Mini Don (Upsize)",
+        "quantityRank": 11,
+        "amountRank": 11,
+        "salesSummary": 240
+      },
+      {
+        "item": "Bara Chirashi Mini Don",
+        "quantityRank": 12,
+        "amountRank": 12,
+        "salesSummary": 220
+      },
+      {
+        "item": "Bara Chirashi  Mini Don (Upsize)",
+        "quantityRank": 13,
+        "amountRank": 13,
+        "salesSummary": 210
+      },
+      {
+        "item": "Salmon Ikura Mini Don",
+        "quantityRank": 14,
+        "amountRank": 14,
+        "salesSummary": 200
+      },
+      {
+        "item": "Salmon Ikura Mini Don (Upsize)",
+        "quantityRank": 15,
+        "amountRank": 15,
+        "salesSummary": 190
+      },
+      {
+        "item": "Salmon Chilli Mini Don",
+        "quantityRank": 16,
+        "amountRank": 16,
+        "salesSummary": 180
+      },
+      {
+        "item": "Salmon Chilli Mini Don (Upsize)",
+        "quantityRank": 17,
+        "amountRank": 17,
+        "salesSummary": 170
+      },
+      {
+        "item": "Prawn Mentaiko Pasta",
+        "quantityRank": 18,
+        "amountRank": 18,
+        "salesSummary": 160
+      },
+      {
+        "item": "Sukiyaki Beef Udon",
+        "quantityRank": 19,
+        "amountRank": 19,
+        "salesSummary": 150
+      },
+      {
+        "item": "Kitsune Udon",
+        "quantityRank": 20,
+        "amountRank": 20,
+        "salesSummary": 140
+      },
+      {
+        "item": "Pork Katsu Curry Udon",
+        "quantityRank": 21,
+        "amountRank": 21,
+        "salesSummary": 130
+      },
+      {
+        "item": "Chicken Katsu Curry Udon",
+        "quantityRank": 22,
+        "amountRank": 22,
+        "salesSummary": 120
+      },
+      {
+        "item": "Cream Crab Croquette",
+        "quantityRank": 23,
+        "amountRank": 23,
+        "salesSummary": 115
+      },
+      {
+        "item": "Geso Karaage",
+        "quantityRank": 24,
+        "amountRank": 24,
+        "salesSummary": 110
+      },
+      {
+        "item": "Maitake Tempura",
+        "quantityRank": 25,
+        "amountRank": 25,
+        "salesSummary": 105
+      },
+      {
+        "item": "Amaebi Tempura",
+        "quantityRank": 26,
+        "amountRank": 26,
+        "salesSummary": 100
+      },
+      {
+        "item": "Aji Fry",
+        "quantityRank": 27,
+        "amountRank": 27,
+        "salesSummary": 95
+      },
+      {
+        "item": "Kaki Fry (1 pc)",
+        "quantityRank": 28,
+        "amountRank": 28,
+        "salesSummary": 90
+      },
+      {
+        "item": "Kaki Fry (2 pc)",
+        "quantityRank": 29,
+        "amountRank": 29,
+        "salesSummary": 85
+      },
+      {
+        "item": "Seafood Ajillo",
+        "quantityRank": 30,
+        "amountRank": 30,
+        "salesSummary": 80
+      },
+      {
+        "item": "Ikura Tamagoyaki",
+        "quantityRank": 31,
+        "amountRank": 31,
+        "salesSummary": 75
+      },
+      {
+        "item": "Aburi Mentai Tamagoyaki",
+        "quantityRank": 32,
+        "amountRank": 32,
+        "salesSummary": 70
+      },
+      {
+        "item": "Potato Salad",
+        "quantityRank": 33,
+        "amountRank": 33,
+        "salesSummary": 68
+      },
+      {
+        "item": "Salmon Sashimi",
+        "quantityRank": 34,
+        "amountRank": 34,
+        "salesSummary": 66
+      },
+      {
+        "item": "Swordfish Sashimi",
+        "quantityRank": 35,
+        "amountRank": 35,
+        "salesSummary": 64
+      },
+      {
+        "item": "Chuka Wakame",
+        "quantityRank": 36,
+        "amountRank": 36,
+        "salesSummary": 62
+      },
+      {
+        "item": "Chuka Kurage",
+        "quantityRank": 37,
+        "amountRank": 37,
+        "salesSummary": 60
+      },
+      {
+        "item": "Tako Wasabi",
+        "quantityRank": 38,
+        "amountRank": 38,
+        "salesSummary": 58
+      },
+      {
+        "item": "Octopus",
+        "quantityRank": 39,
+        "amountRank": 39,
+        "salesSummary": 56
+      },
+      {
+        "item": "Mala Clam",
+        "quantityRank": 40,
+        "amountRank": 40,
+        "salesSummary": 54
+      },
+      {
+        "item": "SOFT DRINK",
+        "quantityRank": 41,
+        "amountRank": 41,
+        "salesSummary": 52
+      },
+      {
+        "item": "BOTTLE DRINK",
+        "quantityRank": 42,
+        "amountRank": 42,
+        "salesSummary": 50
+      },
+      {
+        "item": "KORYORI EXCLUSIVE",
+        "quantityRank": 43,
+        "amountRank": 43,
+        "salesSummary": 48
+      },
+      {
+        "item": "SPARKLING YUZU",
+        "quantityRank": 44,
+        "amountRank": 44,
+        "salesSummary": 46
+      },
+      {
+        "item": "HOT TEA",
+        "quantityRank": 45,
+        "amountRank": 45,
+        "salesSummary": 44
+      },
+      {
+        "item": "HOT WATER",
+        "quantityRank": 46,
+        "amountRank": 46,
+        "salesSummary": 42
+      },
+      {
+        "item": "ICE WATER",
+        "quantityRank": 47,
+        "amountRank": 47,
+        "salesSummary": 40
+      },
+      {
+        "item": "ALCOHOL",
+        "quantityRank": 48,
+        "amountRank": 48,
+        "salesSummary": 38
+      },
+      {
+        "item": "BEER",
+        "quantityRank": 49,
+        "amountRank": 49,
+        "salesSummary": 36
+      },
+      {
+        "item": "SAKE",
+        "quantityRank": 50,
+        "amountRank": 50,
+        "salesSummary": 34
+      },
+      {
+        "item": "COCKTAIL",
+        "quantityRank": 51,
+        "amountRank": 51,
+        "salesSummary": 32
+      },
+      {
+        "item": "Dorayaki",
+        "quantityRank": 52,
+        "amountRank": 52,
+        "salesSummary": 30
+      },
+      {
+        "item": "Black Sesame",
+        "quantityRank": 53,
+        "amountRank": 53,
+        "salesSummary": 29
+      },
+      {
+        "item": "Chocolate",
+        "quantityRank": 54,
+        "amountRank": 54,
+        "salesSummary": 28
+      },
+      {
+        "item": "Houjicha",
+        "quantityRank": 55,
+        "amountRank": 55,
+        "salesSummary": 27
+      },
+      {
+        "item": "Hokkaido Melon",
+        "quantityRank": 56,
+        "amountRank": 56,
+        "salesSummary": 26
+      },
+      {
+        "item": "Jersey Milk",
+        "quantityRank": 57,
+        "amountRank": 57,
+        "salesSummary": 25
+      },
+      {
+        "item": "Matcha",
+        "quantityRank": 58,
+        "amountRank": 58,
+        "salesSummary": 24
+      },
+      {
+        "item": "Yuzu",
+        "quantityRank": 59,
+        "amountRank": 59,
+        "salesSummary": 23
+      },
+      {
+        "item": "Chicken Nanban",
+        "quantityRank": 60,
+        "amountRank": 60,
+        "salesSummary": 22
+      },
+      {
+        "item": "Pork Shogayaki",
+        "quantityRank": 61,
+        "amountRank": 61,
+        "salesSummary": 22
+      },
+      {
+        "item": "Salmon Teriyaki",
+        "quantityRank": 62,
+        "amountRank": 62,
+        "salesSummary": 21
+      },
+      {
+        "item": "Chicken Teriyaki",
+        "quantityRank": 63,
+        "amountRank": 63,
+        "salesSummary": 21
+      },
+      {
+        "item": "Unagi",
+        "quantityRank": 64,
+        "amountRank": 64,
+        "salesSummary": 20
+      },
+      {
+        "item": "Pork Katsu",
+        "quantityRank": 65,
+        "amountRank": 65,
+        "salesSummary": 20
+      },
+      {
+        "item": "Chicken Katsu",
+        "quantityRank": 66,
+        "amountRank": 66,
+        "salesSummary": 20
+      },
+      {
+        "item": "Rice",
+        "quantityRank": 67,
+        "amountRank": 67,
+        "salesSummary": 20
+      },
+      {
+        "item": "Onsen Egg",
+        "quantityRank": 68,
+        "amountRank": 68,
+        "salesSummary": 20
+      },
+      {
+        "item": "Ajitama",
+        "quantityRank": 69,
+        "amountRank": 69,
+        "salesSummary": 20
+      },
+      {
+        "item": "Sunny side",
+        "quantityRank": 70,
+        "amountRank": 70,
+        "salesSummary": 20
+      },
+      {
+        "item": "Omelette",
+        "quantityRank": 71,
+        "amountRank": 71,
+        "salesSummary": 20
+      },
+      {
+        "item": "Kake Udon",
+        "quantityRank": 72,
+        "amountRank": 72,
+        "salesSummary": 20
+      },
+      {
+        "item": "Curry",
+        "quantityRank": 73,
+        "amountRank": 73,
+        "salesSummary": 20
+      },
+      {
+        "item": "Egg Drop Soup",
+        "quantityRank": 74,
+        "amountRank": 74,
+        "salesSummary": 20
+      }
+    ],
+    "hourly": [
+      {
+        "hour": 11,
+        "orders": 12,
+        "amount": 149.27
+      },
+      {
+        "hour": 12,
+        "orders": 11,
+        "amount": 138.33
+      },
+      {
+        "hour": 13,
+        "orders": 11,
+        "amount": 146.28
+      },
+      {
+        "hour": 14,
+        "orders": 7,
+        "amount": 107.56
+      },
+      {
+        "hour": 15,
+        "orders": 9,
+        "amount": 105.65
+      },
+      {
+        "hour": 17,
+        "orders": 9,
+        "amount": 144.79
+      },
+      {
+        "hour": 18,
+        "orders": 8,
+        "amount": 113.43
+      },
+      {
+        "hour": 19,
+        "orders": 6,
+        "amount": 79.8
+      }
+    ],
+    "monthly": [
+      {
+        "month": "2025-01",
+        "rent": 519.55,
+        "salary": 1332.61,
+        "cpfLevy": 225.96,
+        "supplier": 1089.32,
+        "utilities": 106.89,
+        "seasonParking": 18.07,
+        "totalSales": 3404,
+        "profitLoss": 111.60000000000036
+      },
+      {
+        "month": "2025-02",
+        "rent": 331.75,
+        "salary": 836.33,
+        "cpfLevy": 141.81,
+        "supplier": 695.58,
+        "utilities": 67.95,
+        "seasonParking": 11.54,
+        "totalSales": 2173.6,
+        "profitLoss": 88.64000000000021
+      },
+      {
+        "month": "2025-03",
+        "rent": 505.78,
+        "salary": 1199.35,
+        "cpfLevy": 203.37,
+        "supplier": 1060.45,
+        "utilities": 102.01,
+        "seasonParking": 17.59,
+        "totalSales": 3313.8,
+        "profitLoss": 225.25000000000023
+      },
+      {
+        "month": "2025-04",
+        "rent": 281.3,
+        "salary": 574.4,
+        "cpfLevy": 97.4,
+        "supplier": 589.78,
+        "utilities": 54.8,
+        "seasonParking": 9.78,
+        "totalSales": 1843,
+        "profitLoss": 235.54000000000002
+      },
+      {
+        "month": "2025-05",
+        "rent": 276.69,
+        "salary": 716.85,
+        "cpfLevy": 121.55,
+        "supplier": 580.12,
+        "utilities": 57.08,
+        "seasonParking": 9.62,
+        "totalSales": 1812.8,
+        "profitLoss": 50.89000000000004
+      },
+      {
+        "month": "2025-06",
+        "rent": 292.32,
+        "salary": 569.81,
+        "cpfLevy": 96.62,
+        "supplier": 612.89,
+        "utilities": 56.38,
+        "seasonParking": 10.17,
+        "totalSales": 1915.2,
+        "profitLoss": 277.00999999999993
+      },
+      {
+        "month": "2025-07",
+        "rent": 323.09,
+        "salary": 670.9,
+        "cpfLevy": 113.76,
+        "supplier": 677.4,
+        "utilities": 63.18,
+        "seasonParking": 11.24,
+        "totalSales": 2116.8,
+        "profitLoss": 257.23000000000053
+      },
+      {
+        "month": "2025-08",
+        "rent": 248.85,
+        "salary": 588.19,
+        "cpfLevy": 99.74,
+        "supplier": 521.75,
+        "utilities": 50.15,
+        "seasonParking": 8.66,
+        "totalSales": 1630.4,
+        "profitLoss": 113.05999999999986
+      },
+      {
+        "month": "2025-09",
+        "rent": 182.91,
+        "salary": 473.31,
+        "cpfLevy": 80.26,
+        "supplier": 383.5,
+        "utilities": 37.72,
+        "seasonParking": 6.36,
+        "totalSales": 1198.4,
+        "profitLoss": 34.340000000000174
+      },
+      {
+        "month": "2025-10",
+        "rent": 306.94,
+        "salary": 827.14,
+        "cpfLevy": 140.25,
+        "supplier": 643.54,
+        "utilities": 63.98,
+        "seasonParking": 10.68,
+        "totalSales": 2011,
+        "profitLoss": 18.46999999999997
+      },
+      {
+        "month": "2025-11",
+        "rent": 219.05,
+        "salary": 431.95,
+        "cpfLevy": 73.24,
+        "supplier": 459.28,
+        "utilities": 42.36,
+        "seasonParking": 7.62,
+        "totalSales": 1435.2,
+        "profitLoss": 201.70000000000027
+      },
+      {
+        "month": "2025-12",
+        "rent": 324.21,
+        "salary": 730.64,
+        "cpfLevy": 123.89,
+        "supplier": 679.77,
+        "utilities": 64.6,
+        "seasonParking": 11.28,
+        "totalSales": 2124.2,
+        "profitLoss": 189.80999999999966
+      },
+      {
+        "month": "2026-01",
+        "rent": 238.22,
+        "salary": 418.16,
+        "cpfLevy": 70.91,
+        "supplier": 499.47,
+        "utilities": 44.98,
+        "seasonParking": 8.29,
+        "totalSales": 1560.8,
+        "profitLoss": 280.77
+      },
+      {
+        "month": "2026-02",
+        "rent": 388.35,
+        "salary": 955.81,
+        "cpfLevy": 162.07,
+        "supplier": 814.24,
+        "utilities": 79.06,
+        "seasonParking": 13.51,
+        "totalSales": 2544.4,
+        "profitLoss": 131.36
+      }
+    ]
+  },
+  "summary": {
+    "itemSalesTotal": 8013,
+    "hourlyRevenue": 985.11,
+    "hourlyOrders": 73,
+    "avgOrderValue": 13.49,
+    "latestMonth": {
+      "month": "2026-02",
+      "rent": 388.35,
+      "salary": 955.81,
+      "cpfLevy": 162.07,
+      "supplier": 814.24,
+      "utilities": 79.06,
+      "seasonParking": 13.51,
+      "totalSales": 2544.4,
+      "profitLoss": 131.36
+    },
+    "marginPercent": 5.16,
+    "peakHour": 11
+  }
+}

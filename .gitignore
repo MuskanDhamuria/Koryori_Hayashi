@@ -36,3 +36,7 @@ backend/.data/
 
 .venv/
 .venv-dashboard/
+
+# Streamlit
+.streamlit/secrets.toml
+Dashboard/.streamlit/secrets.toml
