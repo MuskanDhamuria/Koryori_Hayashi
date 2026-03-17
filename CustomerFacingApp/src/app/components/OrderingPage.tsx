@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
@@ -8,11 +7,11 @@ import { RecommendationCard } from "./RecommendationCard";
 import { ShoppingCart } from "./ShoppingCart";
 import { PaymentDialog } from "./PaymentDialog";
 import { LoyaltyCard, LoyaltyProfile } from "./LoyaltyCard";
-import {InAppGames} from "./InAppGames";
+import { InAppGames } from "./InAppGames";
 import { Skeleton } from "./ui/skeleton";
-import { QrCode, UtensilsCrossed, Sparkles, CloudRain, Sun, Cloud, Info, Gift, Users, Star, Plus, Flame } from "lucide-react";
+import { QrCode, UtensilsCrossed, Sparkles, CloudRain, Sun, Cloud, Gift, Users, Star, Plus, Flame } from "lucide-react";
 import { toast } from "sonner";
-import { CherryBlossom } from "./JapanesePattern";
+import { CherryBlossom, SeigaihaPattern } from "./JapanesePattern";
 import { MenuItem as MenuItemType, CartItem, FlavorPreferences, WeatherData } from "../types";
 import { generateRecommendations } from "../services/recommendationService";
 import { applyDynamicPricing, recordFlashSaleOrder, hasActiveFlashSale } from "../services/dynamicPricingService";
@@ -364,6 +363,14 @@ function mergeMenuImages(items: MenuItemType[]): MenuItemType[] {
   }));
 }
 
+const CATEGORY_OPTIONS = [
+  { id: "mains", label: "Mains" },
+  { id: "appetizers", label: "Appetizers" },
+  { id: "ramen", label: "Udon" },
+  { id: "desserts", label: "Desserts" },
+  { id: "drinks", label: "Drinks" },
+] as const;
+
 export function OrderingPage({
   tableNumber,
   userName,
@@ -672,34 +679,45 @@ const handleAddFromDialog = (item: MenuItemType) => {
   };
 
   const subtotal = calculateCartSubtotal(cart);
+  const activeCategoryLabel =
+    CATEGORY_OPTIONS.find((category) => category.id === activeCategory)?.label ?? "Mains";
+  const activeMenuItems = menuItems.filter((item) => item.category === activeCategory);
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB]">
+    <div className="relative min-h-screen overflow-hidden">
+      <SeigaihaPattern />
+      <div className="pointer-events-none absolute left-[-6rem] top-12 h-64 w-64 rounded-full bg-[color:var(--gold)]/10 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-[-7rem] right-[-4rem] h-72 w-72 rounded-full bg-[color:var(--olive)]/10 blur-3xl" />
             {/* Header */}
-      <header className="bg-white border-b border-[#E5E7EB] shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-3">
+      <header className="sticky top-0 z-50 border-b border-[color:var(--border)] bg-[rgba(248,244,234,0.88)] shadow-sm backdrop-blur-xl">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Logo and User Info in one row */}
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4">
               {/* Logo */}
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-[#0F1729] to-[#2D3E5F] rounded-full flex items-center justify-center">
-                  <UtensilsCrossed className="w-4 h-4 text-[#D4AF37]" strokeWidth={2} />
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[color:var(--ink)] text-[color:var(--gold)] shadow-[0_16px_32px_rgba(40,52,90,0.15)]">
+                  <UtensilsCrossed className="h-6 w-6" />
                 </div>
                 <div>
-                  <h1 className="text-base font-bold text-[#0F1729] leading-tight">Koryori Hayashi</h1>
-                  <p className="text-[10px] text-[#6B7280]">小料理林</p>
+                  <p className="menu-kicker mb-1">Koryori Hayashi</p>
+                  <h1 className="menu-title text-3xl leading-none text-[color:var(--ink)]">Lunch Menu</h1>
                 </div>
               </div>
             </div>
             
             {/* Right side - Weather and Table */}
-            <div className="flex items-center gap-3">
-              
-              <div className="flex items-center gap-1.5 bg-[#F3F4F6] px-3 py-1.5 rounded-lg">
-                <QrCode className="w-3.5 h-3.5 text-[#6B7280]" />
-                <span className="text-xs text-[#6B7280]">Table</span>
-                <span className="text-sm font-bold text-[#0F1729]">{tableNumber}</span>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              {weatherData && (
+                <div className="stamp-badge flex items-center gap-2 rounded-full px-3 py-2 text-xs uppercase tracking-[0.14em]">
+                  {getWeatherIcon(weatherData.condition)}
+                  <span>{weatherData.temperature}F</span>
+                </div>
+              )}
+
+              <div className="stamp-badge flex items-center gap-2 rounded-full px-3 py-2 text-xs uppercase tracking-[0.14em]">
+                <QrCode className="h-3.5 w-3.5" />
+                <span>Table {tableNumber}</span>
               </div>
             </div>
           </div>
@@ -710,17 +728,19 @@ const handleAddFromDialog = (item: MenuItemType) => {
 
 
          {currentView === "games" ? (
-        <InAppGames
-          currentPoints={loyaltyProfile.points}
-          phoneNumber={phoneNumber}
-          userName={userName}
-          onEarnPoints={addLoyaltyPoints}
-          onBackToOrdering={() => setCurrentView("ordering")}
-        />
+        <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <InAppGames
+            currentPoints={loyaltyProfile.points}
+            phoneNumber={phoneNumber}
+            userName={userName}
+            onEarnPoints={addLoyaltyPoints}
+            onBackToOrdering={() => setCurrentView("ordering")}
+          />
+        </main>
       ) : (
       <>
             {/* Main Content */}
-      <main className="container mx-auto px-6 py-8 pt-16 relative">
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 relative">
         {isInitialDataLoading ? (
           <div className="space-y-6">
             <div className="max-w-md rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
@@ -763,95 +783,175 @@ const handleAddFromDialog = (item: MenuItemType) => {
           </div>
         ) : (
         <>
-        <div className="mb-6 max-w-md">
-          <LoyaltyCard profile={loyaltyProfile} />
-        </div>
-
-        {/* Status Badges - Now in a single row */}
-        <div className="absolute top-6 right-6 flex items-center gap-2">
-          {/* Guest/Loyalty Info Button - moved here */}
-           <button
-            onClick={() => setLoyaltyInfoOpen(true)}
-            className="flex items-center gap-2 bg-[#F3F4F6] hover:bg-[#E5E7EB] px-3 py-2 rounded-lg text-xs font-medium transition-colors"
-          >
-
-            <span className="text-[#6B7280]">👋</span>
-            <span className="text-[#0F1729] font-medium">{userName}</span>
-            <span className="text-[#6B7280]">•</span>
-            <span className="text-[#D4AF37]">⭐</span>
-            <span className="text-[#0F1729] font-medium">
-              {isLoyaltyLoading ? "Syncing..." : loyaltyProfile.points}
-            </span>
-             <span className="text-[#6B7280] text-[10px] capitalize">
-              {isLoyaltyLoading ? "(loading)" : `(${loyaltyProfile.tier})`}
-             </span>
-          </button>
-
-          {hasPlacedOrder && (
-            <button
-              onClick={() => setCurrentView("games")}
-              className="flex items-center gap-2 bg-[#0F1729] hover:bg-[#1A2642] px-3 py-2 rounded-lg text-xs font-medium text-white transition-colors"
-            >
-              Play Games
-            </button>
-          )}
-          
-          {/* Personalized badge */}
-
-          {flavorPreferences && (
-            <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-2 rounded-lg text-xs font-medium">
-              <Sparkles className="w-3 h-3" />
-              Personalized
-            </div>
-          )}
-
-          <button
-            onClick={onUpdateFlavorPreferences}
-            className="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100"
-          >
-            <Info className="h-3 w-3" />
-            Update Taste Profile
-          </button>
-          
-          {/* Birthday badge */}
-          {loyaltyProfile.isBirthday && (
-            <div className="flex items-center gap-2 bg-pink-50 text-pink-700 px-3 py-2 rounded-lg text-xs font-medium">
-              🎂 Birthday Bonus Active
-            </div>
-          )}
-        </div>
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
         
-        {/* Weather banner */}
-        {weatherData && (
-          <div className="mb-6 bg-white border border-[#E5E7EB] rounded-xl p-4 flex items-center gap-3">
-             {weatherData && (
-                <div className="flex items-center gap-1.5 bg-[#F3F4F6] px-2 py-1.5 rounded-lg">
+        <section className="space-y-6">
+          {weatherData && (
+            <div className="paper-panel flex flex-col gap-4 rounded-[28px] border-[color:var(--border)] p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+              <div className="flex items-center gap-3">
+                <div className="stamp-badge flex items-center gap-2 rounded-full px-4 py-2 text-xs uppercase tracking-[0.14em]">
                   {getWeatherIcon(weatherData.condition)}
-                  <span className="text-xs font-medium text-[#0F1729]">{weatherData.temperature}°F</span>
+                  <span>{weatherData.temperature}F</span>
                 </div>
-              )}
-            <div>
-              <h3 className="font-semibold text-[#0F1729] text-sm">
-                {getPerfectWeatherMessage(weatherData)}
-              </h3>
-              <p className="text-xs text-[#6B7280]">{weatherData.description}</p>
+                <div>
+                  <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-[color:var(--ink)]">
+                    {getPerfectWeatherMessage(weatherData)}
+                  </h3>
+                  <p className="text-xs text-[color:var(--ink-soft)]">{weatherData.description}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="stamp-badge rounded-full px-4 py-2 text-xs uppercase tracking-[0.14em] text-[color:var(--ink)]">
+                  Table {tableNumber}
+                </div>
+                <div className="stamp-badge rounded-full px-4 py-2 text-xs uppercase tracking-[0.14em] text-[color:var(--ink)]">
+                  {userName}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="paper-panel rounded-[28px] border-[color:var(--border)] p-3">
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {CATEGORY_OPTIONS.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => setActiveCategory(category.id)}
+                  className={`shrink-0 rounded-full px-5 py-3 text-sm font-semibold uppercase tracking-[0.14em] transition-colors ${
+                    activeCategory === category.id
+                      ? "bg-[color:var(--ink)] text-[color:var(--paper)] shadow-[0_14px_30px_rgba(40,52,90,0.14)]"
+                      : "border border-[color:var(--border)] bg-white/72 text-[color:var(--ink)] hover:border-[color:var(--gold)]/45 hover:bg-white"
+                  }`}
+                >
+                  {category.label}
+                </button>
+              ))}
             </div>
           </div>
-        )}
+
+          <div className="paper-panel rounded-[30px] border-[color:var(--border)] p-6 sm:p-8">
+            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div>
+                <p className="menu-kicker mb-2">Menu</p>
+                <h2 className="menu-title text-4xl text-[color:var(--ink)]">{activeCategoryLabel}</h2>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {flavorPreferences && (
+                  <div className="rounded-full border border-emerald-600/18 bg-emerald-50 px-3 py-2 text-xs font-medium uppercase tracking-[0.14em] text-emerald-700">
+                    Personalized
+                  </div>
+                )}
+                {loyaltyProfile.isBirthday && (
+                  <div className="rounded-full border border-[color:var(--rose)]/20 bg-pink-50 px-3 py-2 text-xs font-medium uppercase tracking-[0.14em] text-pink-700">
+                    Birthday Bonus Active
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
+              {activeMenuItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="w-full cursor-pointer transition-transform hover:scale-[1.01]"
+                  onClick={() => handleItemClick(item)}
+                >
+                  <MenuItem item={item} onAddToCart={handleAddToCart} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {recommendations.length > 0 && (
+            <div className="paper-panel rounded-[30px] border-[color:var(--border)] p-6 sm:p-8">
+              <div className="mb-8 flex flex-wrap items-center gap-4">
+                <div className="relative rounded-[22px] bg-[linear-gradient(135deg,var(--ink),rgba(40,52,90,0.76))] p-3 shadow-xl">
+                  <Sparkles className="relative z-10 h-7 w-7 text-white" strokeWidth={2} />
+                  <div className="absolute inset-0 rounded-[22px] bg-gradient-to-t from-transparent to-white/20" />
+                  <CherryBlossom className="absolute -bottom-2 -right-2 opacity-90 drop-shadow-md" size={24} />
+                </div>
+
+                <div>
+                  <p className="menu-kicker mb-2">Suggested Dishes</p>
+                  <h2 className="menu-title text-4xl text-[color:var(--ink)]">Recommended for Your Table</h2>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2 2xl:grid-cols-3">
+                {recommendations.map((rec) => (
+                  <RecommendationCard
+                    key={rec.item.id}
+                    item={rec.item}
+                    reason={rec.reason}
+                    onAddToCart={handleAddToCart}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+
+        <aside className="order-first space-y-4 self-start xl:order-none xl:sticky xl:top-24">
+          <LoyaltyCard profile={loyaltyProfile} />
+
+          <div className="paper-panel rounded-[30px] border-[color:var(--border)] p-5 sm:p-6">
+            <p className="menu-kicker mb-2">Quick Actions</p>
+            <h3 className="menu-title text-3xl text-[color:var(--ink)]">Your Table</h3>
+
+            <div className="mt-5 space-y-3">
+              <Button
+                onClick={onUpdateFlavorPreferences}
+                className="h-12 w-full rounded-[20px] bg-[color:var(--ink)] text-sm font-semibold text-[color:var(--paper)] shadow-[0_18px_34px_rgba(40,52,90,0.16)] hover:bg-[color:var(--ink)]/92"
+              >
+                <Sparkles className="mr-2 h-4 w-4 text-[color:var(--gold)]" />
+                Update Taste Profile
+              </Button>
+
+              {hasPlacedOrder && (
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentView("games")}
+                  className="h-12 w-full rounded-[20px] border-[color:var(--border)] bg-white/78 text-sm font-semibold text-[color:var(--ink)] hover:border-[color:var(--gold)]/45 hover:bg-white"
+                >
+                  Play Games
+                </Button>
+              )}
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              <div className="rounded-[22px] border border-[color:var(--border)] bg-white/72 px-4 py-4">
+                <p className="menu-kicker mb-2">Member</p>
+                <p className="text-lg font-semibold text-[color:var(--ink)]">{userName}</p>
+                <p className="mt-1 text-xs text-[color:var(--ink-soft)] capitalize">
+                  {isLoyaltyLoading ? "Syncing rewards" : `${loyaltyProfile.points} points | ${loyaltyProfile.tier}`}
+                </p>
+              </div>
+
+              <div className="rounded-[22px] border border-[color:var(--border)] bg-white/72 px-4 py-4">
+                <p className="menu-kicker mb-2">Session</p>
+                <p className="text-lg font-semibold text-[color:var(--ink)]">Table {tableNumber}</p>
+                <p className="mt-1 text-xs text-[color:var(--ink-soft)]">Ready for ordering</p>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
         
                    {/* Main Content with Vertical Categories */}
-      <div className="flex gap-6">
+      <div className="hidden">
                {/* Left Sidebar - Vertical Categories */}
-        <aside className="w-24 shrink-0">
-          <div className="sticky top-20 bg-white rounded-xl border border-[#E5E7EB] p-2">
+        <aside className="w-32 shrink-0">
+          <div className="paper-panel sticky top-24 rounded-[24px] border-[color:var(--border)] p-3">
             <div className="flex flex-col gap-1">
               <button
                 onClick={() => setActiveCategory("mains")}
                 title="Mains"
-                className={`w-full flex items-center px-2 py-2.5 rounded-lg text-left transition-colors ${
+                className={`w-full px-3 py-3 rounded-[18px] text-left transition-colors ${
                   activeCategory === "mains" 
-                    ? "bg-[#0F1729] text-white" 
-                    : "hover:bg-[#F3F4F6] text-[#0F1729]"
+                    ? "bg-[color:var(--ink)] text-[color:var(--paper)]" 
+                    : "hover:bg-white text-[color:var(--ink)]"
                 }`}
               >
                 <span className="text-base mr-1.5">🍱</span>
@@ -860,10 +960,10 @@ const handleAddFromDialog = (item: MenuItemType) => {
               <button
                 onClick={() => setActiveCategory("appetizers")}
                 title="Appetizers"
-                className={`w-full flex items-center px-2 py-2.5 rounded-lg text-left transition-colors ${
+                className={`w-full px-3 py-3 rounded-[18px] text-left transition-colors ${
                   activeCategory === "appetizers" 
-                    ? "bg-[#0F1729] text-white" 
-                    : "hover:bg-[#F3F4F6] text-[#0F1729]"
+                    ? "bg-[color:var(--ink)] text-[color:var(--paper)]" 
+                    : "hover:bg-white text-[color:var(--ink)]"
                 }`}
               >
                 <span className="text-base mr-1.5">🥟</span>
@@ -872,10 +972,10 @@ const handleAddFromDialog = (item: MenuItemType) => {
               <button
                 onClick={() => setActiveCategory("ramen")}
                 title="Ramen"
-                className={`w-full flex items-center px-2 py-2.5 rounded-lg text-left transition-colors ${
+                className={`w-full px-3 py-3 rounded-[18px] text-left transition-colors ${
                   activeCategory === "ramen" 
-                    ? "bg-[#0F1729] text-white" 
-                    : "hover:bg-[#F3F4F6] text-[#0F1729]"
+                    ? "bg-[color:var(--ink)] text-[color:var(--paper)]" 
+                    : "hover:bg-white text-[color:var(--ink)]"
                 }`}
               >
                 <span className="text-base mr-1.5">🍜</span>
@@ -884,10 +984,10 @@ const handleAddFromDialog = (item: MenuItemType) => {
               <button
                 onClick={() => setActiveCategory("desserts")}
                 title="Desserts"
-                className={`w-full flex items-center px-2 py-2.5 rounded-lg text-left transition-colors ${
+                className={`w-full px-3 py-3 rounded-[18px] text-left transition-colors ${
                   activeCategory === "desserts" 
-                    ? "bg-[#0F1729] text-white" 
-                    : "hover:bg-[#F3F4F6] text-[#0F1729]"
+                    ? "bg-[color:var(--ink)] text-[color:var(--paper)]" 
+                    : "hover:bg-white text-[color:var(--ink)]"
                 }`}
               >
                 <span className="text-base mr-1.5">🍦</span>
@@ -896,10 +996,10 @@ const handleAddFromDialog = (item: MenuItemType) => {
               <button
                 onClick={() => setActiveCategory("drinks")}
                 title="Drinks"
-                className={`w-full flex items-center px-2 py-2.5 rounded-lg text-left transition-colors ${
+                className={`w-full px-3 py-3 rounded-[18px] text-left transition-colors ${
                   activeCategory === "drinks" 
-                    ? "bg-[#0F1729] text-white" 
-                    : "hover:bg-[#F3F4F6] text-[#0F1729]"
+                    ? "bg-[color:var(--ink)] text-[color:var(--paper)]" 
+                    : "hover:bg-white text-[color:var(--ink)]"
                 }`}
               >
                 <span className="text-base mr-1.5">🍵</span>
@@ -913,7 +1013,7 @@ const handleAddFromDialog = (item: MenuItemType) => {
         <section className="flex-1 min-w-0">
           {activeCategory === "mains" && (
             <>
-              <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Mains</h2>
+              <h2 className="menu-title mb-6 text-4xl text-[color:var(--ink)]">Mains</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                 {menuItems.filter(item => item.category === 'mains').map(item => (
                  <div 
@@ -930,7 +1030,7 @@ const handleAddFromDialog = (item: MenuItemType) => {
           
                   {activeCategory === "appetizers" && (
             <>
-              <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Appetizers</h2>
+              <h2 className="menu-title mb-6 text-4xl text-[color:var(--ink)]">Appetizers</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                 {menuItems.filter(item => item.category === 'appetizers').map(item => (
                   <div 
@@ -947,7 +1047,7 @@ const handleAddFromDialog = (item: MenuItemType) => {
           
                     {activeCategory === "ramen" && (
             <>
-              <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Ramen</h2>
+              <h2 className="menu-title mb-6 text-4xl text-[color:var(--ink)]">Ramen</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                 {menuItems.filter(item => item.category === 'ramen').map(item => (
                   <div 
@@ -964,7 +1064,7 @@ const handleAddFromDialog = (item: MenuItemType) => {
 
                     {activeCategory === "desserts" && (
             <>
-              <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Desserts</h2>
+              <h2 className="menu-title mb-6 text-4xl text-[color:var(--ink)]">Desserts</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                 {menuItems.filter(item => item.category === 'desserts').map(item => (
                   <div 
@@ -981,7 +1081,7 @@ const handleAddFromDialog = (item: MenuItemType) => {
           
                     {activeCategory === "drinks" && (
             <>
-              <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Drinks</h2>
+              <h2 className="menu-title mb-6 text-4xl text-[color:var(--ink)]">Drinks</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                 {menuItems.filter(item => item.category === 'drinks').map(item => (
                   <div 
@@ -1001,42 +1101,42 @@ const handleAddFromDialog = (item: MenuItemType) => {
 
         {/* Recommendations */}
         {recommendations.length > 0 && (
-          <div className="mt-16 relative">
+          <div className="hidden">
             {/* Divider */}
             <div className="absolute -top-8 left-0 right-0 flex items-center justify-center">
               <div className="flex items-center gap-3">
-                <div className="h-px w-20 bg-gradient-to-r from-transparent to-[#7C8A7A]/30" />
+                <div className="h-px w-20 bg-gradient-to-r from-transparent to-[color:var(--gold)]/40" />
                 <div className="flex gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#7C8A7A]/40" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#7C8A7A]/60" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#7C8A7A]" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#7C8A7A]/60" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#7C8A7A]/40" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[color:var(--gold)]/35" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[color:var(--gold)]/55" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[color:var(--gold)]" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[color:var(--gold)]/55" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[color:var(--gold)]/35" />
                 </div>
-                <div className="h-px w-20 bg-gradient-to-l from-transparent to-[#7C8A7A]/30" />
+                <div className="h-px w-20 bg-gradient-to-l from-transparent to-[color:var(--gold)]/40" />
               </div>
             </div>
             
             <div className="flex items-center gap-4 mb-8 mt-8 flex-wrap">
               <div className="relative">
                 {/* Animated glow */}
-                <div className="absolute inset-0 w-14 h-14 bg-[#7C8A7A]/30 rounded-full blur-xl animate-pulse" />
+                <div className="absolute inset-0 h-14 w-14 rounded-full bg-[color:var(--gold)]/20 blur-xl animate-pulse" />
                 
-                <div className="relative bg-gradient-to-br from-[#7C8A7A] to-[#9BA89A] rounded-2xl p-3 shadow-xl">
+                <div className="relative rounded-2xl bg-[linear-gradient(135deg,var(--ink),rgba(40,52,90,0.76))] p-3 shadow-xl">
                   <Sparkles className="w-7 h-7 text-white relative z-10" strokeWidth={2} />
                   <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent to-white/30" />
                   
                   {/* Sparkle decorations */}
-                  <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-[#7C8A7A] opacity-70 animate-ping" strokeWidth={2} />
+                  <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-[color:var(--gold)] opacity-70 animate-ping" strokeWidth={2} />
                 </div>
                 
                 <CherryBlossom className="absolute -bottom-1 -right-1 opacity-90 drop-shadow-md" size={24} />
               </div>
               
               <div className="flex-1">
-                <h2 className="text-4xl font-bold text-[#4A5548] mb-1" style={{ fontFamily: 'serif' }}> Recommendations おすすめ</h2>
-                <p className="text-sm text-[#6B7669] font-light tracking-wide">
-                  Multi-Armed Bandit • Thompson Sampling • Weather-Aware • Flavor-Matched • User History •  Recommended Pairing
+                <h2 className="menu-title mb-1 text-4xl text-[color:var(--ink)]">Recommendations</h2>
+                <p className="text-sm tracking-wide text-[color:var(--ink-soft)]">
+                  Thompson sampling, weather cues, flavor matching, order history, and pairing data.
                 </p>
               </div>
               

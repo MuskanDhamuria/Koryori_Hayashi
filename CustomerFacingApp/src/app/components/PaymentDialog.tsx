@@ -9,9 +9,9 @@ import {
   Tag,
   Ticket,
 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
-import { Button } from "./ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
 import type { LoyaltyProfile } from "./LoyaltyCard";
 import {
   calculatePricing,
@@ -32,11 +32,11 @@ interface PaymentDialogProps {
 }
 
 const discountIcons: Record<DiscountId, JSX.Element> = {
-  "points-5": <Tag className="w-5 h-5" />,
-  "points-10": <Tag className="w-5 h-5" />,
-  "points-15": <Tag className="w-5 h-5" />,
-  "first-time": <Gift className="w-5 h-5" />,
-  referral: <Ticket className="w-5 h-5" />,
+  "points-5": <Tag className="h-5 w-5" />,
+  "points-10": <Tag className="h-5 w-5" />,
+  "points-15": <Tag className="h-5 w-5" />,
+  "first-time": <Gift className="h-5 w-5" />,
+  referral: <Ticket className="h-5 w-5" />,
 };
 
 export function PaymentDialog({
@@ -104,34 +104,36 @@ export function PaymentDialog({
   if (isPaid) {
     return (
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="border-[color:var(--border)] bg-[color:var(--popover)] sm:max-w-md">
           <div className="flex flex-col items-center py-6 text-center">
-            <CheckCircle2 className="mb-4 h-20 w-20 text-emerald-500" />
-            <h2 className="mb-2 text-2xl font-bold text-[#0F1729]">Payment Successful!</h2>
-            <p className="mb-4 text-[#6B7280]">Your order has been placed</p>
-            <div className="mb-6 w-full rounded-lg bg-gradient-to-r from-[#0F1729] to-[#2D3E5F] p-4">
+            <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full border border-emerald-500/24 bg-emerald-500/10">
+              <CheckCircle2 className="h-14 w-14 text-emerald-500" />
+            </div>
+            <h2 className="menu-title mb-2 text-4xl text-[color:var(--ink)]">Payment Successful</h2>
+            <p className="mb-4 text-sm leading-6 text-[color:var(--ink-soft)]">Your order has been placed.</p>
+            <div className="paper-panel-dark mb-6 w-full rounded-[28px] p-5">
               <div className="mb-2 flex items-center justify-center gap-2">
-                <Star className="h-5 w-5 text-[#D4AF37]" />
-                <span className="font-bold text-white">
+                <Star className="h-5 w-5 text-[color:var(--gold)]" />
+                <span className="font-bold text-[color:var(--paper)]">
                   {completedEarnedPoints ?? pricing.pointsEarned} Points Earned!
                 </span>
               </div>
-              <p className="text-sm text-white/70">
+              <p className="text-sm text-[color:var(--paper)]/72">
                 New balance: {(completedPointsBalance ?? pricing.projectedPointsBalance).toLocaleString()} points
               </p>
               {selectedDiscountData?.requiresPoints ? (
-                <p className="mt-2 text-xs text-white/60">
+                <p className="mt-2 text-xs text-[color:var(--paper)]/58">
                   -{pricing.selectedDiscountPointsCost} points used
                 </p>
               ) : null}
             </div>
-            <p className="mb-6 text-sm text-[#6B7280]">
-              Your food will be prepared shortly. Estimated time: 15-20 minutes
+            <p className="mb-6 text-sm leading-6 text-[color:var(--ink-soft)]">
+              Your food will be prepared shortly. Estimated time: 15 to 20 minutes.
             </p>
 
             <Button
               onClick={handleClose}
-              className="w-full bg-[#0F1729] text-white shadow-md hover:bg-[#1A2642]"
+              className="w-full rounded-full bg-[color:var(--ink)] text-[color:var(--paper)] hover:bg-[color:var(--ink)]/92"
             >
               Done
             </Button>
@@ -143,31 +145,39 @@ export function PaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-y-auto border-[color:var(--border)] bg-[color:var(--popover)] sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-[#0F1729]">Complete Payment</DialogTitle>
-          <DialogDescription>Review your order and select a discount</DialogDescription>
+          <DialogTitle className="menu-title text-4xl text-[color:var(--ink)]">Complete Payment</DialogTitle>
+          <DialogDescription className="text-[color:var(--ink-soft)]">
+            Review your order, apply a voucher, and choose how to pay.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
-          <div className="space-y-2 rounded-xl bg-[#F9FAFB] p-4">
+          <div className="rounded-[26px] border border-[color:var(--border)] bg-white/72 p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <p className="menu-kicker">Order Summary</p>
+              <span className="rounded-full border border-[color:var(--border)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink-soft)]">
+                Secure Checkout
+              </span>
+            </div>
             <div className="flex justify-between text-sm">
-              <span className="text-[#6B7280]">Subtotal</span>
-              <span className="font-semibold text-[#0F1729]">${pricing.subtotal.toFixed(2)}</span>
+              <span className="text-[color:var(--ink-soft)]">Subtotal</span>
+              <span className="font-semibold text-[color:var(--ink)]">${pricing.subtotal.toFixed(2)}</span>
             </div>
             {pricing.birthdayDiscountPercent > 0 ? (
               <div className="flex justify-between text-sm">
-                <span className="text-pink-600">
+                <span className="text-[color:var(--rose)]">
                   Birthday Discount ({pricing.birthdayDiscountPercent}%)
                 </span>
-                <span className="font-semibold text-pink-600">
+                <span className="font-semibold text-[color:var(--rose)]">
                   -${pricing.birthdayDiscountAmount.toFixed(2)}
                 </span>
               </div>
             ) : null}
             <div className="flex justify-between text-sm">
-              <span className="text-[#6B7280]">Tax (10%)</span>
-              <span className="font-semibold text-[#0F1729]">${pricing.taxAmount.toFixed(2)}</span>
+              <span className="text-[color:var(--ink-soft)]">Tax (10%)</span>
+              <span className="font-semibold text-[color:var(--ink)]">${pricing.taxAmount.toFixed(2)}</span>
             </div>
             {pricing.selectedDiscountId ? (
               <div className="flex justify-between text-sm">
@@ -180,26 +190,26 @@ export function PaymentDialog({
                 </span>
               </div>
             ) : null}
-            <div className="my-2 h-px bg-[#E5E7EB]" />
+            <div className="my-3 h-px bg-[color:var(--border)]" />
             <div className="flex justify-between">
-              <span className="font-bold text-[#0F1729]">Total</span>
-              <span className="text-2xl font-bold text-[#0F1729]">
+              <span className="font-bold text-[color:var(--ink)]">Total</span>
+              <span className="text-2xl font-bold text-[color:var(--ink)]">
                 ${pricing.finalTotal.toFixed(2)}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 rounded-lg bg-gradient-to-r from-[#0F1729] to-[#2D3E5F] p-4">
-            <Star className="h-6 w-6 text-[#D4AF37]" />
+          <div className="paper-panel-dark flex items-center gap-3 rounded-[26px] p-5">
+            <Star className="h-6 w-6 text-[color:var(--gold)]" />
             <div className="flex-1">
-              <p className="text-sm text-white/90">You'll earn with this order</p>
-              <p className="text-lg font-bold text-white">{pricing.pointsEarned} loyalty points</p>
+              <p className="text-sm text-[color:var(--paper)]/88">You'll earn with this order</p>
+              <p className="text-lg font-bold text-[color:var(--paper)]">{pricing.pointsEarned} loyalty points</p>
             </div>
           </div>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-[#0F1729]">Apply One Discount (Optional)</p>
+              <p className="menu-kicker">Apply One Discount</p>
               {selectedDiscount ? (
                 <Button
                   variant="ghost"
@@ -218,38 +228,40 @@ export function PaymentDialog({
                   key={discount.id}
                   onClick={() => discount.available && setSelectedDiscount(discount.id)}
                   disabled={!discount.available}
-                  className={`flex w-full items-center gap-3 rounded-lg border-2 p-3 transition-all ${
+                  className={`flex w-full items-center gap-3 rounded-[22px] border p-4 transition-all ${
                     selectedDiscount === discount.id
-                      ? "border-[#D4AF37] bg-[#D4AF37]/10"
+                      ? "border-[color:var(--gold)] bg-[color:var(--gold)]/10"
                       : discount.available
-                        ? "border-[#E5E7EB] hover:border-[#D4AF37]/50 hover:bg-[#F9FAFB]"
-                        : "cursor-not-allowed border-[#E5E7EB] opacity-40"
+                        ? "border-[color:var(--border)] bg-white/72 hover:border-[color:var(--gold)]/55 hover:bg-white"
+                        : "cursor-not-allowed border-[color:var(--border)] bg-white/48 opacity-45"
                   }`}
                 >
                   <div
                     className={`flex h-10 w-10 items-center justify-center rounded-lg ${
                       selectedDiscount === discount.id
-                        ? "bg-[#D4AF37] text-white"
+                        ? "bg-[color:var(--gold)] text-[color:var(--ink)]"
                         : discount.available
-                          ? "bg-[#F3F4F6] text-[#6B7280]"
-                          : "bg-[#F3F4F6] text-[#9CA3AF]"
+                          ? "bg-[color:var(--ink)]/7 text-[color:var(--ink-soft)]"
+                          : "bg-[color:var(--ink)]/6 text-[color:var(--ink-soft)]"
                     }`}
                   >
                     {discountIcons[discount.id]}
                   </div>
                   <div className="flex-1 text-left">
-                    <p className="text-sm font-semibold text-[#0F1729]">{discount.name}</p>
-                    <p className="text-xs text-[#6B7280]">{discount.description}</p>
+                    <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[color:var(--ink)]">
+                      {discount.name}
+                    </p>
+                    <p className="text-xs text-[color:var(--ink-soft)]">{discount.description}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-[#0F1729]">-${discount.discount.toFixed(2)}</p>
+                    <p className="font-bold text-[color:var(--ink)]">-${discount.discount.toFixed(2)}</p>
                     {discount.requiresPoints ? (
                       <Badge
                         variant="outline"
                         className={`text-xs ${
                           discount.available
-                            ? "border-[#D4AF37] text-[#D4AF37]"
-                            : "border-[#E5E7EB] text-[#9CA3AF]"
+                            ? "border-[color:var(--gold)] text-[color:var(--gold)]"
+                            : "border-[color:var(--border)] text-[color:var(--ink-soft)]"
                         }`}
                       >
                         {discount.pointsCost} pts
@@ -257,19 +269,19 @@ export function PaymentDialog({
                     ) : null}
                   </div>
                   {selectedDiscount === discount.id ? (
-                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#D4AF37]" />
+                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[color:var(--gold)]" />
                   ) : null}
                 </button>
               ))}
             </div>
 
-            <div className="flex items-center justify-between rounded-lg bg-[#F9FAFB] p-3">
-              <span className="text-sm text-[#6B7280]">Your Points Balance</span>
+            <div className="flex items-center justify-between rounded-[20px] border border-[color:var(--border)] bg-white/72 p-4">
+              <span className="text-sm text-[color:var(--ink-soft)]">Your Points Balance</span>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-[#0F1729]">{loyaltyProfile.points.toLocaleString()}</span>
+                <span className="font-bold text-[color:var(--ink)]">{loyaltyProfile.points.toLocaleString()}</span>
                 {pricing.selectedDiscountPointsCost > 0 ? (
                   <>
-                    <span className="text-[#6B7280]">-&gt;</span>
+                    <span className="text-[color:var(--ink-soft)]">-&gt;</span>
                     <span className="font-bold text-emerald-600">
                       {(loyaltyProfile.points - pricing.selectedDiscountPointsCost).toLocaleString()}
                     </span>
@@ -280,57 +292,57 @@ export function PaymentDialog({
           </div>
 
           {paymentError ? (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="rounded-[20px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {paymentError}
             </div>
           ) : null}
 
           <div className="space-y-3">
-            <p className="text-sm font-semibold text-[#0F1729]">Select Payment Method</p>
+            <p className="menu-kicker">Select Payment Method</p>
 
             <button
               onClick={() => setPaymentMethod("card")}
-              className={`flex w-full items-center gap-3 rounded-lg border-2 p-4 transition-colors ${
+              className={`flex w-full items-center gap-3 rounded-[22px] border p-4 transition-colors ${
                 paymentMethod === "card"
-                  ? "border-[#D4AF37] bg-[#D4AF37]/5"
-                  : "border-[#E5E7EB] hover:border-[#D4AF37]/50"
+                  ? "border-[color:var(--gold)] bg-[color:var(--gold)]/10"
+                  : "border-[color:var(--border)] bg-white/72 hover:border-[color:var(--gold)]/55"
               }`}
             >
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                  paymentMethod === "card" ? "bg-[#D4AF37]" : "bg-[#F3F4F6]"
+                  paymentMethod === "card" ? "bg-[color:var(--gold)]" : "bg-[color:var(--ink)]/7"
                 }`}
               >
                 <CreditCard
-                  className={`h-5 w-5 ${paymentMethod === "card" ? "text-white" : "text-[#6B7280]"}`}
+                  className={`h-5 w-5 ${paymentMethod === "card" ? "text-[color:var(--ink)]" : "text-[color:var(--ink-soft)]"}`}
                 />
               </div>
               <div className="text-left">
-                <p className="font-semibold text-[#0F1729]">Credit/Debit Card</p>
-                <p className="text-xs text-[#6B7280]">Visa, Mastercard, Amex</p>
+                <p className="font-semibold uppercase tracking-[0.12em] text-[color:var(--ink)]">Credit or Debit Card</p>
+                <p className="text-xs text-[color:var(--ink-soft)]">Visa, Mastercard, Amex</p>
               </div>
             </button>
 
             <button
               onClick={() => setPaymentMethod("mobile")}
-              className={`flex w-full items-center gap-3 rounded-lg border-2 p-4 transition-colors ${
+              className={`flex w-full items-center gap-3 rounded-[22px] border p-4 transition-colors ${
                 paymentMethod === "mobile"
-                  ? "border-[#D4AF37] bg-[#D4AF37]/5"
-                  : "border-[#E5E7EB] hover:border-[#D4AF37]/50"
+                  ? "border-[color:var(--gold)] bg-[color:var(--gold)]/10"
+                  : "border-[color:var(--border)] bg-white/72 hover:border-[color:var(--gold)]/55"
               }`}
             >
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                  paymentMethod === "mobile" ? "bg-[#D4AF37]" : "bg-[#F3F4F6]"
+                  paymentMethod === "mobile" ? "bg-[color:var(--gold)]" : "bg-[color:var(--ink)]/7"
                 }`}
               >
                 <Smartphone
-                  className={`h-5 w-5 ${paymentMethod === "mobile" ? "text-white" : "text-[#6B7280]"}`}
+                  className={`h-5 w-5 ${paymentMethod === "mobile" ? "text-[color:var(--ink)]" : "text-[color:var(--ink-soft)]"}`}
                 />
               </div>
               <div className="text-left">
-                <p className="font-semibold text-[#0F1729]">Mobile Payment</p>
-                <p className="text-xs text-[#6B7280]">Apple Pay, Google Pay</p>
+                <p className="font-semibold uppercase tracking-[0.12em] text-[color:var(--ink)]">Mobile Payment</p>
+                <p className="text-xs text-[color:var(--ink-soft)]">Apple Pay, Google Pay</p>
               </div>
             </button>
           </div>
@@ -338,7 +350,7 @@ export function PaymentDialog({
           <Button
             onClick={handlePayment}
             disabled={!paymentMethod || isCompleting || isSubmittingOrder}
-            className="h-12 w-full bg-[#0F1729] font-semibold text-white shadow-md hover:bg-[#1A2642] disabled:opacity-50"
+            className="h-12 w-full rounded-full bg-[color:var(--ink)] font-semibold text-[color:var(--paper)] shadow-[0_18px_38px_rgba(40,52,90,0.18)] hover:bg-[color:var(--ink)]/92 disabled:opacity-50"
           >
             {isCompleting || isSubmittingOrder
               ? "Processing..."

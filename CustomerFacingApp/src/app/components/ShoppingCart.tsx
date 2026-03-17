@@ -1,9 +1,9 @@
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "./ui/sheet";
+import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { Separator } from "./ui/separator";
-import { Badge } from "./ui/badge";
-import { ShoppingCart as CartIcon, Minus, Plus, Trash2, CreditCard, Star } from "lucide-react";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
+import { CreditCard, Minus, Plus, ShoppingCart as CartIcon, Star, Trash2 } from "lucide-react";
 import type { CartItem } from "../types";
 import type { LoyaltyProfile } from "./LoyaltyCard";
 import { calculateCartSubtotal, calculatePricing } from "../lib/pricing";
@@ -30,86 +30,99 @@ export function ShoppingCart({
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button className="fixed bottom-6 right-6 z-50 h-16 w-16 rounded-full border-4 border-white bg-gradient-to-br from-[#7C8A7A] to-[#9BA89A] shadow-2xl hover:from-[#6B7969] hover:to-[#8A9889]">
+        <Button className="fixed bottom-6 right-6 z-50 h-16 w-16 rounded-full border-4 border-[color:var(--paper)] bg-[color:var(--ink)] text-[color:var(--paper)] shadow-[0_24px_48px_rgba(40,52,90,0.22)] hover:bg-[color:var(--ink)]/92">
           <CartIcon className="h-6 w-6" />
-          {totalItems > 0 && (
-            <Badge className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 p-0">
+          {totalItems > 0 ? (
+            <Badge className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-[color:var(--gold)] p-0 text-[color:var(--ink)]">
               {totalItems}
             </Badge>
-          )}
+          ) : null}
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full px-4 sm:max-w-lg sm:px-6">
+      <SheetContent className="w-full border-l-[color:var(--border)] bg-[linear-gradient(180deg,rgba(255,251,244,0.98),rgba(244,239,226,0.98))] px-4 sm:max-w-lg sm:px-6">
         <SheetHeader>
-          <SheetTitle>Your Order</SheetTitle>
-          <SheetDescription>Review your items and proceed to checkout</SheetDescription>
+          <SheetTitle className="menu-title text-3xl text-[color:var(--ink)]">Your Order</SheetTitle>
+          <SheetDescription className="text-[color:var(--ink-soft)]">
+            Review your dishes and proceed to checkout.
+          </SheetDescription>
         </SheetHeader>
 
         {items.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center px-4 text-center">
-            <CartIcon className="mb-4 h-16 w-16 text-gray-300" />
-            <p className="text-gray-500">Your cart is empty</p>
-            <p className="text-sm text-gray-400">Add items from the menu to get started</p>
+            <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[color:var(--ink)]/6">
+              <CartIcon className="h-10 w-10 text-[color:var(--ink-soft)]" />
+            </div>
+            <p className="menu-title text-3xl text-[color:var(--ink)]">Your cart is empty</p>
+            <p className="mt-2 text-sm leading-6 text-[color:var(--ink-soft)]">
+              Add items from the menu to start building the order.
+            </p>
           </div>
         ) : (
           <div className="flex h-full flex-col">
             <ScrollArea className="flex-1">
               <div className="space-y-4 py-4 pr-2">
                 {items.map((item) => (
-                  <div key={item.id} className="flex gap-2 sm:gap-3">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="h-16 w-16 rounded object-cover sm:h-20 sm:w-20"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <h4 className="truncate text-sm font-semibold sm:text-base">{item.name}</h4>
-                      <p className="mb-1 text-xs text-gray-600 sm:mb-2 sm:text-sm">
-                        ${item.price.toFixed(2)} each
-                      </p>
-                      <div className="flex items-center gap-1 sm:gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-6 w-6 p-0 sm:h-7 sm:w-7"
-                          onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-                        >
-                          <Minus className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                        </Button>
-                        <span className="w-6 text-center text-sm sm:w-8 sm:text-base">{item.quantity}</span>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-6 w-6 p-0 sm:h-7 sm:w-7"
-                          onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                        >
-                          <Plus className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="ml-auto h-6 w-6 p-0 text-red-600 sm:h-7 sm:w-7"
-                          onClick={() => onRemoveItem(item.id)}
-                        >
-                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                        </Button>
+                  <div
+                    key={item.id}
+                    className="rounded-[24px] border border-[color:var(--border)] bg-white/74 p-3 shadow-[0_10px_28px_rgba(40,52,90,0.04)]"
+                  >
+                    <div className="flex gap-2 sm:gap-3">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="h-16 w-16 rounded-[16px] object-cover sm:h-20 sm:w-20"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <h4 className="truncate text-sm font-semibold uppercase tracking-[0.12em] text-[color:var(--ink)] sm:text-base">
+                          {item.name}
+                        </h4>
+                        <p className="mb-1 text-xs text-[color:var(--ink-soft)] sm:mb-2 sm:text-sm">
+                          ${item.price.toFixed(2)} each
+                        </p>
+                        <div className="flex items-center gap-1 sm:gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 w-7 rounded-full border-[color:var(--border)] bg-white/84 p-0 sm:h-8 sm:w-8"
+                            onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                          >
+                            <Minus className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                          </Button>
+                          <span className="w-6 text-center text-sm sm:w-8 sm:text-base">{item.quantity}</span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 w-7 rounded-full border-[color:var(--border)] bg-white/84 p-0 sm:h-8 sm:w-8"
+                            onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                          >
+                            <Plus className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="ml-auto h-7 w-7 rounded-full p-0 text-[color:var(--wine)] hover:bg-[color:var(--wine)]/10 sm:h-8 sm:w-8"
+                            onClick={() => onRemoveItem(item.id)}
+                          >
+                            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                    <div className="whitespace-nowrap text-sm font-semibold sm:text-base">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      <div className="whitespace-nowrap text-sm font-semibold text-[color:var(--ink)] sm:text-base">
+                        ${(item.price * item.quantity).toFixed(2)}
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             </ScrollArea>
 
-            <div className="space-y-2 border-t pt-3 sm:space-y-3 sm:pt-4">
-              <div className="flex justify-between text-xs sm:text-sm">
+            <div className="space-y-2 border-t border-[color:var(--border)] pt-4 sm:space-y-3 sm:pt-5">
+              <div className="flex justify-between text-xs text-[color:var(--ink-soft)] sm:text-sm">
                 <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span className="font-semibold text-[color:var(--ink)]">${subtotal.toFixed(2)}</span>
               </div>
-              {pricing.birthdayDiscountPercent > 0 && (
-                <div className="flex justify-between text-xs text-pink-600 sm:text-sm">
+              {pricing.birthdayDiscountPercent > 0 ? (
+                <div className="flex justify-between text-xs text-[color:var(--rose)] sm:text-sm">
                   <span className="mr-2 truncate">
                     Birthday Discount ({pricing.birthdayDiscountPercent}%)
                   </span>
@@ -117,27 +130,29 @@ export function ShoppingCart({
                     -${pricing.birthdayDiscountAmount.toFixed(2)}
                   </span>
                 </div>
-              )}
-              <div className="flex justify-between text-xs sm:text-sm">
+              ) : null}
+              <div className="flex justify-between text-xs text-[color:var(--ink-soft)] sm:text-sm">
                 <span>Tax (10%)</span>
-                <span>${pricing.taxAmount.toFixed(2)}</span>
+                <span className="font-semibold text-[color:var(--ink)]">${pricing.taxAmount.toFixed(2)}</span>
               </div>
               <Separator className="my-1 sm:my-2" />
-              <div className="flex justify-between text-sm font-bold sm:text-base">
+              <div className="flex justify-between text-sm font-bold text-[color:var(--ink)] sm:text-base">
                 <span>Total</span>
-                <span className="text-[#7C8A7A]">${pricing.finalTotal.toFixed(2)}</span>
+                <span>${pricing.finalTotal.toFixed(2)}</span>
               </div>
-              <div className="flex items-center gap-2 rounded-lg border border-[#7C8A7A]/30 bg-gradient-to-r from-[#E8DCC8] to-[#D4C9B8] p-2 backdrop-blur-sm sm:p-3">
-                <Star className="h-4 w-4 shrink-0 fill-[#9BA89A] text-[#7C8A7A] sm:h-5 sm:w-5" />
+              <div className="flex items-center gap-2 rounded-[22px] border border-[color:var(--border)] bg-[linear-gradient(135deg,rgba(196,163,91,0.18),rgba(113,130,111,0.08))] p-3 sm:p-4">
+                <Star className="h-4 w-4 shrink-0 fill-[color:var(--gold)] text-[color:var(--gold)] sm:h-5 sm:w-5" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-[#4A5548] sm:text-sm">Loyalty Points</p>
-                  <p className="truncate text-[10px] text-[#6B7669] sm:text-xs">
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[color:var(--ink)] sm:text-sm">
+                    Loyalty Points
+                  </p>
+                  <p className="truncate text-[10px] text-[color:var(--ink-soft)] sm:text-xs">
                     You'll earn {pricing.pointsEarned} points ({pricing.pointsMultiplier}x multiplier)
                   </p>
                 </div>
               </div>
               <Button
-                className="mb-10 w-full bg-gradient-to-r from-[#7C8A7A] to-[#9BA89A] py-2 text-sm font-semibold text-white shadow-lg hover:from-[#6B7969] hover:to-[#8A9889] sm:py-3 sm:text-base"
+                className="mb-10 w-full rounded-full bg-[color:var(--ink)] py-2 text-sm font-semibold text-[color:var(--paper)] shadow-[0_18px_38px_rgba(40,52,90,0.18)] hover:bg-[color:var(--ink)]/92 sm:py-3 sm:text-base"
                 size="default"
                 onClick={onCheckout}
               >

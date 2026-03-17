@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Button } from "./ui/button";
-import { Card } from "./ui/card";
-import { QrCode, ScanLine, MapPin, Check, Bird } from "lucide-react";
 import { motion } from "motion/react";
+import { Check, MapPin, QrCode, ScanLine, UtensilsCrossed } from "lucide-react";
+import { Card } from "./ui/card";
+import { Button } from "./ui/button";
+import { SeigaihaPattern } from "./JapanesePattern";
 
 interface QRScannerProps {
   userName: string;
@@ -16,7 +17,7 @@ export function QRScanner({ userName, onScanComplete }: QRScannerProps) {
 
   const handleScan = () => {
     setIsScanning(true);
-    
+
     setTimeout(() => {
       const supportedTables = ["A-1", "A-2", "B-1", "B-2"];
       const mockTableNumber = supportedTables[Math.floor(Math.random() * supportedTables.length)];
@@ -36,165 +37,179 @@ export function QRScanner({ userName, onScanComplete }: QRScannerProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0A0E1A] via-[#0F1729] to-[#1A2642] flex items-center justify-center p-4">
-      {/* Subtle grid pattern */}
-      <div className="fixed inset-0 opacity-5" style={{
-        backgroundImage: `linear-gradient(#D4AF37 1px, transparent 1px), linear-gradient(90deg, #D4AF37 1px, transparent 1px)`,
-        backgroundSize: '50px 50px'
-      }} />
+    <div className="relative min-h-screen overflow-hidden px-4 py-8 sm:px-6 lg:px-8">
+      <SeigaihaPattern />
+      <div className="pointer-events-none absolute right-[-4rem] top-[-3rem] h-56 w-56 rounded-full bg-[color:var(--gold)]/14 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-[-5rem] left-[-3rem] h-60 w-60 rounded-full bg-[color:var(--olive)]/14 blur-3xl" />
 
-      <Card className="w-full max-w-md relative bg-white shadow-2xl">
-        <div className="p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#0F1729] to-[#2D3E5F] rounded-full mb-4">
-              <span className="text-3xl">👋</span>
-            </div>
-            <h2 className="text-2xl font-bold text-[#0F1729] mb-2">
-              Welcome, {userName}!
-            </h2>
-            <p className="text-[#6B7280]">Scan the QR code at your table</p>
-          </div>
+      <div className="mx-auto flex min-h-screen max-w-4xl items-center justify-center">
+        <Card className="paper-panel w-full max-w-3xl gap-0 rounded-[32px] border-[color:var(--border)]">
+          <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[0.86fr_1.14fr]">
+            <aside className="paper-panel-dark rounded-[28px] p-6 text-[color:var(--paper)]">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-white/10 text-[color:var(--gold-soft)]">
+                  <UtensilsCrossed className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="menu-kicker text-[color:var(--gold-soft)]">Table Access</p>
+                  <h2 className="menu-title text-4xl text-[color:var(--paper)]">Hello, {userName}</h2>
+                </div>
+              </div>
 
-          {!scanned ? (
-            <>
-              {/* QR Scanner */}
-              <div className="mb-8">
-                <div className="relative aspect-square max-w-xs mx-auto">
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#F9FAFB] to-[#F3F4F6] rounded-2xl border-2 border-[#E5E7EB] overflow-hidden">
+              <p className="text-sm leading-7 text-[color:var(--paper)]/76">
+                Confirm the table code on your desk to unlock ordering, recommendations, and loyalty tracking.
+              </p>
+
+              <div className="mt-8 grid gap-3">
+                {[
+                  "Scan the table QR code for the fastest entry.",
+                  "Or pick from the available table codes below.",
+                  "Once confirmed, your menu will be ready immediately.",
+                ].map((item, index) => (
+                  <div
+                    key={item}
+                    className="rounded-[22px] border border-white/10 bg-white/6 px-4 py-4 text-sm leading-6 text-[color:var(--paper)]/78"
+                  >
+                    <span className="mr-3 inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-xs font-semibold text-[color:var(--gold-soft)]">
+                      {index + 1}
+                    </span>
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </aside>
+
+            <section className="flex flex-col justify-center">
+              {!scanned ? (
+                <>
+                  <div className="mb-6">
+                    <p className="menu-kicker mb-3">Scan or Select</p>
+                    <h1 className="menu-title text-4xl leading-tight">Find your table and begin.</h1>
+                    <p className="mt-3 text-sm leading-7 text-[color:var(--ink-soft)]">
+                      This step links the order to the correct table before customers start browsing the menu.
+                    </p>
+                  </div>
+
+                  <div className="relative mx-auto mb-8 aspect-square w-full max-w-xs rounded-[32px] border border-[color:var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.86),rgba(240,234,220,0.92))] p-5 shadow-[0_18px_44px_rgba(40,52,90,0.08)]">
+                    <div className="absolute left-4 top-4 h-8 w-8 rounded-tl-[18px] border-l-2 border-t-2 border-[color:var(--gold)]" />
+                    <div className="absolute right-4 top-4 h-8 w-8 rounded-tr-[18px] border-r-2 border-t-2 border-[color:var(--gold)]" />
+                    <div className="absolute bottom-4 left-4 h-8 w-8 rounded-bl-[18px] border-b-2 border-l-2 border-[color:var(--gold)]" />
+                    <div className="absolute bottom-4 right-4 h-8 w-8 rounded-br-[18px] border-b-2 border-r-2 border-[color:var(--gold)]" />
+
                     {!isScanning ? (
-                      <div className="flex items-center justify-center h-full">
-                        <QrCode className="w-32 h-32 text-[#6B7280]" />
+                      <div className="flex h-full items-center justify-center rounded-[24px] border border-dashed border-[color:var(--border)] bg-white/55">
+                        <QrCode className="h-28 w-28 text-[color:var(--ink-soft)]" />
                       </div>
                     ) : (
-                      <div className="flex items-center justify-center h-full bg-gradient-to-br from-[#0F1729] to-[#1A2642]">
-                        <div className="relative w-48 h-48 border-2 border-[#D4AF37] rounded-lg">
+                      <div className="paper-panel-dark relative flex h-full items-center justify-center rounded-[24px]">
+                        <div className="relative h-48 w-48 rounded-[20px] border border-[color:var(--gold-soft)]/55">
                           <motion.div
-                            className="absolute left-0 right-0 h-0.5 bg-[#D4AF37] shadow-lg shadow-[#D4AF37]/50"
-                            animate={{ top: ["0%", "100%"] }}
+                            className="absolute left-0 right-0 h-[2px] bg-[color:var(--gold)] shadow-[0_0_16px_rgba(196,163,91,0.65)]"
+                            animate={{ top: ["10%", "90%", "10%"] }}
                             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                           />
-                          <ScanLine className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 text-[#D4AF37] opacity-50" />
+                          <ScanLine className="absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 text-[color:var(--gold-soft)]/65" />
                         </div>
                       </div>
                     )}
                   </div>
-                  
-                  {/* Corner decorations */}
-                  <div className="absolute -top-1 -left-1 w-8 h-8 border-t-2 border-l-2 border-[#D4AF37] rounded-tl-lg" />
-                  <div className="absolute -top-1 -right-1 w-8 h-8 border-t-2 border-r-2 border-[#D4AF37] rounded-tr-lg" />
-                  <div className="absolute -bottom-1 -left-1 w-8 h-8 border-b-2 border-l-2 border-[#D4AF37] rounded-bl-lg" />
-                  <div className="absolute -bottom-1 -right-1 w-8 h-8 border-b-2 border-r-2 border-[#D4AF37] rounded-br-lg" />
-                </div>
-              </div>
 
-              <Button
-                onClick={handleScan}
-                disabled={isScanning}
-                className="w-full h-12 bg-[#0F1729] hover:bg-[#1A2642] text-white shadow-md mb-6"
-              >
-                {isScanning ? (
-                  <span className="flex items-center gap-2">
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    >
-                      <ScanLine className="w-5 h-5" />
-                    </motion.div>
-                    Scanning...
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2">
-                    <QrCode className="w-5 h-5" />
-                    Scan QR Code
-                  </span>
-                )}
-              </Button>
-
-              {/* Divider */}
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-[#E5E7EB]" />
-                </div>
-                <div className="relative flex justify-center">
-                  <span className="bg-white px-4 text-xs text-[#6B7280] uppercase">
-                    Or select table
-                  </span>
-                </div>
-              </div>
-
-              {/* Manual Table Selection */}
-              <div className="grid grid-cols-4 gap-2">
-                {["A-1", "A-2", "B-1", "B-2"].map((table) => (
                   <Button
-                    key={table}
-                    variant="outline"
-                    className="border-2 hover:bg-[#F9FAFB] hover:border-[#D4AF37]"
-                    onClick={() => handleManualEntry(table)}
+                    onClick={handleScan}
+                    disabled={isScanning}
+                    className="h-14 w-full rounded-full bg-[color:var(--ink)] text-[color:var(--paper)] shadow-[0_18px_38px_rgba(40,52,90,0.18)] hover:bg-[color:var(--ink)]/92"
                   >
-                    {table}
+                    {isScanning ? (
+                      <span className="flex items-center gap-2">
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        >
+                          <ScanLine className="h-5 w-5" />
+                        </motion.div>
+                        Scanning table
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <QrCode className="h-5 w-5" />
+                        Scan QR Code
+                      </span>
+                    )}
                   </Button>
-                ))}
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Success */}
-              <motion.div
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="text-center mb-8"
-              >
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-50 rounded-full mb-4 border-2 border-emerald-500">
-                  <Check className="w-10 h-10 text-emerald-600" />
-                </div>
-                <h3 className="text-2xl font-bold text-[#0F1729] mb-2">Table Confirmed!</h3>
-                <div className="inline-flex items-center gap-2 bg-[#F9FAFB] border-2 border-[#D4AF37] rounded-lg px-6 py-3">
-                  <MapPin className="w-5 h-5 text-[#D4AF37]" />
-                  <span className="text-2xl font-bold text-[#0F1729]">{tableNumber}</span>
-                </div>
-              </motion.div>
 
-              <div className="bg-[#F9FAFB] rounded-xl p-6 mb-6 space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                    <span className="text-lg">📱</span>
+                  <div className="my-7 flex items-center gap-4">
+                    <div className="menu-rule" />
+                    <span className="menu-kicker shrink-0">Manual Select</span>
+                    <div className="menu-rule" />
                   </div>
-                  <p className="text-sm text-[#0F1729]">Browse our digital menu</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                    <span className="text-lg">🍱</span>
+
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {["A-1", "A-2", "B-1", "B-2"].map((table) => (
+                      <button
+                        key={table}
+                        type="button"
+                        onClick={() => handleManualEntry(table)}
+                        className="rounded-[22px] border border-[color:var(--border)] bg-white/76 px-4 py-4 text-sm font-semibold uppercase tracking-[0.14em] text-[color:var(--ink)] transition-all hover:border-[color:var(--gold)]/55 hover:bg-white"
+                      >
+                        {table}
+                      </button>
+                    ))}
                   </div>
-                  <p className="text-sm text-[#0F1729]">Order directly from your phone</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                    <span className="text-lg">⭐</span>
+                </>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-6"
+                >
+                  <div className="text-center">
+                    <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/12">
+                      <Check className="h-10 w-10 text-emerald-600" />
+                    </div>
+                    <p className="menu-kicker mb-3">Table Confirmed</p>
+                    <h1 className="menu-title text-4xl leading-tight">Everything is linked to {tableNumber}.</h1>
+                    <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-[color:var(--border)] bg-white/82 px-5 py-2 text-sm font-semibold uppercase tracking-[0.14em] text-[color:var(--ink)]">
+                      <MapPin className="h-4 w-4 text-[color:var(--gold)]" />
+                      {tableNumber}
+                    </div>
                   </div>
-                  <p className="text-sm text-[#0F1729]">Earn loyalty points automatically</p>
-                </div>
-              </div>
 
-              <Button
-                onClick={handleConfirm}
-                className="w-full h-12 bg-[#0F1729] hover:bg-[#1A2642] text-white shadow-md mb-3"
-              >
-                Start Ordering
-              </Button>
+                  <div className="grid gap-3">
+                    {[
+                      "Browse the digital lunch menu.",
+                      "Send dishes straight from your phone.",
+                      "Collect loyalty points as soon as you pay.",
+                    ].map((item) => (
+                      <div
+                        key={item}
+                        className="rounded-[22px] border border-[color:var(--border)] bg-white/76 px-5 py-4 text-sm leading-6 text-[color:var(--ink-soft)]"
+                      >
+                        {item}
+                      </div>
+                    ))}
+                  </div>
 
-              <Button
-                variant="ghost"
-                onClick={() => setScanned(false)}
-                className="w-full"
-              >
-                Change Table
-              </Button>
-            </>
-          )}
-        </div>
-
-      </Card>
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <Button
+                      onClick={handleConfirm}
+                      className="h-14 flex-1 rounded-full bg-[color:var(--ink)] text-[color:var(--paper)] shadow-[0_18px_38px_rgba(40,52,90,0.18)] hover:bg-[color:var(--ink)]/92"
+                    >
+                      Start Ordering
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setScanned(false)}
+                      className="h-14 flex-1 rounded-full border-[color:var(--border)] bg-white/80 text-[color:var(--ink)] hover:border-[color:var(--gold)]/55 hover:bg-white"
+                    >
+                      Change Table
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+            </section>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }

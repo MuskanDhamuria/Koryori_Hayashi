@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
+import { ArrowLeft, Gamepad2, Sparkles } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
-import { ArrowLeft, Gamepad2 } from "lucide-react";
 import { fetchGameLeaderboards, submitGameScore } from "../services/api";
 import type { GameKey, GameLeaderboardEntry } from "../types";
-import { toast } from "sonner";
 
 interface InAppGamesProps {
   currentPoints: number;
@@ -187,115 +187,128 @@ export function InAppGames({
     return () => window.removeEventListener("message", handleMessage);
   }, [onEarnPoints, phoneNumber, userName]);
 
+  const gameCards: Array<{
+    key: GameKey;
+    title: string;
+    description: string;
+    src: string;
+    stats: string;
+    leaderboard: GameLeaderboardEntry[];
+  }> = [
+    {
+      key: "PLATE_DASH",
+      title: "Sushi Catch",
+      description: `Reach ${SCORE_TO_EARN_POINTS} in-game to earn 5 loyalty points.`,
+      src: "/games/game1.html",
+      stats:
+        lastScore === null
+          ? `${plays} rounds played so far.`
+          : `${plays} rounds played. Last score: ${lastScore}${lastAwarded ? " and reward earned." : "."}`,
+      leaderboard: leaderboards.PLATE_DASH,
+    },
+    {
+      key: "SAKE_POUR",
+      title: "Sake Pour",
+      description: "Earn 5 loyalty points every time you win a round.",
+      src: "/games/game2.html",
+      stats:
+        game2LastScore === null
+          ? `${game2Wins} wins recorded so far.`
+          : `${game2Wins} wins recorded. Last winning score: ${game2LastScore}.`,
+      leaderboard: leaderboards.SAKE_POUR,
+    },
+    {
+      key: "SUSHI_MEMORY",
+      title: "Sushi Memory",
+      description: "Earn 5 loyalty points every time you clear a round.",
+      src: "/games/game3.html",
+      stats:
+        game3LastScore === null
+          ? `${game3Wins} wins recorded so far.`
+          : `${game3Wins} wins recorded. Last winning score: ${game3LastScore}.`,
+      leaderboard: leaderboards.SUSHI_MEMORY,
+    },
+  ];
+
   return (
-    <main className="container mx-auto px-6 py-8">
-      <div className="mb-6 flex items-center justify-between">
+    <section className="space-y-6">
+      <div className="flex flex-col gap-4 rounded-[30px] border border-[color:var(--border)] bg-white/70 p-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#0F1729] flex items-center gap-2">
-            <Gamepad2 className="w-6 h-6 text-[#D4AF37]" />
+          <p className="menu-kicker mb-2">After-Meal Experience</p>
+          <h2 className="menu-title flex items-center gap-2 text-4xl text-[color:var(--ink)]">
+            <Gamepad2 className="h-6 w-6 text-[color:var(--gold)]" />
             In-App Games
           </h2>
-          <p className="text-sm text-[#6B7280]">Play mini-games to earn loyalty points.</p>
+          <p className="mt-2 text-sm leading-6 text-[color:var(--ink-soft)]">
+            Play a mini-game while you wait and add a few more points to the current visit.
+          </p>
         </div>
-        <Button onClick={onBackToOrdering} variant="outline" className="flex items-center gap-2">
-          <ArrowLeft className="w-4 h-4" />
+        <Button
+          onClick={onBackToOrdering}
+          variant="outline"
+          className="h-12 rounded-full border-[color:var(--border)] bg-white/80 text-[color:var(--ink)] hover:border-[color:var(--gold)]/55 hover:bg-white"
+        >
+          <ArrowLeft className="h-4 w-4" />
           Back to Ordering
         </Button>
       </div>
 
-      <Card className="p-4 mb-6 bg-gradient-to-r from-[#0F1729] to-[#2D3E5F] text-white border-0">
-        <p className="text-xs text-white/70">Current Points</p>
-        <p className="text-3xl font-bold">{currentPoints}</p>
+      <Card className="paper-panel-dark rounded-[30px] border-0 p-6 text-[color:var(--paper)]">
+        <p className="menu-kicker text-[color:var(--gold-soft)]">Current Balance</p>
+        <p className="mt-2 text-4xl font-bold">{currentPoints} pts</p>
+        <p className="mt-2 text-sm text-[color:var(--paper)]/76">
+          Scores sync back into loyalty as long as the table session stays active.
+        </p>
       </Card>
 
       <div className="space-y-6">
-        <Card className="p-4 border-2 border-[#E5E7EB]">
-          <div className="mb-3">
-            <p className="font-semibold text-[#0F1729]">Sushi Catch!</p>
-            <p className="text-xs text-[#6B7280]">
-              Reach <span className="font-semibold">{SCORE_TO_EARN_POINTS}</span> sushis in-game to earn <span className="font-semibold">+5</span> loyalty points.
-            </p>
-          </div>
-          <iframe
-            src="/games/game1.html"
-            title="Sushi Catch!"
-            className="w-full h-[600px] rounded-md border border-[#E5E7EB]"
-          />
-          {/* <div className="mt-4 flex items-center justify-between gap-3 text-xs text-[#6B7280]">
-            <p>Game rounds: {plays}</p>
-            <p>
-              Last score: {lastScore ?? "-"}
-              {lastScore !== null && (lastAwarded ? " (Reward earned +5)" : " (No reward)")}
-            </p>
-          </div>
-          <div className="mt-4 rounded-md border border-[#E5E7EB] bg-[#F9FAFB] p-3">
-            <p className="mb-2 text-sm font-semibold text-[#0F1729]">Sushi Catch Leaderboard</p>
-            <div className="space-y-1 text-xs text-[#6B7280]">
-              {leaderboards.PLATE_DASH.length === 0 ? (
-                <p>No scores yet.</p>
-              ) : (
-                leaderboards.PLATE_DASH.slice(0, 5).map((entry) => (
-                  <div key={`${entry.playerName}-${entry.rank}-${entry.score}`} className="flex items-center justify-between">
-                    <span>#{entry.rank} {entry.playerName}</span>
-                    <span className="font-medium text-[#0F1729]">{entry.score}</span>
-                  </div>
-                ))
-              )}
+        {gameCards.map((game) => (
+          <Card key={game.key} className="paper-panel rounded-[30px] border-[color:var(--border)] p-5">
+            <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="menu-kicker mb-2">{game.key.replace("_", " ")}</p>
+                <h3 className="menu-title text-3xl text-[color:var(--ink)]">{game.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-[color:var(--ink-soft)]">{game.description}</p>
+              </div>
+              <div className="rounded-full border border-[color:var(--border)] bg-white/72 px-4 py-2 text-xs uppercase tracking-[0.16em] text-[color:var(--ink-soft)]">
+                {game.stats}
+              </div>
             </div>
-          </div> */}
-        </Card>
 
-        <Card className="p-4 border-2 border-[#E5E7EB]">
-          <div className="mb-3">
-            <p className="font-semibold text-[#0F1729]">SAKE POUR</p>
-            <p className="text-xs text-[#6B7280]">
-              Earn <span className="font-semibold">+5</span> loyalty points every time you win one round.
-            </p>
-          </div>
-          <iframe
-            src="/games/game2.html"
-            title="Game 2"
-            className="w-full h-[600px] rounded-md border border-[#E5E7EB]"
-          />
-          {/* <div className="mt-4 flex items-center justify-between gap-3 text-xs text-[#6B7280]">
-            <p>Round wins: {game2Wins}</p>
-            <p>Last winning score: {game2LastScore ?? "-"}</p>
-          </div>
-          <div className="mt-4 rounded-md border border-[#E5E7EB] bg-[#F9FAFB] p-3">
-            <p className="mb-2 text-sm font-semibold text-[#0F1729]">Sake Pour Leaderboard</p>
-            <div className="space-y-1 text-xs text-[#6B7280]">
-              {leaderboards.SAKE_POUR.length === 0 ? (
-                <p>No scores yet.</p>
-              ) : (
-                leaderboards.SAKE_POUR.slice(0, 5).map((entry) => (
-                  <div key={`${entry.playerName}-${entry.rank}-${entry.score}`} className="flex items-center justify-between">
-                    <span>#{entry.rank} {entry.playerName}</span>
-                    <span className="font-medium text-[#0F1729]">{entry.score}</span>
-                  </div>
-                ))
-              )}
+            <iframe
+              src={game.src}
+              title={game.title}
+              className="h-[600px] w-full rounded-[24px] border border-[color:var(--border)] bg-white"
+            />
+
+            <div className="mt-4 rounded-[24px] border border-[color:var(--border)] bg-white/72 p-4">
+              <div className="mb-3 flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-[color:var(--gold)]" />
+                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-[color:var(--ink)]">
+                  Leaderboard
+                </p>
+              </div>
+              <div className="space-y-2 text-sm text-[color:var(--ink-soft)]">
+                {game.leaderboard.length === 0 ? (
+                  <p>No scores recorded yet.</p>
+                ) : (
+                  game.leaderboard.slice(0, 5).map((entry) => (
+                    <div
+                      key={`${game.key}-${entry.playerName}-${entry.rank}-${entry.score}`}
+                      className="flex items-center justify-between"
+                    >
+                      <span>
+                        #{entry.rank} {entry.playerName}
+                      </span>
+                      <span className="font-semibold text-[color:var(--ink)]">{entry.score}</span>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
-          </div> */}
-        </Card>
-
-        <Card className="p-4 border-2 border-[#E5E7EB]">
-          <div className="mb-3">
-            <p className="font-semibold text-[#0F1729]">SUSHI memory</p>
-            <p className="text-xs text-[#6B7280]">
-              Earn <span className="font-semibold">+5</span> loyalty points every time you win one round.
-            </p>
-          </div>
-          <iframe
-            src="/games/game3.html"
-            title="Game 3"
-            className="w-full h-[600px] rounded-md border border-[#E5E7EB]"
-          />
-          {/* <div className="mt-4 flex items-center justify-between gap-3 text-xs text-[#6B7280]">
-            <p>Round wins: {game3Wins}</p>
-            <p>Last winning score: {game3LastScore ?? "-"}</p>
-          </div> */}
-        </Card>
+          </Card>
+        ))}
       </div>
-    </main>
+    </section>
   );
 }
