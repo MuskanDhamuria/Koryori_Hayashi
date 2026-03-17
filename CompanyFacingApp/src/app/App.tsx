@@ -357,9 +357,8 @@ export default function App() {
                   Sign Out
                 </button>
                 <div className="text-right">
-                  <div className="text-slate-400 text-sm">Current Time</div>
-                  <div className="text-2xl font-bold text-white">{lastUpdatedAt ? new Date(lastUpdatedAt).toLocaleTimeString() : '--:--:--'}</div>
-                  <div className="text-slate-400 text-sm">{lastUpdatedAt ? `Last sync: ${lastUpdatedAt}` : 'Waiting for data'}</div>
+                  
+                  <div >{lastUpdatedAt ? `Last sync: ${lastUpdatedAt}` : 'Waiting for data'}</div>
                 </div>
                 <ExportButton data={exportData} />
               </div>
