@@ -572,20 +572,6 @@ export function OrderingPage({
 
               {/* ── ACTION BADGES ROW (flows naturally, no overlap) ── */}
               <div className="flex flex-wrap items-center gap-2 mb-5">
-                <button
-                  onClick={() => setLoyaltyInfoOpen(true)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
-                  style={{ background: "var(--card-bg)", border: "1px solid var(--border)", color: "var(--navy)" }}
-                >
-                  <span>👋</span>
-                  <span className="font-semibold">{userName}</span>
-                  <span style={{ color: "var(--text-muted)" }}>•</span>
-                  <span style={{ color: "var(--gold)" }}>⭐</span>
-                  <span className="font-semibold">{isLoyaltyLoading ? "…" : loyaltyProfile.points}</span>
-                  <span className="capitalize" style={{ color: "var(--text-muted)", fontSize: "10px" }}>
-                    ({isLoyaltyLoading ? "loading" : loyaltyProfile.tier})
-                  </span>
-                </button>
 
                 {hasPlacedOrder && (
                   <button
@@ -595,12 +581,6 @@ export function OrderingPage({
                   >
                     Play Games
                   </button>
-                )}
-
-                {flavorPreferences && (
-                  <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-emerald-700 bg-emerald-50">
-                    <Sparkles className="w-3 h-3" /> Personalized
-                  </div>
                 )}
 
                 <button
