@@ -120,7 +120,7 @@ export function ShoppingCart({
               )}
               <div className="flex justify-between text-xs sm:text-sm">
                 <span>Tax (10%)</span>
-                <span>${pricing.taxAmount.toFixed(2)}</span>
+                <span>${(pricing?.taxAmount ?? 0).toFixed(2)}</span>
               </div>
               <Separator className="my-1 sm:my-2" />
               <div className="flex justify-between text-sm font-bold sm:text-base">
