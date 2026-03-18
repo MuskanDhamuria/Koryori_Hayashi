@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
@@ -8,7 +7,7 @@ import { RecommendationCard } from "./RecommendationCard";
 import { ShoppingCart } from "./ShoppingCart";
 import { PaymentDialog } from "./PaymentDialog";
 import { LoyaltyCard, LoyaltyProfile } from "./LoyaltyCard";
-import {InAppGames} from "./InAppGames";
+import { InAppGames } from "./InAppGames";
 import { Skeleton } from "./ui/skeleton";
 import { QrCode, UtensilsCrossed, Sparkles, CloudRain, Sun, Cloud, Info, Gift, Users, Star, Plus, Flame } from "lucide-react";
 import { toast } from "sonner";
@@ -30,7 +29,6 @@ interface OrderingPageProps {
   onUpdateFlavorPreferences: () => void;
 }
 
-// Enhanced menu items with flavor profiles, weather tags, and MAB properties
 const BASE_MENU_ITEMS: MenuItemType[] = [
   {
     id: "101",
@@ -42,7 +40,7 @@ const BASE_MENU_ITEMS: MenuItemType[] = [
     isHighMargin: false,
     flavorProfile: { umami: 0.9, citrus: 0.2, refreshing: 0.8, hearty: 0.2 },
     weatherTags: ["sunny", "hot"],
-  }, 
+  },
   {
     id: "102",
     name: "Crab Meat Cream Croquette",
@@ -93,7 +91,6 @@ const BASE_MENU_ITEMS: MenuItemType[] = [
     isHighMargin: false,
     flavorProfile: { umami: 0.8, citrus: 0.2, refreshing: 0.4, hearty: 0.5 },
   },
-
   {
     id: "107",
     name: "Mentaiko Pasta",
@@ -177,7 +174,6 @@ const BASE_MENU_ITEMS: MenuItemType[] = [
     flavorProfile: { umami: 0.8, citrus: 0.1, refreshing: 0.3, hearty: 0.8 },
     weatherTags: ["rainy", "cold"],
   },
-
   {
     id: "115",
     name: "Ice Cream (Matcha/Yuzu/Black Sesame/Houjicha/Jersey Milk)",
@@ -222,7 +218,6 @@ const BASE_MENU_ITEMS: MenuItemType[] = [
     flavorProfile: { umami: 0.8, citrus: 0.3, refreshing: 0.6, hearty: 0.4 },
     weatherTags: ['sunny', 'hot'],
   },
-
   {
     id: "119",
     name: "Volcano Ramen",
@@ -235,7 +230,6 @@ const BASE_MENU_ITEMS: MenuItemType[] = [
     flavorProfile: { umami: 0.9, citrus: 0.1, refreshing: 0.2, hearty: 1.0 },
     weatherTags: ['rainy', 'cold'],
   },
-
   {
     id: "120",
     name: "Spicy Karaage Chicken",
@@ -247,7 +241,6 @@ const BASE_MENU_ITEMS: MenuItemType[] = [
     isHighMargin: true,
     flavorProfile: { umami: 0.8, citrus: 0.2, refreshing: 0.3, hearty: 0.7 },
   },
-
   {
     id: "121",
     name: "Truffle Salmon Roll",
@@ -260,7 +253,6 @@ const BASE_MENU_ITEMS: MenuItemType[] = [
     flavorProfile: { umami: 0.9, citrus: 0.2, refreshing: 0.6, hearty: 0.5 },
     weatherTags: ['sunny'],
   },
-
   {
     id: "122",
     name: "Matcha Cheesecake",
@@ -272,7 +264,6 @@ const BASE_MENU_ITEMS: MenuItemType[] = [
     isHighMargin: true,
     flavorProfile: { umami: 0.3, citrus: 0.2, refreshing: 0.5, hearty: 0.6 },
   },
-
   {
     id: "123",
     name: "Yuzu Sparkling Soda",
@@ -285,11 +276,10 @@ const BASE_MENU_ITEMS: MenuItemType[] = [
     flavorProfile: { umami: 0.1, citrus: 0.9, refreshing: 1.0, hearty: 0.1 },
     weatherTags: ['sunny', 'hot'],
   },
-
   {
     id: "124",
     name: "Iced Lemon Tea",
-    description: "Refreshing black tea served over ice with fresh lemon slices for a light citrus taste.",
+    description: "Refreshing black tea served over ice with fresh lemon slices.",
     price: 3.50,
     category: "drinks",
     image: "images/drinks/iced-lemon-tea.jpg",
@@ -320,30 +310,17 @@ const BASE_MENU_ITEMS: MenuItemType[] = [
 
 function getWeatherIcon(condition: string) {
   switch (condition) {
-    case 'rainy':
-      return <CloudRain className="w-5 h-5" />;
-    case 'sunny':
-      return <Sun className="w-5 h-5" />;
-    case 'cloudy':
-      return <Cloud className="w-5 h-5" />;
-    default:
-      return <Sun className="w-5 h-5" />;
+    case 'rainy': return <CloudRain className="w-4 h-4" />;
+    case 'sunny': return <Sun className="w-4 h-4" />;
+    case 'cloudy': return <Cloud className="w-4 h-4" />;
+    default: return <Sun className="w-4 h-4" />;
   }
 }
 
 function getPerfectWeatherMessage(weather: WeatherData): string {
-  if (weather.condition === "rainy" || weather.condition === "snowy") {
-    return "Perfect weather for hot ramen and warm udon";
-  }
-
-  if (weather.condition === "sunny" && weather.temperature > 80) {
-    return "Perfect weather for sashimi, yuzu soda, and ice cream";
-  }
-
-  if (weather.condition === "sunny") {
-    return "Perfect weather for sushi rolls and donburi";
-  }
-
+  if (weather.condition === "rainy" || weather.condition === "snowy") return "Perfect weather for hot ramen and warm udon";
+  if (weather.condition === "sunny" && weather.temperature > 80) return "Perfect weather for sashimi, yuzu soda, and ice cream";
+  if (weather.condition === "sunny") return "Perfect weather for sushi rolls and donburi";
   return "Perfect weather for cozy bowls and comfort dishes";
 }
 
@@ -354,15 +331,17 @@ function getTierFromPoints(points: number): LoyaltyProfile["tier"] {
 }
 
 function mergeMenuImages(items: MenuItemType[]): MenuItemType[] {
-  const fallbackImageByName = new Map(
-    BASE_MENU_ITEMS.map((item) => [item.name, item.image]),
-  );
-
-  return items.map((item) => ({
-    ...item,
-    image: item.image || fallbackImageByName.get(item.name) || "",
-  }));
+  const fallbackImageByName = new Map(BASE_MENU_ITEMS.map((item) => [item.name, item.image]));
+  return items.map((item) => ({ ...item, image: item.image || fallbackImageByName.get(item.name) || "" }));
 }
+
+const CATEGORIES = [
+  { key: "mains", label: "Mains", emoji: "🍱" },
+  { key: "appetizers", label: "Appetizers", emoji: "🥟" },
+  { key: "ramen", label: "Udon", emoji: "🍜" },
+  { key: "desserts", label: "Desserts", emoji: "🍦" },
+  { key: "drinks", label: "Drinks", emoji: "🍵" },
+];
 
 export function OrderingPage({
   tableNumber,
@@ -371,10 +350,7 @@ export function OrderingPage({
   flavorPreferences,
   onUpdateFlavorPreferences,
 }: OrderingPageProps) {
-  const fallbackCustomerProfile = useMemo(
-    () => getFallbackCustomerProfile(phoneNumber),
-    [phoneNumber],
-  );
+  const fallbackCustomerProfile = useMemo(() => getFallbackCustomerProfile(phoneNumber), [phoneNumber]);
   const initialLoyaltyProfile: LoyaltyProfile = {
     tier: fallbackCustomerProfile.loyaltyProfile.tier,
     points: fallbackCustomerProfile.loyaltyProfile.points,
@@ -382,6 +358,7 @@ export function OrderingPage({
     isBirthday: fallbackCustomerProfile.loyaltyProfile.isBirthday,
     referralCode: fallbackCustomerProfile.loyaltyProfile.referralCode,
   };
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [loyaltyInfoOpen, setLoyaltyInfoOpen] = useState(false);
@@ -400,316 +377,146 @@ export function OrderingPage({
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
 
-  // Fetch weather on mount
   useEffect(() => {
-    const fetchWeather = async () => {
-      const data = await getCurrentWeather();
-      setWeatherData(data);
-    };
+    const fetchWeather = async () => { const data = await getCurrentWeather(); setWeatherData(data); };
     fetchWeather();
   }, []);
 
   useEffect(() => {
     let cancelled = false;
-
-    fetchMenuItemPairings()
-      .then((pairings) => {
-        if (cancelled) return;
-        setMenuItemPairings(pairings);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setMenuItemPairings(null);
-      });
-
-    return () => {
-      cancelled = true;
-    };
+    fetchMenuItemPairings().then((p) => { if (!cancelled) setMenuItemPairings(p); }).catch(() => { if (!cancelled) setMenuItemPairings(null); });
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
     let cancelled = false;
-
-    if (!phoneNumber || phoneNumber.trim().length < 6) {
-      setOrderHistoryItemIds([]);
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    fetchCustomerOrderHistory(phoneNumber)
-      .then((itemIds) => {
-        if (cancelled) return;
-        setOrderHistoryItemIds(itemIds);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setOrderHistoryItemIds([]);
-      });
-
-    return () => {
-      cancelled = true;
-    };
+    if (!phoneNumber || phoneNumber.trim().length < 6) { setOrderHistoryItemIds([]); return () => { cancelled = true; }; }
+    fetchCustomerOrderHistory(phoneNumber).then((ids) => { if (!cancelled) setOrderHistoryItemIds(ids); }).catch(() => { if (!cancelled) setOrderHistoryItemIds([]); });
+    return () => { cancelled = true; };
   }, [phoneNumber]);
 
   useEffect(() => {
     const loadMenuItems = async () => {
       try {
         const items = await fetchMenuItems();
-        if (items.length > 0) {
-          setMenuItems(applyDynamicPricing(mergeMenuImages(items)));
-          setActiveCategory(items[0]?.category ?? "mains");
-        }
-      } catch {
-        setMenuItems(applyDynamicPricing(BASE_MENU_ITEMS));
-      } finally {
-        setIsMenuLoading(false);
-      }
+        if (items.length > 0) { setMenuItems(applyDynamicPricing(mergeMenuImages(items))); setActiveCategory(items[0]?.category ?? "mains"); }
+      } catch { setMenuItems(applyDynamicPricing(BASE_MENU_ITEMS)); }
+      finally { setIsMenuLoading(false); }
     };
-
     void loadMenuItems();
   }, []);
 
   useEffect(() => {
     const loadLoyaltyProfile = async () => {
       const profile = await fetchLoyaltyProfile(phoneNumber);
-      if (profile) {
-        setLoyaltyProfile(profile);
-      } else {
-        setLoyaltyProfile({
-          ...fallbackCustomerProfile.loyaltyProfile,
-          name: userName || fallbackCustomerProfile.fullName,
-        });
-      }
+      if (profile) { setLoyaltyProfile(profile); }
+      else { setLoyaltyProfile({ ...fallbackCustomerProfile.loyaltyProfile, name: userName || fallbackCustomerProfile.fullName }); }
       setIsLoyaltyLoading(false);
     };
-
     void loadLoyaltyProfile();
   }, [fallbackCustomerProfile, phoneNumber, userName]);
 
   const isInitialDataLoading = isMenuLoading || isLoyaltyLoading;
 
-  const handleItemClick = (item: MenuItemType) => {
-  setSelectedItem(item);
-  setItemDialogOpen(true);
-};
+  const handleItemClick = (item: MenuItemType) => { setSelectedItem(item); setItemDialogOpen(true); };
+  const handleAddFromDialog = (item: MenuItemType) => { handleAddToCart(item); setItemDialogOpen(false); setSelectedItem(null); };
 
-const handleAddFromDialog = (item: MenuItemType) => {
-  handleAddToCart(item);
-  setItemDialogOpen(false);
-  setSelectedItem(null);
-};
-
-  // Generate recommendations when cart or flavor preferences change
   useEffect(() => {
-    const newRecommendations = generateRecommendations(
-      menuItems,
-      {
-        cartItems: cart,
-        flavorPreferences,
-        weather: weatherData || undefined,
-        menuItemPairings: menuItemPairings || undefined,
-        userHistory: orderHistoryItemIds,
-      },
-      6
-    );
+    const newRecommendations = generateRecommendations(menuItems, { cartItems: cart, flavorPreferences, weather: weatherData || undefined, menuItemPairings: menuItemPairings || undefined, userHistory: orderHistoryItemIds }, 6);
     setRecommendations(newRecommendations);
   }, [cart, flavorPreferences, weatherData, menuItems, menuItemPairings, orderHistoryItemIds]);
 
   const handleAddToCart = (item: MenuItemType) => {
-    // Record success for MAB algorithm
     recordSuccess(item.id);
-    
-    // Record flash sale order if applicable
-    if (hasActiveFlashSale(item.id)) {
-      recordFlashSaleOrder(item.id);
-      toast.success(`🎉 Flash sale discount applied! ${item.name} added to cart`);
-    } else {
-      toast.success(`${item.name} added to cart`);
-    }
-    
-    setCart((prevCart) => {
-      const existingItem = prevCart.find((i) => i.id === item.id);
-      if (existingItem) {
-        return prevCart.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
-        );
-      }
-      return [...prevCart, { ...item, quantity: 1 }];
-    });
+    if (hasActiveFlashSale(item.id)) { recordFlashSaleOrder(item.id); toast.success(`🎉 Flash sale discount applied! ${item.name} added to cart`); }
+    else { toast.success(`${item.name} added to cart`); }
+    setCart((prev) => { const existing = prev.find((i) => i.id === item.id); if (existing) return prev.map((i) => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i); return [...prev, { ...item, quantity: 1 }]; });
   };
 
   const handleUpdateQuantity = (id: string, quantity: number) => {
-    if (quantity <= 0) {
-      handleRemoveItem(id);
-      return;
-    }
-    setCart((prevCart) =>
-      prevCart.map((item) =>
-        item.id === id ? { ...item, quantity } : item
-      )
-    );
+    if (quantity <= 0) { handleRemoveItem(id); return; }
+    setCart((prev) => prev.map((item) => item.id === id ? { ...item, quantity } : item));
   };
 
-  const handleRemoveItem = (id: string) => {
-    setCart((prevCart) => prevCart.filter((item) => item.id !== id));
-    toast.info("Item removed from cart");
-  };
+  const handleRemoveItem = (id: string) => { setCart((prev) => prev.filter((item) => item.id !== id)); toast.info("Item removed from cart"); };
+  const handleCheckout = () => setPaymentDialogOpen(true);
 
-  const handleCheckout = () => {
-    setPaymentDialogOpen(true);
-  };
-
-  const addLoyaltyPoints = (
-    pointsToAdd: number,
-    source: string,
-    updatedLoyalty?: {
-      pointsBalance: number;
-      tier: LoyaltyProfile["tier"];
-    },
-  ) => {
-    if (pointsToAdd <= 0 && !updatedLoyalty) {
-      return;
-    }
-
+  const addLoyaltyPoints = (pointsToAdd: number, source: string, updatedLoyalty?: { pointsBalance: number; tier: LoyaltyProfile["tier"] }) => {
+    if (pointsToAdd <= 0 && !updatedLoyalty) return;
     setLoyaltyProfile((current) => {
-      if (updatedLoyalty) {
-        return {
-          ...current,
-          points: updatedLoyalty.pointsBalance,
-          tier: updatedLoyalty.tier,
-        };
-      }
-
+      if (updatedLoyalty) return { ...current, points: updatedLoyalty.pointsBalance, tier: updatedLoyalty.tier };
       const updatedPoints = current.points + pointsToAdd;
-
-      return {
-        ...current,
-        points: updatedPoints,
-        tier: getTierFromPoints(updatedPoints),
-      };
+      return { ...current, points: updatedPoints, tier: getTierFromPoints(updatedPoints) };
     });
-
     toast.success(`+${pointsToAdd} points from ${source}`);
   };
 
-  const handlePaymentComplete = async (
-    paymentMethod: "card" | "mobile",
-    selectedDiscountId: DiscountId | null,
-  ) => {
+  const handlePaymentComplete = async (paymentMethod: "card" | "mobile", selectedDiscountId: DiscountId | null) => {
     const subtotal = calculateCartSubtotal(cart);
     const pricing = calculatePricing(subtotal, loyaltyProfile, selectedDiscountId);
-    let completionResult:
-      | {
-          earnedPoints: number;
-          pointsBalance: number;
-        }
-      | undefined;
-
+    let completionResult: { earnedPoints: number; pointsBalance: number } | undefined;
     setIsSubmittingOrder(true);
-
     try {
-      const response = await createOrder({
-        customerName: userName,
-        phoneNumber,
-        tableCode: tableNumber,
-        items: cart.map((item) => ({
-          menuItemId: item.id,
-          quantity: item.quantity
-        })),
-        paymentMethod: paymentMethod === "card" ? "CARD" : "MOBILE",
-        birthdayDiscountPercent: pricing.birthdayDiscountPercent,
-        selectedDiscountId: pricing.selectedDiscountId,
-      });
-
-      cart.forEach((item) => {
-        recordSuccess(item.id);
-      });
-
-      if (phoneNumber && phoneNumber.trim().length >= 6) {
-        fetchCustomerOrderHistory(phoneNumber)
-          .then((itemIds) => setOrderHistoryItemIds(itemIds))
-          .catch(() => setOrderHistoryItemIds([]));
-      }
-
+      const response = await createOrder({ customerName: userName, phoneNumber, tableCode: tableNumber, items: cart.map((item) => ({ menuItemId: item.id, quantity: item.quantity })), paymentMethod: paymentMethod === "card" ? "CARD" : "MOBILE", birthdayDiscountPercent: pricing.birthdayDiscountPercent, selectedDiscountId: pricing.selectedDiscountId });
+      cart.forEach((item) => recordSuccess(item.id));
+      if (phoneNumber && phoneNumber.trim().length >= 6) fetchCustomerOrderHistory(phoneNumber).then((ids) => setOrderHistoryItemIds(ids)).catch(() => setOrderHistoryItemIds([]));
       if (response.loyalty) {
-        setLoyaltyProfile((current) => ({
-          ...current,
-          points: response.loyalty!.pointsBalance,
-          tier: response.loyalty!.tier,
-        }));
+        setLoyaltyProfile((current) => ({ ...current, points: response.loyalty!.pointsBalance, tier: response.loyalty!.tier }));
         toast.success(`Payment successful. You earned ${response.loyalty.earnedPoints} points.`);
-        completionResult = {
-          earnedPoints: response.loyalty.earnedPoints,
-          pointsBalance: response.loyalty.pointsBalance,
-        };
+        completionResult = { earnedPoints: response.loyalty.earnedPoints, pointsBalance: response.loyalty.pointsBalance };
       } else {
         const refreshedProfile = await fetchLoyaltyProfile(phoneNumber);
-        if (refreshedProfile) {
-          setLoyaltyProfile(refreshedProfile);
-          completionResult = {
-            earnedPoints: pricing.pointsEarned,
-            pointsBalance: refreshedProfile.points,
-          };
-        } else {
-          toast.success("Payment successful. Redirecting you to Games.");
-        }
+        if (refreshedProfile) { setLoyaltyProfile(refreshedProfile); completionResult = { earnedPoints: pricing.pointsEarned, pointsBalance: refreshedProfile.points }; }
+        else { toast.success("Payment successful. Redirecting you to Games."); }
       }
-
-      setHasPlacedOrder(true);
-      setCurrentView("games");
-      setPaymentDialogOpen(false);
-      setCart([]);
-
+      setHasPlacedOrder(true); setCurrentView("games"); setPaymentDialogOpen(false); setCart([]);
       return completionResult;
-    } catch (error) {
-      throw new Error(
-        error instanceof Error ? error.message : "Unable to place your order right now.",
-      );
-    } finally {
-      setIsSubmittingOrder(false);
-    }
+    } catch (error) { throw new Error(error instanceof Error ? error.message : "Unable to place your order right now."); }
+    finally { setIsSubmittingOrder(false); }
   };
 
   const subtotal = calculateCartSubtotal(cart);
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB]">
-            {/* Header */}
-      <header className="bg-white border-b border-[#E5E7EB] shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-3">
-          <div className="flex items-center justify-between">
-            {/* Logo and User Info in one row */}
-            <div className="flex items-center gap-6">
-              {/* Logo */}
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-[#0F1729] to-[#2D3E5F] rounded-full flex items-center justify-center">
-                  <UtensilsCrossed className="w-4 h-4 text-[#D4AF37]" strokeWidth={2} />
-                </div>
-                <div>
-                  <h1 className="text-base font-bold text-[#0F1729] leading-tight">Koryori Hayashi</h1>
-                  <p className="text-[10px] text-[#6B7280]">小料理林</p>
-                </div>
+    <div className="min-h-screen" style={{ background: "var(--bg-cream)" }}>
+
+      {/* ── HEADER ── */}
+      <header style={{ background: "var(--navy)", borderBottom: "1px solid var(--navy-light)" }} className="sticky top-0 z-50 shadow-md">
+        <div className="container mx-auto px-4 sm:px-6 py-3">
+          <div className="flex items-center justify-between gap-3">
+            {/* Logo */}
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: "var(--gold)" }}>
+                <UtensilsCrossed className="w-4 h-4" style={{ color: "var(--navy)" }} strokeWidth={2.5} />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-base font-bold leading-tight tracking-wide" style={{ color: "var(--cream)", fontFamily: "'Georgia', serif" }}>
+                  Koryori Hayashi
+                </h1>
+                <p className="text-[10px]" style={{ color: "var(--gold-light)", letterSpacing: "0.15em" }}>小料理林</p>
               </div>
             </div>
-            
-            {/* Right side - Weather and Table */}
-            <div className="flex items-center gap-3">
-              
-              <div className="flex items-center gap-1.5 bg-[#F3F4F6] px-3 py-1.5 rounded-lg">
-                <QrCode className="w-3.5 h-3.5 text-[#6B7280]" />
-                <span className="text-xs text-[#6B7280]">Table</span>
-                <span className="text-sm font-bold text-[#0F1729]">{tableNumber}</span>
+
+            {/* Right — weather + table */}
+            <div className="flex items-center gap-2 shrink-0">
+              {weatherData && (
+                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg" style={{ background: "var(--navy-light)" }}>
+                  <span style={{ color: "var(--gold)" }}>{getWeatherIcon(weatherData.condition)}</span>
+                  <span className="text-xs font-semibold" style={{ color: "var(--cream)" }}>{weatherData.temperature}°F</span>
+                </div>
+              )}
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg" style={{ background: "var(--navy-light)" }}>
+                <QrCode className="w-3.5 h-3.5" style={{ color: "var(--gold)" }} />
+                <span className="text-xs" style={{ color: "var(--cream-muted)" }}>Table</span>
+                <span className="text-sm font-bold" style={{ color: "var(--cream)" }}>{tableNumber}</span>
               </div>
             </div>
           </div>
         </div>
       </header>
 
-            
-
-
-         {currentView === "games" ? (
+      {/* ── GAMES VIEW ── */}
+      {currentView === "games" ? (
         <InAppGames
           currentPoints={loyaltyProfile.points}
           phoneNumber={phoneNumber}
@@ -718,347 +525,279 @@ const handleAddFromDialog = (item: MenuItemType) => {
           onBackToOrdering={() => setCurrentView("ordering")}
         />
       ) : (
-      <>
-            {/* Main Content */}
-      <main className="container mx-auto px-6 py-8 pt-16 relative">
-        {isInitialDataLoading ? (
-          <div className="space-y-6">
-            <div className="max-w-md rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
-              <div className="mb-3 flex items-center gap-3">
-                <Skeleton className="h-12 w-12 rounded-full bg-[#F3F4F6]" />
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-32 bg-[#F3F4F6]" />
-                  <Skeleton className="h-3 w-24 bg-[#F3F4F6]" />
-                </div>
-              </div>
-              <Skeleton className="h-20 w-full bg-[#F3F4F6]" />
-            </div>
+        <main className="container mx-auto px-4 sm:px-6 py-6">
 
-            <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
-              <div className="mb-4 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-[#0F1729]">Syncing your menu and rewards</p>
-                  <p className="text-xs text-[#6B7280]">Pulling the latest backend data for this session.</p>
-                </div>
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#D4AF37]/30 border-t-[#D4AF37]" />
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {Array.from({ length: 6 }, (_, index) => (
-                  <div
-                    key={`menu-skeleton-${index}`}
-                    className="rounded-2xl border border-[#E5E7EB] p-4"
-                  >
-                    <Skeleton className="mb-4 h-40 w-full rounded-xl bg-[#F3F4F6]" />
-                    <Skeleton className="mb-2 h-4 w-2/3 bg-[#F3F4F6]" />
-                    <Skeleton className="mb-4 h-3 w-full bg-[#F3F4F6]" />
-                    <div className="flex items-center justify-between">
-                      <Skeleton className="h-4 w-16 bg-[#F3F4F6]" />
-                      <Skeleton className="h-9 w-24 rounded-lg bg-[#F3F4F6]" />
-                    </div>
+          {isInitialDataLoading ? (
+            /* ── SKELETON ── */
+            <div className="space-y-5">
+              <div className="rounded-2xl border p-5" style={{ background: "var(--card-bg)", borderColor: "var(--border)" }}>
+                <div className="flex items-center gap-3 mb-3">
+                  <Skeleton className="h-12 w-12 rounded-full" style={{ background: "var(--skeleton)" }} />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-32" style={{ background: "var(--skeleton)" }} />
+                    <Skeleton className="h-3 w-24" style={{ background: "var(--skeleton)" }} />
                   </div>
-                ))}
+                </div>
+                <Skeleton className="h-16 w-full" style={{ background: "var(--skeleton)" }} />
+              </div>
+              <div className="rounded-2xl border p-5" style={{ background: "var(--card-bg)", borderColor: "var(--border)" }}>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: "var(--navy)" }}>Syncing your menu and rewards</p>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>Pulling the latest data for this session.</p>
+                  </div>
+                  <div className="h-6 w-6 animate-spin rounded-full border-2" style={{ borderColor: "var(--gold-light)", borderTopColor: "var(--gold)" }} />
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {Array.from({ length: 6 }, (_, i) => (
+                    <div key={i} className="rounded-2xl border p-4" style={{ borderColor: "var(--border)" }}>
+                      <Skeleton className="mb-4 h-44 w-full rounded-xl" style={{ background: "var(--skeleton)" }} />
+                      <Skeleton className="mb-2 h-4 w-2/3" style={{ background: "var(--skeleton)" }} />
+                      <Skeleton className="mb-4 h-3 w-full" style={{ background: "var(--skeleton)" }} />
+                      <div className="flex items-center justify-between">
+                        <Skeleton className="h-4 w-16" style={{ background: "var(--skeleton)" }} />
+                        <Skeleton className="h-9 w-28 rounded-lg" style={{ background: "var(--skeleton)" }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-        <>
-        <div className="mb-6 max-w-md">
-          <LoyaltyCard profile={loyaltyProfile} />
-        </div>
+          ) : (
+            <>
+              {/* ── LOYALTY CARD ── */}
+              <div className="mb-4">
+                <LoyaltyCard profile={loyaltyProfile} />
+              </div>
 
-        {/* Status Badges - Now in a single row */}
-        <div className="absolute top-6 right-6 flex items-center gap-2">
-          {/* Guest/Loyalty Info Button - moved here */}
-           <button
-            onClick={() => setLoyaltyInfoOpen(true)}
-            className="flex items-center gap-2 bg-[#F3F4F6] hover:bg-[#E5E7EB] px-3 py-2 rounded-lg text-xs font-medium transition-colors"
-          >
+              {/* ── ACTION BADGES ROW (flows naturally, no overlap) ── */}
+              <div className="flex flex-wrap items-center gap-2 mb-5">
+                <button
+                  onClick={() => setLoyaltyInfoOpen(true)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+                  style={{ background: "var(--card-bg)", border: "1px solid var(--border)", color: "var(--navy)" }}
+                >
+                  <span>👋</span>
+                  <span className="font-semibold">{userName}</span>
+                  <span style={{ color: "var(--text-muted)" }}>•</span>
+                  <span style={{ color: "var(--gold)" }}>⭐</span>
+                  <span className="font-semibold">{isLoyaltyLoading ? "…" : loyaltyProfile.points}</span>
+                  <span className="capitalize" style={{ color: "var(--text-muted)", fontSize: "10px" }}>
+                    ({isLoyaltyLoading ? "loading" : loyaltyProfile.tier})
+                  </span>
+                </button>
 
-            <span className="text-[#6B7280]">👋</span>
-            <span className="text-[#0F1729] font-medium">{userName}</span>
-            <span className="text-[#6B7280]">•</span>
-            <span className="text-[#D4AF37]">⭐</span>
-            <span className="text-[#0F1729] font-medium">
-              {isLoyaltyLoading ? "Syncing..." : loyaltyProfile.points}
-            </span>
-             <span className="text-[#6B7280] text-[10px] capitalize">
-              {isLoyaltyLoading ? "(loading)" : `(${loyaltyProfile.tier})`}
-             </span>
-          </button>
+                {hasPlacedOrder && (
+                  <button
+                    onClick={() => setCurrentView("games")}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-white transition-colors"
+                    style={{ background: "var(--navy)" }}
+                  >
+                    Play Games
+                  </button>
+                )}
 
-          {hasPlacedOrder && (
-            <button
-              onClick={() => setCurrentView("games")}
-              className="flex items-center gap-2 bg-[#0F1729] hover:bg-[#1A2642] px-3 py-2 rounded-lg text-xs font-medium text-white transition-colors"
-            >
-              Play Games
-            </button>
-          )}
-          
-          {/* Personalized badge */}
+                {flavorPreferences && (
+                  <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-emerald-700 bg-emerald-50">
+                    <Sparkles className="w-3 h-3" /> Personalized
+                  </div>
+                )}
 
-          {flavorPreferences && (
-            <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-2 rounded-lg text-xs font-medium">
-              <Sparkles className="w-3 h-3" />
-              Personalized
-            </div>
-          )}
+                <button
+                  onClick={onUpdateFlavorPreferences}
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-colors"
+                  style={{ background: "var(--gold-bg)", color: "var(--navy)" }}
+                >
+                  <Info className="h-3 w-3" style={{ color: "var(--gold-dark)" }} />
+                  Update Taste Profile
+                </button>
 
-          <button
-            onClick={onUpdateFlavorPreferences}
-            className="flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100"
-          >
-            <Info className="h-3 w-3" />
-            Update Taste Profile
-          </button>
-          
-          {/* Birthday badge */}
-          {loyaltyProfile.isBirthday && (
-            <div className="flex items-center gap-2 bg-pink-50 text-pink-700 px-3 py-2 rounded-lg text-xs font-medium">
-              🎂 Birthday Bonus Active
-            </div>
-          )}
-        </div>
-        
-        {/* Weather banner */}
-        {weatherData && (
-          <div className="mb-6 bg-white border border-[#E5E7EB] rounded-xl p-4 flex items-center gap-3">
-             {weatherData && (
-                <div className="flex items-center gap-1.5 bg-[#F3F4F6] px-2 py-1.5 rounded-lg">
-                  {getWeatherIcon(weatherData.condition)}
-                  <span className="text-xs font-medium text-[#0F1729]">{weatherData.temperature}°F</span>
+                {loyaltyProfile.isBirthday && (
+                  <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-pink-700 bg-pink-50">
+                    🎂 Birthday Bonus Active
+                  </div>
+                )}
+              </div>
+
+              {/* ── WEATHER BANNER ── */}
+              {weatherData && (
+                <div className="mb-5 rounded-xl p-4 flex items-center gap-3" style={{ background: "var(--card-bg)", border: "1px solid var(--border)" }}>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg shrink-0" style={{ background: "var(--gold-bg)" }}>
+                    <span style={{ color: "var(--gold-dark)" }}>{getWeatherIcon(weatherData.condition)}</span>
+                    <span className="text-xs font-semibold" style={{ color: "var(--navy)" }}>{weatherData.temperature}°F</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm" style={{ color: "var(--navy)", fontFamily: "'Georgia', serif" }}>
+                      {getPerfectWeatherMessage(weatherData)}
+                    </h3>
+                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>{weatherData.description}</p>
+                  </div>
                 </div>
               )}
-            <div>
-              <h3 className="font-semibold text-[#0F1729] text-sm">
-                {getPerfectWeatherMessage(weatherData)}
-              </h3>
-              <p className="text-xs text-[#6B7280]">{weatherData.description}</p>
-            </div>
-          </div>
-        )}
-        
-                   {/* Main Content with Vertical Categories */}
-      <div className="flex gap-6">
-               {/* Left Sidebar - Vertical Categories */}
-        <aside className="w-24 shrink-0">
-          <div className="sticky top-20 bg-white rounded-xl border border-[#E5E7EB] p-2">
-            <div className="flex flex-col gap-1">
-              <button
-                onClick={() => setActiveCategory("mains")}
-                title="Mains"
-                className={`w-full flex items-center px-2 py-2.5 rounded-lg text-left transition-colors ${
-                  activeCategory === "mains" 
-                    ? "bg-[#0F1729] text-white" 
-                    : "hover:bg-[#F3F4F6] text-[#0F1729]"
-                }`}
-              >
-                <span className="text-base mr-1.5">🍱</span>
-                <span className="text-xs truncate">Mains</span>
-              </button>
-              <button
-                onClick={() => setActiveCategory("appetizers")}
-                title="Appetizers"
-                className={`w-full flex items-center px-2 py-2.5 rounded-lg text-left transition-colors ${
-                  activeCategory === "appetizers" 
-                    ? "bg-[#0F1729] text-white" 
-                    : "hover:bg-[#F3F4F6] text-[#0F1729]"
-                }`}
-              >
-                <span className="text-base mr-1.5">🥟</span>
-                <span className="text-xs truncate">Appetizers</span>
-              </button>
-              <button
-                onClick={() => setActiveCategory("ramen")}
-                title="Ramen"
-                className={`w-full flex items-center px-2 py-2.5 rounded-lg text-left transition-colors ${
-                  activeCategory === "ramen" 
-                    ? "bg-[#0F1729] text-white" 
-                    : "hover:bg-[#F3F4F6] text-[#0F1729]"
-                }`}
-              >
-                <span className="text-base mr-1.5">🍜</span>
-                <span className="text-xs truncate">Udon</span>
-              </button>
-              <button
-                onClick={() => setActiveCategory("desserts")}
-                title="Desserts"
-                className={`w-full flex items-center px-2 py-2.5 rounded-lg text-left transition-colors ${
-                  activeCategory === "desserts" 
-                    ? "bg-[#0F1729] text-white" 
-                    : "hover:bg-[#F3F4F6] text-[#0F1729]"
-                }`}
-              >
-                <span className="text-base mr-1.5">🍦</span>
-                <span className="text-xs truncate">Desserts</span>
-              </button>
-              <button
-                onClick={() => setActiveCategory("drinks")}
-                title="Drinks"
-                className={`w-full flex items-center px-2 py-2.5 rounded-lg text-left transition-colors ${
-                  activeCategory === "drinks" 
-                    ? "bg-[#0F1729] text-white" 
-                    : "hover:bg-[#F3F4F6] text-[#0F1729]"
-                }`}
-              >
-                <span className="text-base mr-1.5">🍵</span>
-                <span className="text-xs truncate">Drinks</span>
-              </button>
-            </div>
-          </div>
-        </aside>
 
-                {/* Right Content - Menu Items */}
-        <section className="flex-1 min-w-0">
-          {activeCategory === "mains" && (
-            <>
-              <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Mains</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {menuItems.filter(item => item.category === 'mains').map(item => (
-                 <div 
-  key={item.id} 
-  className="w-full cursor-pointer transition-transform hover:scale-[1.02]"
-  onClick={() => handleItemClick(item)}
->
-  <MenuItem item={item} onAddToCart={handleAddToCart} />
-</div>
-                ))}
-              </div>
-            </>
-          )}
-          
-                  {activeCategory === "appetizers" && (
-            <>
-              <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Appetizers</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {menuItems.filter(item => item.category === 'appetizers').map(item => (
-                  <div 
-                    key={item.id} 
-                    className="w-full cursor-pointer transition-transform hover:scale-[1.02]"
-                    onClick={() => handleItemClick(item)}
-                  >
-                    <MenuItem item={item} onAddToCart={handleAddToCart} />
+              {/* ── CATEGORY FILTER CHIPS — mobile horizontal scroll ── */}
+              <div className="lg:hidden mb-5">
+                {/* Header row: filter label + scroll hint */}
+                <div className="flex items-center gap-2 mb-2.5 px-1">
+                  <div className="flex items-center gap-1.5">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 2.5h10M3 6h6M5 9.5h2" stroke="var(--gold-dark)" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.14em]" style={{ color: "var(--text-muted)" }}>
+                      Filter
+                    </span>
                   </div>
-                ))}
-              </div>
-            </>
-          )}
-          
-                    {activeCategory === "ramen" && (
-            <>
-              <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Ramen</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {menuItems.filter(item => item.category === 'ramen').map(item => (
-                  <div 
-                    key={item.id} 
-                    className="w-full cursor-pointer transition-transform hover:scale-[1.02]"
-                    onClick={() => handleItemClick(item)}
-                  >
-                    <MenuItem item={item} onAddToCart={handleAddToCart} />
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-                    {activeCategory === "desserts" && (
-            <>
-              <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Desserts</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {menuItems.filter(item => item.category === 'desserts').map(item => (
-                  <div 
-                    key={item.id} 
-                    className="w-full cursor-pointer transition-transform hover:scale-[1.02]"
-                    onClick={() => handleItemClick(item)}
-                  >
-                    <MenuItem item={item} onAddToCart={handleAddToCart} />
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-          
-                    {activeCategory === "drinks" && (
-            <>
-              <h2 className="text-2xl font-bold text-[#0F1729] mb-6">Drinks</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-                {menuItems.filter(item => item.category === 'drinks').map(item => (
-                  <div 
-                    key={item.id} 
-                    className="w-full cursor-pointer transition-transform hover:scale-[1.02]"
-                    onClick={() => handleItemClick(item)}
-                  >
-                    <MenuItem item={item} onAddToCart={handleAddToCart} />
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-        </section>
-      </div>
-
-        {/* Recommendations */}
-        {recommendations.length > 0 && (
-          <div className="mt-16 relative">
-            {/* Divider */}
-            <div className="absolute -top-8 left-0 right-0 flex items-center justify-center">
-              <div className="flex items-center gap-3">
-                <div className="h-px w-20 bg-gradient-to-r from-transparent to-[#7C8A7A]/30" />
-                <div className="flex gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#7C8A7A]/40" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#7C8A7A]/60" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#7C8A7A]" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#7C8A7A]/60" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#7C8A7A]/40" />
+                  <div className="flex-1 h-px" style={{ background: "var(--border)" }} />
+                  <span className="text-[10px]" style={{ color: "var(--cream-muted)" }}>scroll ›</span>
                 </div>
-                <div className="h-px w-20 bg-gradient-to-l from-transparent to-[#7C8A7A]/30" />
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-4 mb-8 mt-8 flex-wrap">
-              <div className="relative">
-                {/* Animated glow */}
-                <div className="absolute inset-0 w-14 h-14 bg-[#7C8A7A]/30 rounded-full blur-xl animate-pulse" />
-                
-                <div className="relative bg-gradient-to-br from-[#7C8A7A] to-[#9BA89A] rounded-2xl p-3 shadow-xl">
-                  <Sparkles className="w-7 h-7 text-white relative z-10" strokeWidth={2} />
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-t from-transparent to-white/30" />
-                  
-                  {/* Sparkle decorations */}
-                  <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-[#7C8A7A] opacity-70 animate-ping" strokeWidth={2} />
-                </div>
-                
-                <CherryBlossom className="absolute -bottom-1 -right-1 opacity-90 drop-shadow-md" size={24} />
-              </div>
-              
-              <div className="flex-1">
-                <h2 className="text-4xl font-bold text-[#4A5548] mb-1" style={{ fontFamily: 'serif' }}> Recommendations おすすめ</h2>
-                <p className="text-sm text-[#6B7669] font-light tracking-wide">
-                  Multi-Armed Bandit • Thompson Sampling • Weather-Aware • Flavor-Matched • User History •  Recommended Pairing
-                </p>
-              </div>
-              
-              
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-              {recommendations.map((rec) => (
-                <RecommendationCard
-                  key={rec.item.id}
-                  item={rec.item}
-                  reason={rec.reason}
-                  onAddToCart={handleAddToCart}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-        </>
-        )}
-      </main>
 
-      {/* Shopping Cart */}
+                {/* Scroll container */}
+                <div className="relative">
+                  {/* Right fade hint */}
+                  <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-10 z-10"
+                    style={{ background: "linear-gradient(to right, transparent, var(--bg-cream))" }} />
+
+                  <div className="cat-scroll overflow-x-auto pb-2.5 -mx-4 px-4">
+                    <div className="flex gap-2" style={{ width: "max-content" }}>
+                      {CATEGORIES.map((cat) => (
+                        <button
+                          key={cat.key}
+                          onClick={() => setActiveCategory(cat.key)}
+                          className="filter-chip flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all"
+                          style={
+                            activeCategory === cat.key
+                              ? {
+                                  background: "var(--navy)",
+                                  color: "var(--cream)",
+                                  border: "1.5px solid var(--navy)",
+                                  borderRadius: "999px",
+                                  padding: "0.3rem 0.85rem",
+                                  fontSize: "0.8rem",
+                                  fontWeight: 600,
+                                  fontFamily: "'Georgia', serif",
+                                }
+                              : {
+                                  background: "var(--card-bg)",
+                                  color: "var(--text-muted)",
+                                  border: "1.5px solid var(--border)",
+                                  borderRadius: "999px",
+                                  padding: "0.3rem 0.85rem",
+                                  fontSize: "0.8rem",
+                                  fontWeight: 400,
+                                  fontFamily: "'Georgia', serif",
+                                }
+                          }
+                        >
+                          <span className="text-sm leading-none">{cat.emoji}</span>
+                          <span>{cat.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Desktop: vertical sidebar + content */}
+              <div className="flex gap-6">
+                {/* Sidebar — desktop only */}
+                <aside className="hidden lg:block w-28 shrink-0">
+                  <div className="sticky top-20 rounded-xl p-2" style={{ background: "var(--card-bg)", border: "1px solid var(--border)" }}>
+                    <div className="flex flex-col gap-1">
+                      {CATEGORIES.map((cat) => (
+                        <button
+                          key={cat.key}
+                          onClick={() => setActiveCategory(cat.key)}
+                          className="w-full flex items-center gap-1.5 px-2.5 py-2.5 rounded-lg text-left transition-all"
+                          style={
+                            activeCategory === cat.key
+                              ? { background: "var(--navy)", color: "var(--cream)" }
+                              : { color: "var(--navy)" }
+                          }
+                        >
+                          <span className="text-base">{cat.emoji}</span>
+                          <span className="text-xs truncate font-medium">{cat.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </aside>
+
+                {/* ── MENU ITEMS ── */}
+                <section className="flex-1 min-w-0 menu-card-grid">
+                  {CATEGORIES.map((cat) =>
+                    activeCategory === cat.key ? (
+                      <div key={cat.key}>
+                        <h2 className="text-2xl sm:text-3xl font-bold mb-5" style={{ color: "var(--navy)", fontFamily: "'Georgia', serif" }}>
+                          {cat.label}
+                        </h2>
+                        <div className="grid grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5 items-stretch">
+                          {menuItems
+                            .filter((item) => item.category === cat.key)
+                            .map((item) => (
+                              <div
+                                key={item.id}
+                                className="mi-wrap w-full h-full cursor-pointer transition-transform hover:scale-[1.02]"
+                                onClick={() => handleItemClick(item)}
+                              >
+                                <MenuItem item={item} onAddToCart={handleAddToCart} />
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    ) : null
+                  )}
+                </section>
+              </div>
+
+              {/* ── RECOMMENDATIONS ── */}
+              {recommendations.length > 0 && (
+                <div className="mt-16 relative">
+                  <div className="absolute -top-8 left-0 right-0 flex items-center justify-center">
+                    <div className="flex items-center gap-3">
+                      <div className="h-px w-20" style={{ background: "linear-gradient(to right, transparent, var(--gold-light))" }} />
+                      {[0.4, 0.6, 1, 0.6, 0.4].map((o, i) => (
+                        <div key={i} className="w-1.5 h-1.5 rounded-full" style={{ background: `rgba(200, 168, 75, ${o})` }} />
+                      ))}
+                      <div className="h-px w-20" style={{ background: "linear-gradient(to left, transparent, var(--gold-light))" }} />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 mb-7 mt-8 flex-wrap">
+                    <div className="relative">
+                      <div className="absolute inset-0 w-14 h-14 rounded-full blur-xl animate-pulse" style={{ background: "var(--gold-bg)" }} />
+                      <div className="relative rounded-2xl p-3 shadow-xl" style={{ background: "linear-gradient(135deg, var(--navy), var(--navy-light))" }}>
+                        <Sparkles className="w-7 h-7 relative z-10" style={{ color: "var(--gold)" }} strokeWidth={2} />
+                      </div>
+                      <CherryBlossom className="absolute -bottom-1 -right-1 opacity-90 drop-shadow-md" size={24} />
+                    </div>
+                    <div className="flex-1">
+                      <h2 className="text-3xl sm:text-4xl font-bold mb-1" style={{ color: "var(--navy)", fontFamily: "'Georgia', serif" }}>
+                        Recommendations おすすめ
+                      </h2>
+                      <p className="text-xs" style={{ color: "var(--text-muted)", letterSpacing: "0.05em" }}>
+                        Multi-Armed Bandit · Thompson Sampling · Weather-Aware · Flavor-Matched
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="rec-card-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                    {recommendations.map((rec) => (
+                      <RecommendationCard
+                        key={rec.item.id}
+                        item={rec.item}
+                        reason={rec.reason}
+                        onAddToCart={handleAddToCart}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </main>
+      )}
+
+      {/* ── SHOPPING CART ── */}
       {!isInitialDataLoading && (
         <ShoppingCart
           items={cart}
@@ -1069,7 +808,7 @@ const handleAddFromDialog = (item: MenuItemType) => {
         />
       )}
 
-      {/* Payment Dialog */}
+      {/* ── PAYMENT DIALOG ── */}
       <PaymentDialog
         open={paymentDialogOpen}
         onClose={() => setPaymentDialogOpen(false)}
@@ -1079,201 +818,109 @@ const handleAddFromDialog = (item: MenuItemType) => {
         isSubmittingOrder={isSubmittingOrder}
       />
 
-      {/* Item Detail Dialog */}
+      {/* ── ITEM DETAIL DIALOG ── */}
       <Dialog open={itemDialogOpen} onOpenChange={setItemDialogOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto" style={{ background: "var(--card-bg)" }}>
           {selectedItem && (
             <>
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-3 text-2xl">
-                  <div className="w-10 h-10 bg-gradient-to-br from-[#0F1729] to-[#2D3E5F] rounded-full flex items-center justify-center">
-                    <UtensilsCrossed className="w-5 h-5 text-[#D4AF37]" />
+                <DialogTitle className="flex items-center gap-3 text-xl" style={{ color: "var(--navy)", fontFamily: "'Georgia', serif" }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "var(--navy)" }}>
+                    <UtensilsCrossed className="w-5 h-5" style={{ color: "var(--gold)" }} />
                   </div>
                   {selectedItem.name}
                 </DialogTitle>
-                <DialogDescription>
-                  {selectedItem.description}
-                </DialogDescription>
+                <DialogDescription style={{ color: "var(--text-muted)" }}>{selectedItem.description}</DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-6">
-                {/* Image */}
+              <div className="space-y-5">
                 <div className="relative aspect-[16/9] rounded-xl overflow-hidden">
-                  <img 
-                    src={selectedItem.image} 
-                    alt={selectedItem.name}
-                    className="w-full h-full object-cover"
-                  />
-                  
-                  {/* Badges */}
-                  <div className="absolute top-4 left-4 flex gap-2">
+                  <img src={selectedItem.image} alt={selectedItem.name} className="w-full h-full object-cover" />
+                  <div className="absolute top-3 left-3 flex gap-2">
                     {selectedItem.isNew && (
-                      <Badge className="bg-purple-600 text-white px-3 py-1.5">
-                        <Sparkles className="w-4 h-4 mr-1.5" />
-                        NEW
-                      </Badge>
+                      <Badge className="bg-purple-600 text-white px-3 py-1"><Sparkles className="w-3 h-3 mr-1" />NEW</Badge>
                     )}
                     {selectedItem.spicy && (
-                      <Badge className="bg-red-500 text-white px-3 py-1.5">
-                        {Array.from({ length: selectedItem.spicy }).map((_, i) => (
-                          <span key={i}>🌶️</span>
-                        ))}
+                      <Badge className="bg-red-500 text-white px-2 py-1">
+                        {Array.from({ length: selectedItem.spicy }).map((_, i) => <span key={i}>🌶️</span>)}
                       </Badge>
                     )}
                   </div>
-                  
                   {selectedItem.isHighMargin && !selectedItem.isNew && (
-                    <Badge className="absolute top-4 right-4 bg-[#D4AF37] text-white px-3 py-1.5">
-                      <Sparkles className="w-4 h-4 mr-1.5" />
-                      Chef's Pick
+                    <Badge className="absolute top-3 right-3 px-3 py-1" style={{ background: "var(--gold)", color: "var(--navy)" }}>
+                      <Sparkles className="w-3 h-3 mr-1" />Chef's Pick
                     </Badge>
                   )}
                 </div>
 
-                {/* Details Grid */}
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Price */}
-                  <div className="bg-[#F3F4F6] rounded-xl p-4">
-                    <p className="text-xs text-[#6B7280] mb-1">Price</p>
-                    <p className="text-2xl font-bold text-[#0F1729]">
-                      ${selectedItem.price.toFixed(2)}
-                    </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl p-4" style={{ background: "var(--gold-bg)" }}>
+                    <p className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>Price</p>
+                    <p className="text-2xl font-bold" style={{ color: "var(--navy)", fontFamily: "'Georgia', serif" }}>${selectedItem.price.toFixed(2)}</p>
                     {selectedItem.originalPrice && (
-                      <p className="text-xs text-[#9CA3AF] line-through">
-                        ${selectedItem.originalPrice.toFixed(2)}
-                      </p>
+                      <p className="text-xs line-through" style={{ color: "var(--text-muted)" }}>${selectedItem.originalPrice.toFixed(2)}</p>
                     )}
                   </div>
-
-                  {/* Category */}
-                  <div className="bg-[#F3F4F6] rounded-xl p-4">
-                    <p className="text-xs text-[#6B7280] mb-1">Category</p>
-                    <p className="text-lg font-semibold text-[#0F1729] capitalize">
-                      {selectedItem.category}
-                    </p>
+                  <div className="rounded-xl p-4" style={{ background: "var(--gold-bg)" }}>
+                    <p className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>Category</p>
+                    <p className="text-lg font-semibold capitalize" style={{ color: "var(--navy)" }}>{selectedItem.category}</p>
                   </div>
                 </div>
 
-                {/* Flavor Profile */}
                 {selectedItem.flavorProfile && (
-                  <div className="bg-gradient-to-br from-[#F3F4F6] to-white rounded-xl p-4">
-                    <h3 className="font-semibold text-[#0F1729] mb-3">Flavor Profile</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      {selectedItem.flavorProfile.umami !== undefined && (
-                        <div>
-                          <div className="flex justify-between text-xs mb-1">
-                            <span>Umami</span>
-                            <span className="font-medium">{(selectedItem.flavorProfile.umami * 100).toFixed(0)}%</span>
+                  <div className="rounded-xl p-4" style={{ background: "var(--gold-bg)" }}>
+                    <h3 className="font-semibold mb-3" style={{ color: "var(--navy)" }}>Flavor Profile</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      {(["umami", "citrus", "refreshing", "hearty"] as const).map((key) =>
+                        selectedItem.flavorProfile?.[key] !== undefined ? (
+                          <div key={key}>
+                            <div className="flex justify-between text-xs mb-1">
+                              <span className="capitalize" style={{ color: "var(--text-muted)" }}>{key}</span>
+                              <span className="font-medium" style={{ color: "var(--navy)" }}>{((selectedItem.flavorProfile[key] ?? 0) * 100).toFixed(0)}%</span>
+                            </div>
+                            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
+                              <div className="h-full rounded-full" style={{ width: `${(selectedItem.flavorProfile[key] ?? 0) * 100}%`, background: "var(--gold)" }} />
+                            </div>
                           </div>
-                          <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-amber-600 rounded-full"
-                              style={{ width: `${selectedItem.flavorProfile.umami * 100}%` }}
-                            />
-                          </div>
-                        </div>
-                      )}
-                      {selectedItem.flavorProfile.citrus !== undefined && (
-                        <div>
-                          <div className="flex justify-between text-xs mb-1">
-                            <span>Citrus</span>
-                            <span className="font-medium">{(selectedItem.flavorProfile.citrus * 100).toFixed(0)}%</span>
-                          </div>
-                          <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-yellow-400 rounded-full"
-                              style={{ width: `${selectedItem.flavorProfile.citrus * 100}%` }}
-                            />
-                          </div>
-                        </div>
-                      )}
-                      {selectedItem.flavorProfile.refreshing !== undefined && (
-                        <div>
-                          <div className="flex justify-between text-xs mb-1">
-                            <span>Refreshing</span>
-                            <span className="font-medium">{(selectedItem.flavorProfile.refreshing * 100).toFixed(0)}%</span>
-                          </div>
-                          <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-blue-400 rounded-full"
-                              style={{ width: `${selectedItem.flavorProfile.refreshing * 100}%` }}
-                            />
-                          </div>
-                        </div>
-                      )}
-                      {selectedItem.flavorProfile.hearty !== undefined && (
-                        <div>
-                          <div className="flex justify-between text-xs mb-1">
-                            <span>Hearty</span>
-                            <span className="font-medium">{(selectedItem.flavorProfile.hearty * 100).toFixed(0)}%</span>
-                          </div>
-                          <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-red-600 rounded-full"
-                              style={{ width: `${selectedItem.flavorProfile.hearty * 100}%` }}
-                            />
-                          </div>
-                        </div>
+                        ) : null
                       )}
                     </div>
                   </div>
                 )}
 
-                {/* Weather Tags */}
                 {selectedItem.weatherTags && selectedItem.weatherTags.length > 0 && (
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4">
-                    <h3 className="font-semibold text-[#0F1729] mb-2">Perfect for</h3>
-                    <div className="flex gap-2">
-                      {selectedItem.weatherTags.map(tag => (
+                  <div className="rounded-xl p-4 bg-blue-50">
+                    <h3 className="font-semibold mb-2" style={{ color: "var(--navy)" }}>Perfect for</h3>
+                    <div className="flex gap-2 flex-wrap">
+                      {selectedItem.weatherTags.map((tag) => (
                         <Badge key={tag} variant="outline" className="bg-white capitalize">
-                          {tag === 'sunny' && '☀️ '}
-                          {tag === 'rainy' && '🌧️ '}
-                          {tag === 'cold' && '❄️ '}
-                          {tag === 'hot' && '🔥 '}
-                          {tag}
+                          {tag === 'sunny' && '☀️ '}{tag === 'rainy' && '🌧️ '}{tag === 'cold' && '❄️ '}{tag === 'hot' && '🔥 '}{tag}
                         </Badge>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Flash Sale Info */}
                 {selectedItem.flashSaleRemaining && selectedItem.flashSaleRemaining > 0 && (
-                  <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 text-white">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Flame className="w-5 h-5" />
-                      <h3 className="font-bold">Flash Sale!</h3>
-                    </div>
-                    <p className="text-sm mb-1">
-                      {selectedItem.discountPercentage}% OFF - Only {selectedItem.flashSaleRemaining} left!
-                    </p>
-                    {selectedItem.surplusIngredient && (
-                      <p className="text-xs text-white/90">
-                        ♻️ Made with fresh {selectedItem.surplusIngredient}
-                      </p>
-                    )}
+                  <div className="rounded-xl p-4 text-white bg-gradient-to-r from-orange-500 to-red-500">
+                    <div className="flex items-center gap-2 mb-1"><Flame className="w-5 h-5" /><h3 className="font-bold">Flash Sale!</h3></div>
+                    <p className="text-sm">{selectedItem.discountPercentage}% OFF · Only {selectedItem.flashSaleRemaining} left!</p>
+                    {selectedItem.surplusIngredient && <p className="text-xs text-white/80 mt-1">♻️ Made with fresh {selectedItem.surplusIngredient}</p>}
                   </div>
                 )}
 
-                {/* Action Buttons */}
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => setItemDialogOpen(false)}
-                    className="flex-1"
-                  >
-                    Close
-                  </Button>
+                <div className="flex gap-3 pt-2">
+                  <Button variant="outline" onClick={() => setItemDialogOpen(false)} className="flex-1">Close</Button>
                   <Button
                     onClick={() => handleAddFromDialog(selectedItem)}
-                    className={`flex-1 ${
+                    className="flex-1 text-white"
+                    style={
                       selectedItem.flashSaleRemaining && selectedItem.flashSaleRemaining > 0
-                        ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600'
-                        : 'bg-[#0F1729] hover:bg-[#1A2642]'
-                    } text-white`}
+                        ? { background: "linear-gradient(to right, #f97316, #ef4444)" }
+                        : { background: "var(--navy)" }
+                    }
                   >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add to Cart
+                    <Plus className="w-4 h-4 mr-2" /> Add to Cart
                   </Button>
                 </div>
               </div>
@@ -1282,244 +929,312 @@ const handleAddFromDialog = (item: MenuItemType) => {
         </DialogContent>
       </Dialog>
 
-      {/* Loyalty Info Dialog */}
+      {/* ── LOYALTY INFO DIALOG ── */}
       <Dialog open={loyaltyInfoOpen} onOpenChange={setLoyaltyInfoOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto" style={{ background: "var(--card-bg)" }}>
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-3 text-2xl">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#0F1729] to-[#2D3E5F] rounded-full flex items-center justify-center">
-                <Star className="w-5 h-5 text-[#D4AF37]" />
+            <DialogTitle className="flex items-center gap-3 text-xl" style={{ color: "var(--navy)", fontFamily: "'Georgia', serif" }}>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "var(--navy)" }}>
+                <Star className="w-5 h-5" style={{ color: "var(--gold)" }} />
               </div>
               Loyalty Program
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription style={{ color: "var(--text-muted)" }}>
               Earn points, unlock rewards, and enjoy exclusive benefits
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6">
-            {/* How It Works */}
-            <div className="bg-gradient-to-r from-[#0F1729] to-[#2D3E5F] rounded-xl p-6 text-white">
-              <h3 className="text-lg font-bold mb-4">How It Works</h3>
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-[#D4AF37] rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-sm font-bold text-[#0F1729]">1</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold">Order & Earn</p>
-                    <p className="text-sm text-white/80">Earn points automatically with every purchase</p>
-                  </div>
+          <div className="space-y-5">
+            <div className="rounded-xl p-5 text-white" style={{ background: "linear-gradient(135deg, var(--navy), var(--navy-light))" }}>
+              <h3 className="text-base font-bold mb-3" style={{ fontFamily: "'Georgia', serif" }}>How It Works</h3>
+              {[
+                { n: "1", title: "Order & Earn", desc: "Earn points automatically with every purchase" },
+                { n: "2", title: "Level Up", desc: "Reach Silver, Gold, and Platinum tiers" },
+                { n: "3", title: "Redeem Rewards", desc: "Use points for discounts and exclusive items" },
+              ].map((s) => (
+                <div key={s.n} className="flex items-start gap-3 mb-3">
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-sm font-bold" style={{ background: "var(--gold)", color: "var(--navy)" }}>{s.n}</div>
+                  <div><p className="font-semibold text-sm">{s.title}</p><p className="text-xs text-white/75">{s.desc}</p></div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-[#D4AF37] rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-sm font-bold text-[#0F1729]">2</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold">Level Up</p>
-                    <p className="text-sm text-white/80">Reach Silver, Gold, and Platinum tiers</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-[#D4AF37] rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-sm font-bold text-[#0F1729]">3</span>
-                  </div>
-                  <div>
-                    <p className="font-semibold">Redeem Rewards</p>
-                    <p className="text-sm text-white/80">Use points for discounts and exclusive items</p>
-                  </div>
-                </div>
-              </div>
-              <Button
-                onClick={onUpdateFlavorPreferences}
-                variant="outline"
-                className="mt-4 border-white/30 bg-white/10 text-white hover:bg-white/20"
-              >
+              ))}
+              <Button onClick={onUpdateFlavorPreferences} variant="outline" className="mt-2 border-white/30 bg-white/10 text-white hover:bg-white/20 text-sm">
                 Update My Taste Profile
               </Button>
             </div>
 
-            {/* Membership Tiers */}
             <div>
-              <h3 className="text-lg font-bold text-[#0F1729] mb-4">Membership Tiers</h3>
-              <div className="space-y-4">
-                {/* Silver Tier */}
-                <div className={`border-2 rounded-xl p-4 ${loyaltyProfile.tier === 'silver' ? 'border-[#D4AF37] bg-[#D4AF37]/5' : 'border-[#E5E7EB]'}`}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl">🌸</span>
-                      <div>
-                        <h4 className="font-bold text-[#0F1729]">Silver</h4>
-                        <p className="text-xs text-[#6B7280]">Starting tier</p>
+              <h3 className="text-base font-bold mb-3" style={{ color: "var(--navy)", fontFamily: "'Georgia', serif" }}>Membership Tiers</h3>
+              <div className="space-y-3">
+                {[
+                  { tier: "silver", emoji: "🌸", label: "Silver", sub: "Starting tier", benefits: ["Earn 1 point per $1 spent", "5% birthday discount", "Early access to seasonal menu"] },
+                  { tier: "gold", emoji: "⭐", label: "Gold", sub: "500+ points", benefits: ["Earn 1.5 points per $1 spent", "10% birthday discount", "Free appetizer on birthday", "Priority seating"] },
+                  { tier: "platinum", emoji: "💎", label: "Platinum", sub: "1500+ points", benefits: ["Earn 2 points per $1 spent", "15% birthday discount", "Free meal on birthday", "Exclusive VIP events", "Personal chef recommendations"] },
+                ].map((t) => (
+                  <div key={t.tier} className="border-2 rounded-xl p-4" style={loyaltyProfile.tier === t.tier ? { borderColor: "var(--gold)", background: "var(--gold-bg)" } : { borderColor: "var(--border)" }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">{t.emoji}</span>
+                        <div><h4 className="font-bold text-sm" style={{ color: "var(--navy)" }}>{t.label}</h4><p className="text-xs" style={{ color: "var(--text-muted)" }}>{t.sub}</p></div>
                       </div>
+                      {loyaltyProfile.tier === t.tier && <Badge style={{ background: "var(--gold)", color: "var(--navy)" }}>Current</Badge>}
                     </div>
-                    {loyaltyProfile.tier === 'silver' && (
-                      <Badge className="bg-[#D4AF37] text-white">Current</Badge>
-                    )}
+                    <ul className="space-y-1">
+                      {t.benefits.map((b) => (
+                        <li key={b} className="flex items-center gap-2 text-xs"><span className="text-emerald-600">✓</span><span style={{ color: "var(--text-muted)" }}>{b}</span></li>
+                      ))}
+                    </ul>
                   </div>
-                  <ul className="space-y-2">
-                    <li className="flex items-center gap-2 text-sm">
-                      <span className="text-emerald-600">✓</span>
-                      <span className="text-[#6B7280]">Earn 1 point per $1 spent</span>
-                    </li>
-                    <li className="flex items-center gap-2 text-sm">
-                      <span className="text-emerald-600">✓</span>
-                      <span className="text-[#6B7280]">5% birthday discount</span>
-                    </li>
-                    <li className="flex items-center gap-2 text-sm">
-                      <span className="text-emerald-600">✓</span>
-                      <span className="text-[#6B7280]">Early access to seasonal menu</span>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* Gold Tier */}
-                <div className={`border-2 rounded-xl p-4 ${loyaltyProfile.tier === 'gold' ? 'border-[#D4AF37] bg-[#D4AF37]/5' : 'border-[#E5E7EB]'}`}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl">⭐</span>
-                      <div>
-                        <h4 className="font-bold text-[#0F1729]">Gold</h4>
-                        <p className="text-xs text-[#6B7280]">500+ points</p>
-                      </div>
-                    </div>
-                    {loyaltyProfile.tier === 'gold' && (
-                      <Badge className="bg-[#D4AF37] text-white">Current</Badge>
-                    )}
-                  </div>
-                  <ul className="space-y-2">
-                    <li className="flex items-center gap-2 text-sm">
-                      <span className="text-emerald-600">✓</span>
-                      <span className="text-[#6B7280]">Earn 1.5 points per $1 spent</span>
-                    </li>
-                    <li className="flex items-center gap-2 text-sm">
-                      <span className="text-emerald-600">✓</span>
-                      <span className="text-[#6B7280]">10% birthday discount</span>
-                    </li>
-                    <li className="flex items-center gap-2 text-sm">
-                      <span className="text-emerald-600">✓</span>
-                      <span className="text-[#6B7280]">Free appetizer on birthday</span>
-                    </li>
-                    <li className="flex items-center gap-2 text-sm">
-                      <span className="text-emerald-600">✓</span>
-                      <span className="text-[#6B7280]">Priority seating</span>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* Platinum Tier */}
-                <div className={`border-2 rounded-xl p-4 ${loyaltyProfile.tier === 'platinum' ? 'border-[#D4AF37] bg-[#D4AF37]/5' : 'border-[#E5E7EB]'}`}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl">💎</span>
-                      <div>
-                        <h4 className="font-bold text-[#0F1729]">Platinum</h4>
-                        <p className="text-xs text-[#6B7280]">1500+ points</p>
-                      </div>
-                    </div>
-                    {loyaltyProfile.tier === 'platinum' && (
-                      <Badge className="bg-[#D4AF37] text-white">Current</Badge>
-                    )}
-                  </div>
-                  <ul className="space-y-2">
-                    <li className="flex items-center gap-2 text-sm">
-                      <span className="text-emerald-600">✓</span>
-                      <span className="text-[#6B7280]">Earn 2 points per $1 spent</span>
-                    </li>
-                    <li className="flex items-center gap-2 text-sm">
-                      <span className="text-emerald-600">✓</span>
-                      <span className="text-[#6B7280]">15% birthday discount</span>
-                    </li>
-                    <li className="flex items-center gap-2 text-sm">
-                      <span className="text-emerald-600">✓</span>
-                      <span className="text-[#6B7280]">Free meal on birthday</span>
-                    </li>
-                    <li className="flex items-center gap-2 text-sm">
-                      <span className="text-emerald-600">✓</span>
-                      <span className="text-[#6B7280]">Exclusive VIP events</span>
-                    </li>
-                    <li className="flex items-center gap-2 text-sm">
-                      <span className="text-emerald-600">✓</span>
-                      <span className="text-[#6B7280]">Personal chef recommendations</span>
-                    </li>
-                  </ul>
-                </div>
+                ))}
               </div>
             </div>
 
-            {/* Redeem Points */}
-            <div className="bg-[#F9FAFB] rounded-xl p-6">
-              <h3 className="text-lg font-bold text-[#0F1729] mb-4 flex items-center gap-2">
-                <Gift className="w-5 h-5 text-[#D4AF37]" />
-                Redeem Your Points
+            <div className="rounded-xl p-5" style={{ background: "var(--gold-bg)", border: "1px solid var(--border)" }}>
+              <h3 className="text-base font-bold mb-3 flex items-center gap-2" style={{ color: "var(--navy)", fontFamily: "'Georgia', serif" }}>
+                <Gift className="w-4 h-4" style={{ color: "var(--gold-dark)" }} /> Redeem Your Points
               </h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white rounded-lg p-3 border border-[#E5E7EB]">
-                  <p className="font-semibold text-sm text-[#0F1729]">$5 Off</p>
-                  <Badge variant="outline" className="text-xs border-[#D4AF37] text-[#D4AF37] mt-1">100 pts</Badge>
-                </div>
-                <div className="bg-white rounded-lg p-3 border border-[#E5E7EB]">
-                  <p className="font-semibold text-sm text-[#0F1729]">$10 Off</p>
-                  <Badge variant="outline" className="text-xs border-[#D4AF37] text-[#D4AF37] mt-1">200 pts</Badge>
-                </div>
-                <div className="bg-white rounded-lg p-3 border border-[#E5E7EB]">
-                  <p className="font-semibold text-sm text-[#0F1729]">$15 Off</p>
-                  <Badge variant="outline" className="text-xs border-[#D4AF37] text-[#D4AF37] mt-1">300 pts</Badge>
-                </div>
-                <div className="bg-white rounded-lg p-3 border border-[#E5E7EB]">
-                  <p className="font-semibold text-sm text-[#0F1729]">Free Appetizer</p>
-                  <Badge variant="outline" className="text-xs border-[#D4AF37] text-[#D4AF37] mt-1">250 pts</Badge>
-                </div>
+              <div className="grid grid-cols-2 gap-2">
+                {[["$5 Off", "100 pts"], ["$10 Off", "200 pts"], ["$15 Off", "300 pts"], ["Free Appetizer", "250 pts"]].map(([label, pts]) => (
+                  <div key={label} className="rounded-lg p-3" style={{ background: "var(--card-bg)", border: "1px solid var(--border)" }}>
+                    <p className="font-semibold text-sm" style={{ color: "var(--navy)" }}>{label}</p>
+                    <Badge variant="outline" className="text-xs mt-1" style={{ borderColor: "var(--gold)", color: "var(--gold-dark)" }}>{pts}</Badge>
+                  </div>
+                ))}
               </div>
-              <p className="text-xs text-[#6B7280] mt-4">
-                Redeem points at checkout when placing your order
-              </p>
+              <p className="text-xs mt-3" style={{ color: "var(--text-muted)" }}>Redeem points at checkout when placing your order</p>
             </div>
 
-            {/* Referral Program */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border-2 border-blue-200">
-              <h3 className="text-lg font-bold text-[#0F1729] mb-3 flex items-center gap-2">
-                <Users className="w-5 h-5 text-blue-600" />
-                Refer a Friend
+            <div className="rounded-xl p-5 border-2 bg-blue-50 border-blue-200">
+              <h3 className="text-base font-bold mb-2 flex items-center gap-2" style={{ color: "var(--navy)", fontFamily: "'Georgia', serif" }}>
+                <Users className="w-4 h-4 text-blue-600" /> Refer a Friend
               </h3>
-              <p className="text-sm text-[#6B7280] mb-4">
-                Share your referral code and both of you get 100 bonus points!
-              </p>
-              <div className="bg-white rounded-lg p-4 border-2 border-dashed border-blue-300">
-                <p className="text-xs text-[#6B7280] mb-1">Your Referral Code</p>
-                <p className="text-xl font-bold text-blue-600 tracking-wider">{loyaltyProfile.referralCode}</p>
+              <p className="text-xs text-blue-700/70 mb-3">Share your referral code and both of you get 100 bonus points!</p>
+              <div className="rounded-lg p-3 bg-white border-2 border-dashed border-blue-300">
+                <p className="text-xs text-blue-400 mb-1">Your Referral Code</p>
+                <p className="text-lg font-bold text-blue-600 tracking-widest">{loyaltyProfile.referralCode}</p>
               </div>
             </div>
 
-            {/* Close Button */}
-            <Button 
-              onClick={() => setLoyaltyInfoOpen(false)}
-              className="w-full bg-[#0F1729] hover:bg-[#1A2642] text-white"
-            >
-              Got it!
-            </Button>
+            <Button onClick={() => setLoyaltyInfoOpen(false)} className="w-full text-white" style={{ background: "var(--navy)" }}>Got it!</Button>
           </div>
         </DialogContent>
       </Dialog>
 
+      {/* ── CSS ── */}
       <style>{`
+        :root {
+          --navy:        #1a2240;
+          --navy-light:  #2a3560;
+          --cream:       #f5f0e8;
+          --cream-muted: #cdc6b8;
+          --bg-cream:    #ede8dc;
+          --card-bg:     #faf7f2;
+          --border:      #ddd6c8;
+          --gold:        #c8a84b;
+          --gold-light:  #e0c97a;
+          --gold-dark:   #a8862e;
+          --gold-bg:     #f5edd8;
+          --text-muted:  #7a7060;
+          --skeleton:    #e5dfd4;
+        }
+
+        /* ══════════════════════════════════
+           CATEGORY FILTER CHIP STRIP
+        ══════════════════════════════════ */
+        .filter-chip {
+          -webkit-tap-highlight-color: transparent;
+          cursor: pointer;
+          transition: background 0.15s, color 0.15s, border-color 0.15s;
+          letter-spacing: 0.01em;
+        }
+        .filter-chip:hover {
+          border-color: var(--navy) !important;
+          color: var(--navy) !important;
+        }
+
+        /* Keep old cat-tab in case desktop sidebar references it */
+        .cat-tab {
+          font-size: 0.8125rem;
+          font-family: 'Georgia', serif;
+          padding: 0.45rem 1rem 0.55rem;
+          background: transparent;
+          border: none;
+          outline: none;
+          cursor: pointer;
+          letter-spacing: 0.01em;
+          transition: color 0.15s, border-color 0.15s;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .cat-tab:hover { color: var(--navy) !important; }
+
+        /* ══════════════════════════════════
+           AESTHETIC SCROLLBAR — always visible
+        ══════════════════════════════════ */
+        .cat-scroll {
+          scrollbar-width: thin;
+          scrollbar-color: var(--gold) var(--gold-bg);
+        }
+        .cat-scroll::-webkit-scrollbar { height: 5px; }
+        .cat-scroll::-webkit-scrollbar-track {
+          background: var(--gold-bg);
+          border-radius: 99px;
+          margin: 0 16px;
+        }
+        .cat-scroll::-webkit-scrollbar-thumb {
+          background: var(--gold);
+          border-radius: 99px;
+          min-width: 24px;
+        }
+
+        /* ══════════════════════════════════
+           EQUAL HEIGHT CARDS
+        ══════════════════════════════════ */
+        .mi-wrap {
+          display: flex !important;
+          flex-direction: column !important;
+        }
+        .mi-wrap > * {
+          flex: 1 !important;
+          display: flex !important;
+          flex-direction: column !important;
+          height: 100% !important;
+        }
+        /* Push the button to the bottom */
+        .mi-wrap > * > div:not(:first-child) {
+          flex: 1 !important;
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: space-between !important;
+        }
+
+
+
+        /* The card root: no gap between image and body */
+        .mi-wrap > *,
+        .mi-wrap > * > * {
+          gap: 0 !important;
+        }
+
+        /* Every direct child div of the card: kill all vertical margin */
+        .mi-wrap > * > div {
+          margin-top: 0 !important;
+          margin-bottom: 0 !important;
+        }
+
+        /* The image wrapper — flush bottom */
+        .mi-wrap > * > div:first-child {
+          padding-bottom: 0 !important;
+          margin-bottom: 0 !important;
+          line-height: 0;
+        }
+
+        /* The image itself */
+        .mi-wrap img {
+          display: block;
+          margin: 0 !important;
+          padding: 0 !important;
+          vertical-align: bottom;
+        }
+
+        /* The content body — consistent padding, flush top */
+        .mi-wrap > * > div:not(:first-child) {
+          padding-top: 10px !important;
+          padding-bottom: 14px !important;
+          padding-left: 12px !important;
+          padding-right: 12px !important;
+          margin-top: 0 !important;
+        }
+
+        /* Also flatten via class-name selectors as backup */
+        .mi-wrap [class*="relative"]:has(img) {
+          margin-bottom: 0 !important;
+          padding-bottom: 0 !important;
+          line-height: 0;
+        }
+        .mi-wrap [class*="p-4"],
+        .mi-wrap [class*="p-3"] {
+          padding-top: 10px !important;
+          padding-left: 12px !important;
+          padding-right: 12px !important;
+          padding-bottom: 14px !important;
+        }
+
+        /* ══════════════════════════════════
+           ADD TO CART BUTTON — DARK NAVY
+        ══════════════════════════════════ */
+        .menu-card-grid button {
+          background: var(--navy) !important;
+          color: var(--cream) !important;
+        }
+        .menu-card-grid button:hover {
+          background: var(--navy-light) !important;
+        }
+
+        /* ══════════════════════════════════
+           CHEF'S PICK BADGE — SMALLER ON MOBILE
+        ══════════════════════════════════ */
+        .mi-wrap [class*="badge"],
+        .mi-wrap [class*="Badge"],
+        .mi-wrap span[class*="absolute"],
+        .mi-wrap div[class*="absolute"] span,
+        .mi-wrap div[class*="absolute"] {
+          font-size: 0.65rem !important;
+          padding: 0.2rem 0.5rem !important;
+          gap: 0.2rem !important;
+        }
+        .mi-wrap div[class*="absolute"] svg,
+        .mi-wrap span[class*="absolute"] svg {
+          width: 0.6rem !important;
+          height: 0.6rem !important;
+        }
+        @media (min-width: 640px) {
+          .mi-wrap [class*="badge"],
+          .mi-wrap [class*="Badge"],
+          .mi-wrap div[class*="absolute"] {
+            font-size: 0.75rem !important;
+            padding: 0.25rem 0.65rem !important;
+          }
+        }
+
+        /* ══════════════════════════════════
+           FLOATING CART FAB — DARK NAVY
+        ══════════════════════════════════ */
+        .fixed.bottom-6 button,
+        .fixed.bottom-4 button,
+        .fixed.bottom-6 > button,
+        .fixed.bottom-4 > button,
+        [class*="fixed"][class*="bottom"] button,
+        [class*="fixed"][class*="bottom"] > button,
+        [class*="fixed"][class*="bottom"] > div > button,
+        [class*="fixed"][class*="bottom"] [class*="rounded-full"] {
+          background: var(--navy) !important;
+          background-color: var(--navy) !important;
+          color: var(--cream) !important;
+        }
+        .fixed.bottom-6 button:hover,
+        .fixed.bottom-4 button:hover,
+        [class*="fixed"][class*="bottom"] button:hover {
+          background: var(--navy-light) !important;
+          background-color: var(--navy-light) !important;
+        }
+
+        /* ══════════════════════════════════
+           RECOMMENDATION CARD BUTTONS — DARK NAVY
+        ══════════════════════════════════ */
+        .rec-card-grid button,
+        .rec-card-grid [role="button"] {
+          background: var(--navy) !important;
+          color: var(--cream) !important;
+        }
+        .rec-card-grid button:hover {
+          background: var(--navy-light) !important;
+        }
+
         @keyframes float {
           0%, 100% { transform: translateY(0px) rotate(0deg); }
           50% { transform: translateY(-20px) rotate(5deg); }
         }
-        @keyframes float-delayed {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-25px) rotate(-5deg); }
-        }
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-        .animate-float-delayed {
-          animation: float-delayed 8s ease-in-out infinite;
-        }
+        .animate-float { animation: float 6s ease-in-out infinite; }
       `}</style>
-      </>
-      )}
     </div>
   );
 }
