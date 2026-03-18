@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { QrCode, ScanLine, MapPin, Check, Bird } from "lucide-react";
 import { motion } from "motion/react";
+import { fetchAvailableTables } from "../services/api";
 
 interface QRScannerProps {
   userName: string;
@@ -13,15 +14,39 @@ export function QRScanner({ userName, onScanComplete }: QRScannerProps) {
   const [isScanning, setIsScanning] = useState(false);
   const [scanned, setScanned] = useState(false);
   const [tableNumber, setTableNumber] = useState("");
+  const [availableTables, setAvailableTables] = useState<
+    Array<{ code: string; label: string; seatCount: number }>
+  >([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchAvailableTables()
+      .then((tables) => {
+        if (!cancelled) {
+          setAvailableTables(tables);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setAvailableTables([]);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleScan = () => {
     setIsScanning(true);
     
     setTimeout(() => {
-      const supportedTables = ["A-1", "A-2", "B-1", "B-2"];
-      const mockTableNumber = supportedTables[Math.floor(Math.random() * supportedTables.length)];
+      const supportedTables = availableTables.map((table) => table.code);
+      const mockTableNumber =
+        supportedTables[Math.floor(Math.random() * supportedTables.length)] ?? "";
       setTableNumber(mockTableNumber);
-      setScanned(true);
+      setScanned(Boolean(mockTableNumber));
       setIsScanning(false);
     }, 2000);
   };
@@ -125,14 +150,14 @@ export function QRScanner({ userName, onScanComplete }: QRScannerProps) {
 
               {/* Manual Table Selection */}
               <div className="grid grid-cols-4 gap-2">
-                {["A-1", "A-2", "B-1", "B-2"].map((table) => (
+                {availableTables.map((table) => (
                   <Button
-                    key={table}
+                    key={table.code}
                     variant="outline"
                     className="border-2 hover:bg-[#F9FAFB] hover:border-[#D4AF37]"
-                    onClick={() => handleManualEntry(table)}
+                    onClick={() => handleManualEntry(table.code)}
                   >
-                    {table}
+                    {table.code}
                   </Button>
                 ))}
               </div>

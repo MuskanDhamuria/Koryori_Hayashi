@@ -34,6 +34,21 @@ export const inventoryRoutes: FastifyPluginAsync = async (app) => {
       orderBy: { stockOnHand: "asc" }
     });
 
-    return { alerts };
+    return {
+      alerts: alerts.map((alert) => ({
+        item: {
+          id: alert.menuItem.id,
+          name: alert.menuItem.name,
+          category: alert.menuItem.category?.name ?? "Uncategorized",
+          stock: alert.stockOnHand,
+          reorderPoint: alert.reorderPoint,
+        },
+        daysUntilStockout: Math.max(
+          1,
+          Math.floor(alert.stockOnHand / Math.max(1, alert.reorderPoint / 3 || 1)),
+        ),
+        suggestedOrder: Math.max(alert.reorderPoint * 3 - alert.stockOnHand, 0),
+      })),
+    };
   });
 };

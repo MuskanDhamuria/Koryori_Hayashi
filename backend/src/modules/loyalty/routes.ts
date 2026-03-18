@@ -1,6 +1,13 @@
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import { prisma } from "../../lib/prisma.js";
+import { normalizeTier, resolveCustomerMetadata } from "../customer/profileMetadata.js";
+
+export type FlavorPreferences = {
+  umamiVsCitrus: "umami" | "citrus" | "balanced";
+  refreshingVsHearty: "refreshing" | "hearty" | "balanced";
+  spicyTolerance: "mild" | "medium" | "very-spicy";
+};
 
 export const loyaltyRoutes: FastifyPluginAsync = async (app) => {
   app.get("/:phoneNumber/history", async (request) => {
@@ -67,14 +74,27 @@ export const loyaltyRoutes: FastifyPluginAsync = async (app) => {
       return reply.code(404).send({ message: "Customer not found" });
     }
 
+    const metadata = resolveCustomerMetadata({
+      phoneNumber: user.phoneNumber,
+      fullName: user.fullName,
+      referralCode: user.referralCode,
+    });
+
     return {
       user: {
         id: user.id,
-        fullName: user.fullName,
+        fullName: metadata.fullName,
         phoneNumber: user.phoneNumber,
         flavorProfile: user.flavorProfile,
+        referralCode: metadata.referralCode,
+        isBirthday: metadata.isBirthday,
       },
       loyaltyAccount: user.loyaltyAccount
+        ? {
+            ...user.loyaltyAccount,
+            tier: normalizeTier(user.loyaltyAccount.tier),
+          }
+        : null,
     };
   });
 
@@ -91,17 +111,23 @@ export const loyaltyRoutes: FastifyPluginAsync = async (app) => {
       })
       .parse(request.body);
 
+    const metadata = resolveCustomerMetadata({
+      phoneNumber,
+      fullName: payload.fullName,
+    });
+
     const user = await prisma.user.upsert({
       where: { phoneNumber },
       update: {
-        fullName: payload.fullName,
+        fullName: metadata.fullName,
         flavorProfile: payload.flavorProfile,
       },
       create: {
         phoneNumber,
-        fullName: payload.fullName ?? "Guest",
+        fullName: metadata.fullName,
         role: "CUSTOMER",
         flavorProfile: payload.flavorProfile,
+        referralCode: metadata.referralCode,
       },
       include: {
         loyaltyAccount: true,
@@ -114,8 +140,15 @@ export const loyaltyRoutes: FastifyPluginAsync = async (app) => {
         fullName: user.fullName,
         phoneNumber: user.phoneNumber,
         flavorProfile: user.flavorProfile,
+        referralCode: user.referralCode ?? metadata.referralCode,
+        isBirthday: metadata.isBirthday,
       },
-      loyaltyAccount: user.loyaltyAccount,
+      loyaltyAccount: user.loyaltyAccount
+        ? {
+            ...user.loyaltyAccount,
+            tier: normalizeTier(user.loyaltyAccount.tier),
+          }
+        : null,
     };
   });
 };

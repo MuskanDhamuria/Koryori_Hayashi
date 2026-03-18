@@ -1,8 +1,25 @@
-import type { MenuItem } from "@prisma/client";
+import { getEffectiveMenuPrice, getMenuPromotion } from "../menu/pricing.js";
 
 export interface SelectedDiscount {
   amount: number;
   pointsCost: number;
+}
+
+export type DiscountId =
+  | "points-5"
+  | "points-10"
+  | "points-15"
+  | "first-time"
+  | "referral";
+
+export interface AvailableDiscount {
+  id: DiscountId;
+  name: string;
+  description: string;
+  discount: number;
+  pointsCost?: number;
+  available: boolean;
+  requiresPoints?: boolean;
 }
 
 export interface OrderLineItem {
@@ -10,6 +27,7 @@ export interface OrderLineItem {
   quantity: number;
   unitPrice: number;
   lineTotal: number;
+  discountPercent: number;
 }
 
 export function roundCurrency(value: number) {
@@ -40,8 +58,27 @@ export function getTierFromPoints(points: number) {
   return "silver";
 }
 
+export function getBirthdayDiscountPercent(payload: {
+  tier: string | null | undefined;
+  isBirthday: boolean;
+}) {
+  if (!payload.isBirthday) {
+    return 0;
+  }
+
+  if (payload.tier === "platinum") {
+    return 15;
+  }
+
+  if (payload.tier === "gold") {
+    return 10;
+  }
+
+  return 5;
+}
+
 export function getSelectedDiscount(payload: {
-  selectedDiscountId?: "points-5" | "points-10" | "points-15" | "first-time" | "referral" | null;
+  selectedDiscountId?: DiscountId | null;
   totalBeforeSelectedDiscount: number;
   currentPoints: number;
   currentTier: string;
@@ -71,22 +108,94 @@ export function getSelectedDiscount(payload: {
   }
 }
 
+export function getAvailableDiscounts(payload: {
+  currentPoints: number;
+  currentTier: string;
+  totalBeforeSelectedDiscount: number;
+  referralEligible?: boolean;
+}): AvailableDiscount[] {
+  return [
+    {
+      id: "points-5",
+      name: "$5 Off",
+      description: "Redeem 100 points",
+      discount: 5,
+      pointsCost: 100,
+      available: payload.currentPoints >= 100,
+      requiresPoints: true,
+    },
+    {
+      id: "points-10",
+      name: "$10 Off",
+      description: "Redeem 200 points",
+      discount: 10,
+      pointsCost: 200,
+      available: payload.currentPoints >= 200,
+      requiresPoints: true,
+    },
+    {
+      id: "points-15",
+      name: "$15 Off",
+      description: "Redeem 300 points",
+      discount: 15,
+      pointsCost: 300,
+      available: payload.currentPoints >= 300,
+      requiresPoints: true,
+    },
+    {
+      id: "first-time",
+      name: "First Time Guest",
+      description: "10% off (max $10)",
+      discount: roundCurrency(Math.min(payload.totalBeforeSelectedDiscount * 0.1, 10)),
+      available: payload.currentTier === "silver" && payload.currentPoints === 0,
+      requiresPoints: false,
+    },
+    {
+      id: "referral",
+      name: "Referral Bonus",
+      description: "$8 off your order",
+      discount: 8,
+      available: payload.referralEligible ?? false,
+      requiresPoints: false,
+    },
+  ];
+}
+
 export function buildOrderLineItems(
-  menuItems: MenuItem[],
+  menuItems: Array<{
+    id: string;
+    price: unknown;
+    inventoryItem: {
+      stockOnHand: number;
+      reorderPoint: number;
+      ingredientName: string;
+      expiresInHours: number | null;
+    } | null;
+  }>,
   requestedItems: Array<{ menuItemId: string; quantity: number }>,
 ): OrderLineItem[] {
-  const itemMap = new Map<string, MenuItem>(menuItems.map((item) => [item.id, item]));
+  const itemMap = new Map(menuItems.map((item) => [item.id, item]));
 
   return requestedItems.map((item) => {
     const menuItem = itemMap.get(item.menuItemId)!;
-    const unitPrice = Number(menuItem.price);
+    const unitPrice = getEffectiveMenuPrice({
+      name: "",
+      price: menuItem.price,
+      inventoryItem: menuItem.inventoryItem,
+    });
     const lineTotal = unitPrice * item.quantity;
+    const promotion = getMenuPromotion({
+      name: "",
+      price: menuItem.price,
+      inventoryItem: menuItem.inventoryItem,
+    });
 
     return {
       menuItemId: item.menuItemId,
       quantity: item.quantity,
       unitPrice,
       lineTotal,
+      discountPercent: promotion?.discountPercentage ?? 0,
     };
   });
 }

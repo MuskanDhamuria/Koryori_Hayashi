@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { prisma } from "../../lib/prisma.js";
+import { buildOrderLineItems, calculateOrderPricing, getAvailableDiscounts, getBirthdayDiscountPercent, getSelectedDiscount, getTierFromPoints, getTierMultiplier, } from "./orderHelpers.js";
+import { normalizeTier, resolveCustomerMetadata } from "../customer/profileMetadata.js";
 const createOrderSchema = z.object({
     customerName: z.string().min(1),
     phoneNumber: z.string().min(6).optional(),
@@ -12,9 +14,6 @@ const createOrderSchema = z.object({
     }))
         .min(1),
     paymentMethod: z.enum(["CARD", "MOBILE", "CASH"]).default("CARD"),
-    birthdayDiscountPercent: z
-        .union([z.literal(0), z.literal(5), z.literal(10), z.literal(15)])
-        .default(0),
     selectedDiscountId: z
         .enum(["points-5", "points-10", "points-15", "first-time", "referral"])
         .nullable()
@@ -27,143 +26,174 @@ class RouteError extends Error {
         this.statusCode = statusCode;
     }
 }
-function roundCurrency(value) {
-    return Number(value.toFixed(2));
-}
-function getTierMultiplier(tier) {
-    if (tier === "platinum") {
-        return 2;
+async function buildOrderContext(tx, payload) {
+    const table = await tx.restaurantTable.findUnique({
+        where: { code: payload.tableCode },
+    });
+    if (!table) {
+        throw new RouteError(404, "Table not found");
     }
-    if (tier === "gold") {
-        return 1.5;
+    const menuItems = await tx.menuItem.findMany({
+        where: {
+            id: {
+                in: payload.items.map((item) => item.menuItemId),
+            },
+            isAvailable: true,
+        },
+        include: {
+            inventoryItem: true,
+        },
+    });
+    if (menuItems.length !== payload.items.length) {
+        throw new RouteError(400, "One or more menu items are unavailable");
     }
-    return 1;
-}
-function getTierFromPoints(points) {
-    if (points >= 1500) {
-        return "platinum";
-    }
-    if (points >= 500) {
-        return "gold";
-    }
-    return "silver";
-}
-function getSelectedDiscount(payload) {
-    switch (payload.selectedDiscountId) {
-        case "points-5":
-            return payload.currentPoints >= 100
-                ? { amount: 5, pointsCost: 100 }
-                : { amount: 0, pointsCost: 0 };
-        case "points-10":
-            return payload.currentPoints >= 200
-                ? { amount: 10, pointsCost: 200 }
-                : { amount: 0, pointsCost: 0 };
-        case "points-15":
-            return payload.currentPoints >= 300
-                ? { amount: 15, pointsCost: 300 }
-                : { amount: 0, pointsCost: 0 };
-        case "first-time":
-            return payload.currentTier === "silver" && payload.currentPoints === 0
-                ? {
-                    amount: roundCurrency(Math.min(payload.totalBeforeSelectedDiscount * 0.1, 10)),
-                    pointsCost: 0,
-                }
-                : { amount: 0, pointsCost: 0 };
-        default:
-            return { amount: 0, pointsCost: 0 };
-    }
+    const existingCustomer = payload.phoneNumber
+        ? await tx.user.findUnique({
+            where: { phoneNumber: payload.phoneNumber },
+            include: {
+                loyaltyAccount: true,
+            },
+        })
+        : null;
+    const metadata = resolveCustomerMetadata({
+        phoneNumber: payload.phoneNumber,
+        fullName: payload.customerName,
+        referralCode: existingCustomer?.referralCode,
+    });
+    const currentTier = normalizeTier(existingCustomer?.loyaltyAccount?.tier);
+    const currentPoints = existingCustomer?.loyaltyAccount?.pointsBalance ?? 0;
+    const birthdayDiscountPercent = getBirthdayDiscountPercent({
+        tier: currentTier,
+        isBirthday: metadata.isBirthday,
+    });
+    const lineItems = buildOrderLineItems(menuItems, payload.items);
+    const preflightPricing = calculateOrderPricing({
+        lineItems,
+        birthdayDiscountPercent,
+        selectedDiscount: { amount: 0, pointsCost: 0 },
+    });
+    const selectedDiscount = getSelectedDiscount({
+        selectedDiscountId: payload.selectedDiscountId,
+        totalBeforeSelectedDiscount: preflightPricing.totalBeforeSelectedDiscount,
+        currentPoints,
+        currentTier,
+    });
+    const pricing = calculateOrderPricing({
+        lineItems,
+        birthdayDiscountPercent,
+        selectedDiscount,
+    });
+    return {
+        table,
+        menuItems,
+        lineItems,
+        pricing,
+        selectedDiscount,
+        currentTier,
+        currentPoints,
+        birthdayDiscountPercent,
+        existingCustomer,
+        customerMetadata: metadata,
+        availableDiscounts: getAvailableDiscounts({
+            currentPoints,
+            currentTier,
+            totalBeforeSelectedDiscount: preflightPricing.totalBeforeSelectedDiscount,
+            referralEligible: false,
+        }),
+    };
 }
 export const ordersRoutes = async (app) => {
+    app.post("/preview", async (request, reply) => {
+        const payload = createOrderSchema.parse({
+            paymentMethod: "CARD",
+            ...request.body,
+        });
+        try {
+            const context = await buildOrderContext(prisma, payload);
+            return {
+                pricing: {
+                    subtotal: context.pricing.subtotal,
+                    birthdayDiscountPercent: context.birthdayDiscountPercent,
+                    birthdayDiscountAmount: context.pricing.birthdayDiscountAmount,
+                    subtotalAfterBirthdayDiscount: context.pricing.subtotalAfterBirthdayDiscount,
+                    taxAmount: context.pricing.taxAmount,
+                    totalBeforeSelectedDiscount: context.pricing.totalBeforeSelectedDiscount,
+                    selectedDiscountId: payload.selectedDiscountId ?? null,
+                    selectedDiscountAmount: context.selectedDiscount.amount,
+                    selectedDiscountPointsCost: context.selectedDiscount.pointsCost,
+                    finalTotal: context.pricing.totalAmount,
+                    pointsMultiplier: getTierMultiplier(context.currentTier),
+                    pointsEarned: Math.floor(context.pricing.totalAmount * getTierMultiplier(context.currentTier)),
+                    projectedPointsBalance: context.currentPoints -
+                        context.selectedDiscount.pointsCost +
+                        Math.floor(context.pricing.totalAmount * getTierMultiplier(context.currentTier)),
+                },
+                availableDiscounts: context.availableDiscounts,
+                loyaltyProfile: {
+                    tier: context.currentTier,
+                    points: context.currentPoints,
+                    name: context.customerMetadata.fullName,
+                    isBirthday: context.customerMetadata.isBirthday,
+                    referralCode: context.customerMetadata.referralCode,
+                },
+            };
+        }
+        catch (error) {
+            if (error instanceof RouteError) {
+                return reply.code(error.statusCode).send({ message: error.message });
+            }
+            throw error;
+        }
+    });
     app.post("/", async (request, reply) => {
         const payload = createOrderSchema.parse(request.body);
         try {
             const result = await prisma.$transaction(async (tx) => {
-                const table = await tx.restaurantTable.findUnique({
-                    where: { code: payload.tableCode },
-                });
-                if (!table) {
-                    throw new RouteError(404, "Table not found");
-                }
-                const menuItems = await tx.menuItem.findMany({
-                    where: {
-                        id: {
-                            in: payload.items.map((item) => item.menuItemId),
-                        },
-                        isAvailable: true,
-                    },
-                });
-                if (menuItems.length !== payload.items.length) {
-                    throw new RouteError(400, "One or more menu items are unavailable");
-                }
+                const context = await buildOrderContext(tx, payload);
                 let customer = null;
-                let currentTier = "silver";
-                let currentPoints = 0;
+                const currentTier = context.currentTier;
+                const currentPoints = context.currentPoints;
+                const orderNumber = `KH-${Date.now().toString().slice(-8)}`;
                 if (payload.phoneNumber) {
                     customer = await tx.user.upsert({
                         where: { phoneNumber: payload.phoneNumber },
-                        update: { fullName: payload.customerName },
+                        update: {
+                            fullName: context.customerMetadata.fullName,
+                            referralCode: context.customerMetadata.referralCode,
+                        },
                         create: {
                             phoneNumber: payload.phoneNumber,
-                            fullName: payload.customerName,
+                            fullName: context.customerMetadata.fullName,
                             role: "CUSTOMER",
+                            referralCode: context.customerMetadata.referralCode,
                         },
                     });
-                    const loyaltyAccount = await tx.loyaltyAccount.findUnique({
-                        where: { userId: customer.id },
-                    });
-                    currentTier = loyaltyAccount?.tier ?? "silver";
-                    currentPoints = loyaltyAccount?.pointsBalance ?? 0;
                 }
-                const itemMap = new Map(menuItems.map((item) => [item.id, item]));
-                const lineItems = payload.items.map((item) => {
-                    const menuItem = itemMap.get(item.menuItemId);
-                    const unitPrice = Number(menuItem.price);
-                    const lineTotal = unitPrice * item.quantity;
-                    return {
-                        menuItemId: item.menuItemId,
-                        quantity: item.quantity,
-                        unitPrice,
-                        lineTotal,
-                    };
-                });
-                const subtotal = roundCurrency(lineItems.reduce((sum, item) => sum + item.lineTotal, 0));
-                const birthdayDiscountAmount = roundCurrency(subtotal * (payload.birthdayDiscountPercent / 100));
-                const subtotalAfterBirthdayDiscount = roundCurrency(subtotal - birthdayDiscountAmount);
-                const taxAmount = roundCurrency(subtotalAfterBirthdayDiscount * 0.1);
-                const totalBeforeSelectedDiscount = roundCurrency(subtotalAfterBirthdayDiscount + taxAmount);
-                const selectedDiscount = getSelectedDiscount({
-                    selectedDiscountId: payload.selectedDiscountId,
-                    totalBeforeSelectedDiscount,
-                    currentPoints,
-                    currentTier,
-                });
-                const totalAmount = roundCurrency(Math.max(0, totalBeforeSelectedDiscount - selectedDiscount.amount));
-                const discountAmount = roundCurrency(birthdayDiscountAmount + selectedDiscount.amount);
-                const orderNumber = `KH-${Date.now().toString().slice(-8)}`;
                 const order = await tx.order.create({
                     data: {
                         orderNumber,
                         userId: customer?.id,
-                        tableId: table.id,
+                        tableId: context.table.id,
                         notes: payload.notes,
                         status: "CONFIRMED",
-                        subtotalAmount: subtotal,
-                        discountAmount,
-                        taxAmount,
-                        totalAmount,
+                        subtotalAmount: context.pricing.subtotal,
+                        discountAmount: context.pricing.discountAmount,
+                        taxAmount: context.pricing.taxAmount,
+                        totalAmount: context.pricing.totalAmount,
                         orderItems: {
-                            create: lineItems.map((item) => ({
+                            create: context.lineItems.map((item) => ({
                                 menuItemId: item.menuItemId,
                                 quantity: item.quantity,
                                 unitPrice: item.unitPrice,
                                 lineTotal: item.lineTotal,
+                                discountPercent: item.discountPercent,
                             })),
                         },
                         payment: {
                             create: {
                                 method: payload.paymentMethod,
                                 status: payload.paymentMethod === "CASH" ? "PENDING" : "PAID",
-                                amount: totalAmount,
+                                amount: context.pricing.totalAmount,
                                 paidAt: payload.paymentMethod === "CASH" ? null : new Date(),
                             },
                         },
@@ -180,24 +210,24 @@ export const ordersRoutes = async (app) => {
                 });
                 let loyalty = null;
                 if (customer) {
-                    const earnedPoints = Math.floor(totalAmount * getTierMultiplier(currentTier));
-                    if (selectedDiscount.pointsCost > 0) {
+                    const earnedPoints = Math.floor(context.pricing.totalAmount * getTierMultiplier(currentTier));
+                    if (context.selectedDiscount.pointsCost > 0) {
                         const existingAccount = await tx.loyaltyAccount.findUnique({
                             where: { userId: customer.id },
                         });
-                        if (!existingAccount || existingAccount.pointsBalance < selectedDiscount.pointsCost) {
+                        if (!existingAccount || existingAccount.pointsBalance < context.selectedDiscount.pointsCost) {
                             throw new RouteError(400, "Insufficient loyalty points for selected discount");
                         }
                         await tx.loyaltyAccount.update({
                             where: { userId: customer.id },
                             data: {
                                 pointsBalance: {
-                                    decrement: selectedDiscount.pointsCost,
+                                    decrement: context.selectedDiscount.pointsCost,
                                 },
                                 transactions: {
                                     create: {
                                         type: "REDEEM",
-                                        points: -selectedDiscount.pointsCost,
+                                        points: -context.selectedDiscount.pointsCost,
                                         description: `Points redeemed on order ${order.orderNumber}`,
                                     },
                                 },

@@ -4,9 +4,8 @@ import { ScrollArea } from "./ui/scroll-area";
 import { Separator } from "./ui/separator";
 import { Badge } from "./ui/badge";
 import { ShoppingCart as CartIcon, Minus, Plus, Trash2, CreditCard, Star } from "lucide-react";
-import type { CartItem } from "../types";
+import type { CartItem, PricingBreakdown } from "../types";
 import type { LoyaltyProfile } from "./LoyaltyCard";
-import { calculateCartSubtotal, calculatePricing } from "../lib/pricing";
 
 interface ShoppingCartProps {
   items: CartItem[];
@@ -14,6 +13,7 @@ interface ShoppingCartProps {
   onRemoveItem: (id: string) => void;
   onCheckout: () => void;
   loyaltyProfile: LoyaltyProfile;
+  pricing: PricingBreakdown | null;
 }
 
 export function ShoppingCart({
@@ -22,10 +22,10 @@ export function ShoppingCart({
   onRemoveItem,
   onCheckout,
   loyaltyProfile,
+  pricing,
 }: ShoppingCartProps) {
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const subtotal = calculateCartSubtotal(items);
-  const pricing = calculatePricing(subtotal, loyaltyProfile);
+  const subtotal = pricing?.subtotal ?? items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
     <Sheet>
@@ -108,7 +108,7 @@ export function ShoppingCart({
                 <span>Subtotal</span>
                 <span>${subtotal.toFixed(2)}</span>
               </div>
-              {pricing.birthdayDiscountPercent > 0 && (
+              {pricing && pricing.birthdayDiscountPercent > 0 && (
                 <div className="flex justify-between text-xs text-pink-600 sm:text-sm">
                   <span className="mr-2 truncate">
                     Birthday Discount ({pricing.birthdayDiscountPercent}%)
@@ -125,14 +125,16 @@ export function ShoppingCart({
               <Separator className="my-1 sm:my-2" />
               <div className="flex justify-between text-sm font-bold sm:text-base">
                 <span>Total</span>
-                <span className="text-[#7C8A7A]">${pricing.finalTotal.toFixed(2)}</span>
+                <span className="text-[#7C8A7A]">
+                  ${(pricing?.finalTotal ?? subtotal).toFixed(2)}
+                </span>
               </div>
               <div className="flex items-center gap-2 rounded-lg border border-[#7C8A7A]/30 bg-gradient-to-r from-[#E8DCC8] to-[#D4C9B8] p-2 backdrop-blur-sm sm:p-3">
                 <Star className="h-4 w-4 shrink-0 fill-[#9BA89A] text-[#7C8A7A] sm:h-5 sm:w-5" />
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold text-[#4A5548] sm:text-sm">Loyalty Points</p>
                   <p className="truncate text-[10px] text-[#6B7669] sm:text-xs">
-                    You'll earn {pricing.pointsEarned} points ({pricing.pointsMultiplier}x multiplier)
+                    You'll earn {pricing?.pointsEarned ?? 0} points ({pricing?.pointsMultiplier ?? 1}x multiplier)
                   </p>
                 </div>
               </div>

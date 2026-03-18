@@ -12,6 +12,9 @@ import { inventoryRoutes } from "./modules/inventory/routes.js";
 import { loyaltyRoutes } from "./modules/loyalty/routes.js";
 import { gamesRoutes } from "./modules/games/routes.js";
 import { aiRoutes } from "./modules/ai/routes.js";
+import { integrationRoutes } from "./modules/integrations/routes.js";
+import { customerRoutes } from "./modules/customer/routes.js";
+import { tablesRoutes } from "./modules/tables/routes.js";
 export function buildApp() {
     const allowedOrigins = new Set([
         env.CUSTOMER_APP_ORIGIN,
@@ -51,5 +54,8 @@ export function buildApp() {
     app.register(loyaltyRoutes, { prefix: "/api/loyalty" });
     app.register(gamesRoutes, { prefix: "/api/games" });
     app.register(aiRoutes, { prefix: "/api/ai" });
+    app.register(integrationRoutes, { prefix: "/api/integrations" });
+    app.register(customerRoutes, { prefix: "/api/customer" });
+    app.register(tablesRoutes, { prefix: "/api/tables" });
     return app;
 }

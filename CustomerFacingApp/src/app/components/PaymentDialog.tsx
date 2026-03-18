@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { JSX } from "react/jsx-runtime";
 import {
   CheckCircle2,
@@ -13,21 +13,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import type { LoyaltyProfile } from "./LoyaltyCard";
-import {
-  calculatePricing,
-  getAvailableDiscounts,
-  type DiscountId,
-} from "../lib/pricing";
+import type { AvailableDiscount, DiscountId, PricingBreakdown } from "../types";
 
 interface PaymentDialogProps {
   open: boolean;
   onClose: () => void;
+  onDiscountChange: (discountId: DiscountId | null) => void;
   onPaymentComplete: (
     paymentMethod: "card" | "mobile",
     selectedDiscountId: DiscountId | null,
   ) => Promise<{ earnedPoints: number; pointsBalance: number } | void>;
-  subtotal: number;
   loyaltyProfile: LoyaltyProfile;
+  pricing: PricingBreakdown | null;
+  availableDiscounts: AvailableDiscount[];
   isSubmittingOrder?: boolean;
 }
 
@@ -42,9 +40,11 @@ const discountIcons: Record<DiscountId, JSX.Element> = {
 export function PaymentDialog({
   open,
   onClose,
+  onDiscountChange,
   onPaymentComplete,
-  subtotal,
   loyaltyProfile,
+  pricing,
+  availableDiscounts,
   isSubmittingOrder = false,
 }: PaymentDialogProps) {
   const [paymentMethod, setPaymentMethod] = useState<"card" | "mobile" | null>(null);
@@ -55,14 +55,12 @@ export function PaymentDialog({
   const [completedPointsBalance, setCompletedPointsBalance] = useState<number | null>(null);
   const [paymentError, setPaymentError] = useState("");
 
-  const basePricing = calculatePricing(subtotal, loyaltyProfile);
-  const availableDiscounts = getAvailableDiscounts(
-    loyaltyProfile,
-    basePricing.totalBeforeSelectedDiscount,
-  );
-  const pricing = calculatePricing(subtotal, loyaltyProfile, selectedDiscount);
+  useEffect(() => {
+    setSelectedDiscount(pricing?.selectedDiscountId ?? null);
+  }, [pricing?.selectedDiscountId]);
+
   const selectedDiscountData = availableDiscounts.find(
-    (discount) => discount.id === pricing.selectedDiscountId,
+    (discount) => discount.id === (pricing?.selectedDiscountId ?? selectedDiscount),
   );
 
   const handleClose = () => {
@@ -73,11 +71,12 @@ export function PaymentDialog({
     setCompletedEarnedPoints(null);
     setCompletedPointsBalance(null);
     setPaymentError("");
+    onDiscountChange(null);
     onClose();
   };
 
   const handlePayment = async () => {
-    if (!paymentMethod) {
+    if (!paymentMethod || !pricing) {
       return;
     }
 
@@ -113,13 +112,13 @@ export function PaymentDialog({
               <div className="mb-2 flex items-center justify-center gap-2">
                 <Star className="h-5 w-5 text-[#D4AF37]" />
                 <span className="font-bold text-white">
-                  {completedEarnedPoints ?? pricing.pointsEarned} Points Earned!
+                  {completedEarnedPoints ?? pricing?.pointsEarned ?? 0} Points Earned!
                 </span>
               </div>
               <p className="text-sm text-white/70">
-                New balance: {(completedPointsBalance ?? pricing.projectedPointsBalance).toLocaleString()} points
+                New balance: {(completedPointsBalance ?? pricing?.projectedPointsBalance ?? loyaltyProfile.points).toLocaleString()} points
               </p>
-              {selectedDiscountData?.requiresPoints ? (
+              {pricing && selectedDiscountData?.requiresPoints ? (
                 <p className="mt-2 text-xs text-white/60">
                   -{pricing.selectedDiscountPointsCost} points used
                 </p>
@@ -149,6 +148,11 @@ export function PaymentDialog({
           <DialogDescription>Review your order and select a discount</DialogDescription>
         </DialogHeader>
 
+        {!pricing ? (
+          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+            Calculating live order total...
+          </div>
+        ) : (
         <div className="space-y-6">
           <div className="space-y-2 rounded-xl bg-[#F9FAFB] p-4">
             <div className="flex justify-between text-sm">
@@ -204,7 +208,10 @@ export function PaymentDialog({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setSelectedDiscount(null)}
+                  onClick={() => {
+                    setSelectedDiscount(null);
+                    onDiscountChange(null);
+                  }}
                   className="h-auto py-1 text-xs"
                 >
                   Clear
@@ -216,7 +223,15 @@ export function PaymentDialog({
               {availableDiscounts.map((discount) => (
                 <button
                   key={discount.id}
-                  onClick={() => discount.available && setSelectedDiscount(discount.id)}
+                  onClick={() => {
+                    if (!discount.available) {
+                      return;
+                    }
+
+                    const nextDiscount = selectedDiscount === discount.id ? null : discount.id;
+                    setSelectedDiscount(nextDiscount);
+                    onDiscountChange(nextDiscount);
+                  }}
                   disabled={!discount.available}
                   className={`flex w-full items-center gap-3 rounded-lg border-2 p-3 transition-all ${
                     selectedDiscount === discount.id
@@ -337,7 +352,7 @@ export function PaymentDialog({
 
           <Button
             onClick={handlePayment}
-            disabled={!paymentMethod || isCompleting || isSubmittingOrder}
+            disabled={!paymentMethod || !pricing || isCompleting || isSubmittingOrder}
             className="h-12 w-full bg-[#0F1729] font-semibold text-white shadow-md hover:bg-[#1A2642] disabled:opacity-50"
           >
             {isCompleting || isSubmittingOrder
@@ -347,6 +362,7 @@ export function PaymentDialog({
                 : "Select Payment Method"}
           </Button>
         </div>
+        )}
       </DialogContent>
     </Dialog>
   );

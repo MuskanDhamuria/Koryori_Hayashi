@@ -32,6 +32,38 @@ export interface CartItem extends MenuItem {
   quantity: number;
 }
 
+export type DiscountId =
+  | "points-5"
+  | "points-10"
+  | "points-15"
+  | "first-time"
+  | "referral";
+
+export interface AvailableDiscount {
+  id: DiscountId;
+  name: string;
+  description: string;
+  discount: number;
+  pointsCost?: number;
+  available: boolean;
+  requiresPoints?: boolean;
+}
+
+export interface PricingBreakdown {
+  subtotal: number;
+  birthdayDiscountPercent: number;
+  birthdayDiscountAmount: number;
+  subtotalAfterBirthdayDiscount: number;
+  taxAmount: number;
+  totalBeforeSelectedDiscount: number;
+  selectedDiscountId: DiscountId | null;
+  selectedDiscountAmount: number;
+  selectedDiscountPointsCost: number;
+  finalTotal: number;
+  pointsMultiplier: number;
+  pointsEarned: number;
+  projectedPointsBalance: number;
+}
 
 export interface FlavorPreferences {
   umamiVsCitrus: 'umami' | 'citrus' | 'balanced';

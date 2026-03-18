@@ -1,4 +1,5 @@
 import { prisma } from "../../lib/prisma.js";
+import { serializeMenuItem } from "./serializers.js";
 export const menuRoutes = async (app) => {
     app.get("/", async () => {
         const categories = await prisma.category.findMany({
@@ -13,7 +14,29 @@ export const menuRoutes = async (app) => {
             },
             orderBy: { name: "asc" }
         });
-        return { categories };
+        return {
+            categories: categories.map((category) => ({
+                ...category,
+                items: category.items.map((item) => serializeMenuItem({
+                    ...item,
+                    category: {
+                        slug: category.slug,
+                        name: category.name,
+                    },
+                })),
+            })),
+        };
+    });
+    app.get("/pairings", async () => {
+        const pairings = await prisma.menuItemPairing.findMany({
+            select: {
+                sourceMenuItemId: true,
+                targetMenuItemId: true,
+                weight: true,
+                reason: true
+            }
+        });
+        return { pairings };
     });
     app.get("/featured", async () => {
         const items = await prisma.menuItem.findMany({
@@ -27,6 +50,14 @@ export const menuRoutes = async (app) => {
             take: 8,
             orderBy: [{ isNew: "desc" }, { name: "asc" }]
         });
-        return { items };
+        return {
+            items: items.map((item) => serializeMenuItem({
+                ...item,
+                category: {
+                    slug: "featured",
+                    name: "Featured",
+                },
+            })),
+        };
     });
 };

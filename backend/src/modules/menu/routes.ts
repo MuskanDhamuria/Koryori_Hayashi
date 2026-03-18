@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
 import { prisma } from "../../lib/prisma.js";
+import { serializeMenuItem } from "./serializers.js";
 
 export const menuRoutes: FastifyPluginAsync = async (app) => {
   app.get("/", async () => {
@@ -16,7 +17,20 @@ export const menuRoutes: FastifyPluginAsync = async (app) => {
       orderBy: { name: "asc" }
     });
 
-    return { categories };
+    return {
+      categories: categories.map((category) => ({
+        ...category,
+        items: category.items.map((item) =>
+          serializeMenuItem({
+            ...item,
+            category: {
+              slug: category.slug,
+              name: category.name,
+            },
+          }),
+        ),
+      })),
+    };
   });
 
   app.get("/pairings", async () => {
@@ -45,6 +59,16 @@ export const menuRoutes: FastifyPluginAsync = async (app) => {
       orderBy: [{ isNew: "desc" }, { name: "asc" }]
     });
 
-    return { items };
+    return {
+      items: items.map((item) =>
+        serializeMenuItem({
+          ...item,
+          category: {
+            slug: "featured",
+            name: "Featured",
+          },
+        }),
+      ),
+    };
   });
 };

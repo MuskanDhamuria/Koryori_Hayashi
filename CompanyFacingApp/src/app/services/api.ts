@@ -72,6 +72,135 @@ export interface DashboardAnalyticsResponse {
     lowCount: number;
     recommendation: string;
   };
+  charts: {
+    revenue: {
+      daily: Array<{ date: string; revenue: number }>;
+      weekly: Array<{ date: string; revenue: number }>;
+      monthly: Array<{ date: string; revenue: number }>;
+    };
+    combo: Array<{
+      date: string;
+      revenue: number;
+      orders: number;
+      customers: number;
+    }>;
+    hourlySales: Array<{
+      hour: number;
+      sales: number;
+      isPeak: boolean;
+    }>;
+    heatMap: Array<{
+      day: string;
+      hours: Array<{ hour: number; value: number }>;
+    }>;
+    seasonal: Array<{
+      period: string;
+      revenue: number;
+      orders: number;
+      avgOrderValue: number;
+    }>;
+    forecast: Array<{
+      date: string;
+      actual?: number;
+      forecast?: number;
+      isHistorical: boolean;
+    }>;
+    forecastFocusItemName: string;
+  };
+  performance: {
+    topItems: Array<{
+      item: {
+        id: string;
+        name: string;
+        category: string;
+        price: number;
+        cost: number;
+        stock: number;
+        reorderPoint: number;
+      };
+      totalRevenue: number;
+      totalQuantity: number;
+    }>;
+    worstItems: Array<{
+      item: {
+        id: string;
+        name: string;
+        category: string;
+        price: number;
+        cost: number;
+        stock: number;
+        reorderPoint: number;
+      };
+      totalRevenue: number;
+      totalQuantity: number;
+    }>;
+  };
+  forecast: {
+    focusItemName: string;
+    chart: Array<{
+      date: string;
+      actual?: number;
+      forecast?: number;
+      isHistorical: boolean;
+    }>;
+    cards: Array<{
+      itemId: string;
+      itemName: string;
+      weekTotal: number;
+      avgDaily: number;
+      currentStock: number;
+    }>;
+  };
+  staffing: {
+    schedule: {
+      staff: Array<{
+        id: string;
+        name: string;
+        role: string;
+        shift: string;
+        hours: string;
+      }>;
+      coverage: {
+        peak: string;
+        offPeak: string;
+        peakHourRange: string;
+      };
+    };
+    allocation: Array<{
+      hour: number;
+      label: string;
+      shift: string;
+      expectedSales: number;
+      staffRequired: number;
+      availableStaff: number;
+      coverageStatus: string;
+    }>;
+  };
+  pricingStrategy: {
+    topPerformers: Array<{
+      itemId: string;
+      itemName: string;
+      category: string;
+      price: number;
+      margin: number;
+      quantity: number;
+      revenue: number;
+      action: string;
+      reason: string;
+    }>;
+    slowMovers: Array<{
+      itemId: string;
+      itemName: string;
+      category: string;
+      price: number;
+      margin: number;
+      quantity: number;
+      revenue: number;
+      action: string;
+      reason: string;
+    }>;
+    strategicInsights: string[];
+  };
 }
 
 export interface DashboardAiResponse {
@@ -144,15 +273,15 @@ export async function fetchOrders(token: string) {
 export async function fetchInventoryAlerts(token: string) {
   return apiFetch<{
     alerts: Array<{
-      stockOnHand: number;
-      reorderPoint: number;
-      menuItem: {
+      item: {
         id: string;
         name: string;
-        category: {
-          name: string;
-        };
+        category: string;
+        stock: number;
+        reorderPoint: number;
       };
+      daysUntilStockout: number;
+      suggestedOrder: number;
     }>;
   }>("/api/inventory/alerts", {
     headers: {
