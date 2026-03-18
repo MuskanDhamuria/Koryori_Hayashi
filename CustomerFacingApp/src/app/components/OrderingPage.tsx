@@ -42,7 +42,7 @@ const BASE_MENU_ITEMS: MenuItemType[] = [
     isHighMargin: false,
     flavorProfile: { umami: 0.9, citrus: 0.2, refreshing: 0.8, hearty: 0.2 },
     weatherTags: ["sunny", "hot"],
-  },
+  }, 
   {
     id: "102",
     name: "Crab Meat Cream Croquette",
@@ -79,7 +79,7 @@ const BASE_MENU_ITEMS: MenuItemType[] = [
     description: "Breaded and fried Japanese horse mackerel",
     price: 3.8,
     category: "appetizers",
-    image: "https://images.unsplash.com/photo-1598514982501-3b7b02c27d64",
+    image: "/images/menu/aji_fry.png",
     isHighMargin: true,
     flavorProfile: { umami: 0.7, citrus: 0.2, refreshing: 0.3, hearty: 0.6 },
   },
