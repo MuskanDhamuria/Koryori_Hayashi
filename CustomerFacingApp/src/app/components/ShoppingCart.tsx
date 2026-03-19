@@ -30,8 +30,8 @@ export function ShoppingCart({
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button className="fixed bottom-6 right-6 z-50 h-16 w-16 rounded-full border-4 border-white bg-gradient-to-br from-[#7C8A7A] to-[#9BA89A] shadow-2xl hover:from-[#6B7969] hover:to-[#8A9889]">
-          <CartIcon className="h-6 w-6" />
+        <Button className="fixed bottom-6 right-6 z-50 h-16 w-16 rounded-full border-4 border-white shadow-2xl" style={{ background: "#1a2240" }}>
+          <CartIcon className="h-6 w-6 text-white" />
           {totalItems > 0 && (
             <Badge className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 p-0">
               {totalItems}
@@ -125,21 +125,24 @@ export function ShoppingCart({
               <Separator className="my-1 sm:my-2" />
               <div className="flex justify-between text-sm font-bold sm:text-base">
                 <span>Total</span>
-                <span className="text-[#7C8A7A]">${pricing.finalTotal.toFixed(2)}</span>
+                <span style={{ color: "#1a2240" }}>${pricing.finalTotal.toFixed(2)}</span>
               </div>
-              <div className="flex items-center gap-2 rounded-lg border border-[#7C8A7A]/30 bg-gradient-to-r from-[#E8DCC8] to-[#D4C9B8] p-2 backdrop-blur-sm sm:p-3">
-                <Star className="h-4 w-4 shrink-0 fill-[#9BA89A] text-[#7C8A7A] sm:h-5 sm:w-5" />
+              <div className="flex items-center gap-2 rounded-lg border p-2 backdrop-blur-sm sm:p-3" style={{ borderColor: "rgba(26,34,64,0.2)", background: "linear-gradient(to right, #E8DCC8, #D4C9B8)" }}>
+                <Star className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" style={{ fill: "#c8a84b", color: "#c8a84b" }} />
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-[#4A5548] sm:text-sm">Loyalty Points</p>
-                  <p className="truncate text-[10px] text-[#6B7669] sm:text-xs">
+                  <p className="text-xs font-semibold sm:text-sm" style={{ color: "#1a2240" }}>Loyalty Points</p>
+                  <p className="truncate text-[10px] sm:text-xs" style={{ color: "#7a7060" }}>
                     You'll earn {pricing.pointsEarned} points ({pricing.pointsMultiplier}x multiplier)
                   </p>
                 </div>
               </div>
               <Button
-                className="mb-10 w-full bg-gradient-to-r from-[#7C8A7A] to-[#9BA89A] py-2 text-sm font-semibold text-white shadow-lg hover:from-[#6B7969] hover:to-[#8A9889] sm:py-3 sm:text-base"
+                className="mb-10 w-full py-2 text-sm font-semibold text-white shadow-lg sm:py-3 sm:text-base"
+                style={{ background: "#1a2240" }}
                 size="default"
                 onClick={onCheckout}
+                onMouseEnter={e => (e.currentTarget.style.background = "#2a3560")}
+                onMouseLeave={e => (e.currentTarget.style.background = "#1a2240")}
               >
                 <CreditCard className="mr-1.5 h-3.5 w-3.5 sm:mr-2 sm:h-4 sm:w-4" />
                 Proceed to Payment
