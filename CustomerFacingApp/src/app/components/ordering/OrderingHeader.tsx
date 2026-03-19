@@ -9,58 +9,32 @@ type OrderingHeaderProps = {
 
 export function OrderingHeader({ tableNumber, weatherData }: OrderingHeaderProps) {
   return (
-    <header
-      style={{ background: "var(--navy)", borderBottom: "1px solid var(--navy-light)" }}
-      className="sticky top-0 z-50 shadow-md"
-    >
-      <div className="container mx-auto px-4 py-3 sm:px-6">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <div
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-              style={{ background: "var(--gold)" }}
-            >
-              <UtensilsCrossed className="w-4 h-4" style={{ color: "var(--navy)" }} strokeWidth={2.5} />
-            </div>
-            <div className="min-w-0">
-              <h1
-                className="text-base font-bold leading-tight tracking-wide"
-                style={{ color: "var(--cream)", fontFamily: "'Georgia', serif" }}
-              >
-                Koryori Hayashi
-              </h1>
-              <p
-                className="text-[10px]"
-                style={{ color: "var(--gold-light)", letterSpacing: "0.15em" }}
-              >
-                小料理林
-              </p>
+    <header className="sticky top-0 z-50 border-b border-[color:var(--border)] bg-[rgba(248,244,234,0.88)] shadow-sm backdrop-blur-xl">
+      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-[color:var(--ink)] text-[color:var(--gold)] shadow-[0_16px_32px_rgba(40,52,90,0.15)]">
+                <UtensilsCrossed className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="menu-kicker mb-1">Koryori Hayashi</p>
+                <h1 className="menu-title text-3xl leading-none text-[color:var(--ink)]">Lunch Menu</h1>
+              </div>
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             {weatherData && (
-              <div
-                className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5"
-                style={{ background: "var(--navy-light)" }}
-              >
-                <span style={{ color: "var(--gold)" }}>{getWeatherIcon(weatherData.condition)}</span>
-                <span className="text-xs font-semibold" style={{ color: "var(--cream)" }}>
-                  {weatherData.temperature}°F
-                </span>
+              <div className="stamp-badge flex items-center gap-2 rounded-full px-3 py-2 text-xs uppercase tracking-[0.14em]">
+                {getWeatherIcon(weatherData.condition)}
+                <span>{weatherData.temperature}F</span>
               </div>
             )}
-            <div
-              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5"
-              style={{ background: "var(--navy-light)" }}
-            >
-              <QrCode className="w-3.5 h-3.5" style={{ color: "var(--gold)" }} />
-              <span className="text-xs" style={{ color: "var(--cream-muted)" }}>
-                Table
-              </span>
-              <span className="text-sm font-bold" style={{ color: "var(--cream)" }}>
-                {tableNumber}
-              </span>
+
+            <div className="stamp-badge flex items-center gap-2 rounded-full px-3 py-2 text-xs uppercase tracking-[0.14em]">
+              <QrCode className="h-3.5 w-3.5" />
+              <span>Table {tableNumber}</span>
             </div>
           </div>
         </div>

@@ -1,18 +1,25 @@
 import type { ReactNode } from "react";
-import { Info, Sparkles } from "lucide-react";
+import { Skeleton } from "../ui/skeleton";
+import { Sparkles } from "lucide-react";
 import { CherryBlossom } from "../JapanesePattern";
 import { MenuItem } from "../MenuItem";
 import { RecommendationCard } from "../RecommendationCard";
 import { LoyaltyCard, type LoyaltyProfile } from "../LoyaltyCard";
-import type { MenuItem as MenuItemType, WeatherData } from "../../types";
+import { Button } from "../ui/button";
+import type { FlavorPreferences, MenuItem as MenuItemType, WeatherData } from "../../types";
 
-type OrderingCategory = {
-  key: string;
-  label: string;
-  emoji: string;
-};
+const CATEGORY_OPTIONS = [
+  { id: "mains", label: "Mains" },
+  { id: "appetizers", label: "Appetizers" },
+  { id: "ramen", label: "Udon" },
+  { id: "desserts", label: "Desserts" },
+  { id: "drinks", label: "Drinks" },
+] as const;
 
 type OrderingCatalogProps = {
+  tableNumber: string;
+  userName: string;
+  flavorPreferences?: FlavorPreferences;
   hasPlacedOrder: boolean;
   onShowGames: () => void;
   onUpdateFlavorPreferences: () => void;
@@ -20,16 +27,19 @@ type OrderingCatalogProps = {
   weatherData: WeatherData | null;
   getWeatherIcon: (condition: string) => ReactNode;
   getPerfectWeatherMessage: (weather: WeatherData) => string;
-  categories: OrderingCategory[];
   activeCategory: string;
   onSelectCategory: (category: string) => void;
   menuItems: MenuItemType[];
   onItemClick: (item: MenuItemType) => void;
   recommendations: Array<{ item: MenuItemType; reason: string }>;
   onAddToCart: (item: MenuItemType) => void;
+  isLoading: boolean;
 };
 
 export function OrderingCatalog({
+  tableNumber,
+  userName,
+  flavorPreferences,
   hasPlacedOrder,
   onShowGames,
   onUpdateFlavorPreferences,
@@ -37,258 +47,216 @@ export function OrderingCatalog({
   weatherData,
   getWeatherIcon,
   getPerfectWeatherMessage,
-  categories,
   activeCategory,
   onSelectCategory,
   menuItems,
   onItemClick,
   recommendations,
   onAddToCart,
+  isLoading,
 }: OrderingCatalogProps) {
-  return (
-    <>
-      <div className="mb-4">
-        <LoyaltyCard profile={loyaltyProfile} />
-      </div>
+  const activeCategoryLabel =
+    CATEGORY_OPTIONS.find((category) => category.id === activeCategory)?.label ?? "Mains";
+  const activeMenuItems = menuItems.filter((item) => item.category === activeCategory);
 
-      <div className="mb-5 flex flex-wrap items-center gap-2">
-        {hasPlacedOrder && (
-          <button
-            onClick={onShowGames}
-            className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-white transition-colors"
-            style={{ background: "var(--navy)" }}
-          >
-            Play Games
-          </button>
-        )}
-
-        <button
-          onClick={onUpdateFlavorPreferences}
-          className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-colors"
-          style={{ background: "var(--gold-bg)", color: "var(--navy)" }}
-        >
-          <Info className="h-3 w-3" style={{ color: "var(--gold-dark)" }} />
-          Update Taste Profile
-        </button>
-
-        {loyaltyProfile.isBirthday && (
-          <div className="flex items-center gap-1.5 rounded-lg bg-pink-50 px-3 py-2 text-xs font-medium text-pink-700">
-            Birthday Bonus Active
-          </div>
-        )}
-      </div>
-
-      {weatherData && (
-        <div
-          className="mb-5 flex items-center gap-3 rounded-xl p-4"
-          style={{ background: "var(--card-bg)", border: "1px solid var(--border)" }}
-        >
-          <div
-            className="shrink-0 rounded-lg px-2.5 py-1.5"
-            style={{ background: "var(--gold-bg)" }}
-          >
-            <div className="flex items-center gap-1.5">
-              <span style={{ color: "var(--gold-dark)" }}>{getWeatherIcon(weatherData.condition)}</span>
-              <span className="text-xs font-semibold" style={{ color: "var(--navy)" }}>
-                {weatherData.temperature}°F
-              </span>
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="max-w-md rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
+          <div className="mb-3 flex items-center gap-3">
+            <Skeleton className="h-12 w-12 rounded-full bg-[#F3F4F6]" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-32 bg-[#F3F4F6]" />
+              <Skeleton className="h-3 w-24 bg-[#F3F4F6]" />
             </div>
           </div>
-          <div>
-            <h3
-              className="text-sm font-semibold"
-              style={{ color: "var(--navy)", fontFamily: "'Georgia', serif" }}
-            >
-              {getPerfectWeatherMessage(weatherData)}
-            </h3>
-            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-              {weatherData.description}
-            </p>
-          </div>
-        </div>
-      )}
-
-      <div className="lg:hidden mb-5">
-        <div className="mb-2.5 flex items-center gap-2 px-1">
-          <div className="flex items-center gap-1.5">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 2.5h10M3 6h6M5 9.5h2" stroke="var(--gold-dark)" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-            <span
-              className="text-[10px] font-semibold uppercase tracking-[0.14em]"
-              style={{ color: "var(--text-muted)" }}
-            >
-              Filter
-            </span>
-          </div>
-          <div className="h-px flex-1" style={{ background: "var(--border)" }} />
-          <span className="text-[10px]" style={{ color: "var(--cream-muted)" }}>
-            scroll ›
-          </span>
+          <Skeleton className="h-20 w-full bg-[#F3F4F6]" />
         </div>
 
-        <div className="relative">
-          <div
-            className="pointer-events-none absolute bottom-0 right-0 top-0 z-10 w-10"
-            style={{ background: "linear-gradient(to right, transparent, var(--bg-cream))" }}
-          />
-
-          <div className="cat-scroll -mx-4 overflow-x-auto px-4 pb-2.5">
-            <div className="flex gap-2" style={{ width: "max-content" }}>
-              {categories.map((category) => (
-                <button
-                  key={category.key}
-                  onClick={() => onSelectCategory(category.key)}
-                  className="filter-chip flex shrink-0 items-center gap-1.5 whitespace-nowrap transition-all"
-                  style={
-                    activeCategory === category.key
-                      ? {
-                          background: "var(--navy)",
-                          color: "var(--cream)",
-                          border: "1.5px solid var(--navy)",
-                          borderRadius: "999px",
-                          padding: "0.3rem 0.85rem",
-                          fontSize: "0.8rem",
-                          fontWeight: 600,
-                          fontFamily: "'Georgia', serif",
-                        }
-                      : {
-                          background: "var(--card-bg)",
-                          color: "var(--text-muted)",
-                          border: "1.5px solid var(--border)",
-                          borderRadius: "999px",
-                          padding: "0.3rem 0.85rem",
-                          fontSize: "0.8rem",
-                          fontWeight: 400,
-                          fontFamily: "'Georgia', serif",
-                        }
-                  }
-                >
-                  <span className="text-sm leading-none">{category.emoji}</span>
-                  <span>{category.label}</span>
-                </button>
-              ))}
+        <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-[#0F1729]">Syncing your menu and rewards</p>
+              <p className="text-xs text-[#6B7280]">Pulling the latest backend data for this session.</p>
             </div>
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#D4AF37]/30 border-t-[#D4AF37]" />
           </div>
-        </div>
-      </div>
 
-      <div className="flex gap-6">
-        <aside className="hidden w-28 shrink-0 lg:block">
-          <div
-            className="sticky top-20 rounded-xl p-2"
-            style={{ background: "var(--card-bg)", border: "1px solid var(--border)" }}
-          >
-            <div className="flex flex-col gap-1">
-              {categories.map((category) => (
-                <button
-                  key={category.key}
-                  onClick={() => onSelectCategory(category.key)}
-                  className="flex w-full items-center gap-1.5 rounded-lg px-2.5 py-2.5 text-left transition-all"
-                  style={
-                    activeCategory === category.key
-                      ? { background: "var(--navy)", color: "var(--cream)" }
-                      : { color: "var(--navy)" }
-                  }
-                >
-                  <span className="text-base">{category.emoji}</span>
-                  <span className="truncate text-xs font-medium">{category.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </aside>
-
-        <section className="menu-card-grid min-w-0 flex-1">
-          {categories.map((category) =>
-            activeCategory === category.key ? (
-              <div key={category.key}>
-                <h2
-                  className="mb-5 text-2xl font-bold sm:text-3xl"
-                  style={{ color: "var(--navy)", fontFamily: "'Georgia', serif" }}
-                >
-                  {category.label}
-                </h2>
-                <div className="grid grid-cols-2 items-stretch gap-3 sm:gap-5 xl:grid-cols-3">
-                  {menuItems
-                    .filter((item) => item.category === category.key)
-                    .map((item) => (
-                      <div
-                        key={item.id}
-                        className="mi-wrap h-full w-full cursor-pointer transition-transform hover:scale-[1.02]"
-                        onClick={() => onItemClick(item)}
-                      >
-                        <MenuItem item={item} onAddToCart={onAddToCart} />
-                      </div>
-                    ))}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 6 }, (_, index) => (
+              <div
+                key={`menu-skeleton-${index}`}
+                className="rounded-2xl border border-[#E5E7EB] p-4"
+              >
+                <Skeleton className="mb-4 h-40 w-full rounded-xl bg-[#F3F4F6]" />
+                <Skeleton className="mb-2 h-4 w-2/3 bg-[#F3F4F6]" />
+                <Skeleton className="mb-4 h-3 w-full bg-[#F3F4F6]" />
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-4 w-16 bg-[#F3F4F6]" />
+                  <Skeleton className="h-9 w-24 rounded-lg bg-[#F3F4F6]" />
                 </div>
               </div>
-            ) : null,
-          )}
-        </section>
-      </div>
-
-      {recommendations.length > 0 && (
-        <div className="relative mt-16">
-          <div className="absolute -top-8 left-0 right-0 flex items-center justify-center">
-            <div className="flex items-center gap-3">
-              <div
-                className="h-px w-20"
-                style={{ background: "linear-gradient(to right, transparent, var(--gold-light))" }}
-              />
-              {[0.4, 0.6, 1, 0.6, 0.4].map((opacity, index) => (
-                <div
-                  key={index}
-                  className="h-1.5 w-1.5 rounded-full"
-                  style={{ background: `rgba(200, 168, 75, ${opacity})` }}
-                />
-              ))}
-              <div
-                className="h-px w-20"
-                style={{ background: "linear-gradient(to left, transparent, var(--gold-light))" }}
-              />
-            </div>
-          </div>
-
-          <div className="mt-8 mb-7 flex flex-wrap items-center gap-4">
-            <div className="relative">
-              <div
-                className="absolute inset-0 h-14 w-14 animate-pulse rounded-full blur-xl"
-                style={{ background: "var(--gold-bg)" }}
-              />
-              <div
-                className="relative rounded-2xl p-3 shadow-xl"
-                style={{ background: "linear-gradient(135deg, var(--navy), var(--navy-light))" }}
-              >
-                <Sparkles className="relative z-10 h-7 w-7" style={{ color: "var(--gold)" }} strokeWidth={2} />
-              </div>
-              <CherryBlossom className="absolute -bottom-1 -right-1 opacity-90 drop-shadow-md" size={24} />
-            </div>
-            <div className="flex-1">
-              <h2
-                className="mb-1 text-3xl font-bold sm:text-4xl"
-                style={{ color: "var(--navy)", fontFamily: "'Georgia', serif" }}
-              >
-                Recommendations おすすめ
-              </h2>
-              <p className="text-xs" style={{ color: "var(--text-muted)", letterSpacing: "0.05em" }}>
-                Multi-Armed Bandit · Thompson Sampling · Weather-Aware · Flavor-Matched
-              </p>
-            </div>
-          </div>
-
-          <div className="rec-card-grid grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {recommendations.map((recommendation) => (
-              <RecommendationCard
-                key={recommendation.item.id}
-                item={recommendation.item}
-                reason={recommendation.reason}
-                onAddToCart={onAddToCart}
-              />
             ))}
           </div>
         </div>
-      )}
-    </>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
+      <section className="space-y-6">
+        {weatherData && (
+          <div className="paper-panel flex flex-col gap-4 rounded-[28px] border-[color:var(--border)] p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+            <div className="flex items-center gap-3">
+              <div className="stamp-badge flex items-center gap-2 rounded-full px-4 py-2 text-xs uppercase tracking-[0.14em]">
+                {getWeatherIcon(weatherData.condition)}
+                <span>{weatherData.temperature}F</span>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-[color:var(--ink)]">
+                  {getPerfectWeatherMessage(weatherData)}
+                </h3>
+                <p className="text-xs text-[color:var(--ink-soft)]">{weatherData.description}</p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="stamp-badge rounded-full px-4 py-2 text-xs uppercase tracking-[0.14em] text-[color:var(--ink)]">
+                Table {tableNumber}
+              </div>
+              <div className="stamp-badge rounded-full px-4 py-2 text-xs uppercase tracking-[0.14em] text-[color:var(--ink)]">
+                {userName}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="paper-panel rounded-[28px] border-[color:var(--border)] p-3">
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {CATEGORY_OPTIONS.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => onSelectCategory(category.id)}
+                className={`shrink-0 rounded-full px-5 py-3 text-sm font-semibold uppercase tracking-[0.14em] transition-colors ${
+                  activeCategory === category.id
+                    ? "bg-[color:var(--ink)] text-[color:var(--paper)] shadow-[0_14px_30px_rgba(40,52,90,0.14)]"
+                    : "border border-[color:var(--border)] bg-white/72 text-[color:var(--ink)] hover:border-[color:var(--gold)]/45 hover:bg-white"
+                }`}
+              >
+                {category.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="paper-panel rounded-[30px] border-[color:var(--border)] p-6 sm:p-8">
+          <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div>
+              <p className="menu-kicker mb-2">Menu</p>
+              <h2 className="menu-title text-4xl text-[color:var(--ink)]">{activeCategoryLabel}</h2>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {flavorPreferences && (
+                <div className="rounded-full border border-emerald-600/18 bg-emerald-50 px-3 py-2 text-xs font-medium uppercase tracking-[0.14em] text-emerald-700">
+                  Personalized
+                </div>
+              )}
+              {loyaltyProfile.isBirthday && (
+                <div className="rounded-full border border-[color:var(--rose)]/20 bg-pink-50 px-3 py-2 text-xs font-medium uppercase tracking-[0.14em] text-pink-700">
+                  Birthday Bonus Active
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
+            {activeMenuItems.map((item) => (
+              <div
+                key={item.id}
+                className="w-full cursor-pointer transition-transform hover:scale-[1.01]"
+                onClick={() => onItemClick(item)}
+              >
+                <MenuItem item={item} onAddToCart={onAddToCart} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {recommendations.length > 0 && (
+          <div className="paper-panel rounded-[30px] border-[color:var(--border)] p-6 sm:p-8">
+            <div className="mb-8 flex flex-wrap items-center gap-4">
+              <div className="relative rounded-[22px] bg-[linear-gradient(135deg,var(--ink),rgba(40,52,90,0.76))] p-3 shadow-xl">
+                <Sparkles className="relative z-10 h-7 w-7 text-white" strokeWidth={2} />
+                <div className="absolute inset-0 rounded-[22px] bg-gradient-to-t from-transparent to-white/20" />
+                <CherryBlossom className="absolute -bottom-2 -right-2 opacity-90 drop-shadow-md" size={24} />
+              </div>
+
+              <div>
+                <p className="menu-kicker mb-2">Suggested Dishes</p>
+                <h2 className="menu-title text-4xl text-[color:var(--ink)]">Recommended for Your Table</h2>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 2xl:grid-cols-3">
+              {recommendations.map((rec) => (
+                <RecommendationCard
+                  key={rec.item.id}
+                  item={rec.item}
+                  reason={rec.reason}
+                  onAddToCart={onAddToCart}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+
+      <aside className="order-first space-y-4 self-start xl:order-none xl:sticky xl:top-24">
+        <LoyaltyCard profile={loyaltyProfile} />
+
+        <div className="paper-panel rounded-[30px] border-[color:var(--border)] p-5 sm:p-6">
+          <p className="menu-kicker mb-2">Quick Actions</p>
+          <h3 className="menu-title text-3xl text-[color:var(--ink)]">Your Table</h3>
+
+          <div className="mt-5 space-y-3">
+            <Button
+              onClick={onUpdateFlavorPreferences}
+              className="h-12 w-full rounded-[20px] bg-[color:var(--ink)] text-sm font-semibold text-[color:var(--paper)] shadow-[0_18px_34px_rgba(40,52,90,0.16)] hover:bg-[color:var(--ink)]/92"
+            >
+              <Sparkles className="mr-2 h-4 w-4 text-[color:var(--gold)]" />
+              Update Taste Profile
+            </Button>
+
+            {hasPlacedOrder && (
+              <Button
+                variant="outline"
+                onClick={onShowGames}
+                className="h-12 w-full rounded-[20px] border-[color:var(--border)] bg-white/78 text-sm font-semibold text-[color:var(--ink)] hover:border-[color:var(--gold)]/45 hover:bg-white"
+              >
+                Play Games
+              </Button>
+            )}
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+            <div className="rounded-[22px] border border-[color:var(--border)] bg-white/72 px-4 py-4">
+              <p className="menu-kicker mb-2">Member</p>
+              <p className="text-lg font-semibold text-[color:var(--ink)]">{userName}</p>
+              <p className="mt-1 text-xs text-[color:var(--ink-soft)] capitalize">
+                {loyaltyProfile.points} points | {loyaltyProfile.tier}
+              </p>
+            </div>
+
+            <div className="rounded-[22px] border border-[color:var(--border)] bg-white/72 px-4 py-4">
+              <p className="menu-kicker mb-2">Session</p>
+              <p className="text-lg font-semibold text-[color:var(--ink)]">Table {tableNumber}</p>
+              <p className="mt-1 text-xs text-[color:var(--ink-soft)]">Ready for ordering</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
   );
 }

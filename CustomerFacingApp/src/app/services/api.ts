@@ -9,7 +9,6 @@ import type {
   PricingBreakdown,
   WeatherData,
 } from "../types";
-import { getFallbackCustomerProfile } from "../lib/customerProfiles";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000";
 
@@ -58,27 +57,6 @@ export interface CustomerProfile {
   loyaltyProfile: LoyaltyProfile | null;
 }
 
-export interface CustomerExperienceResponse {
-  customer: {
-    phoneNumber: string;
-    fullName: string;
-    flavorProfile: FlavorPreferences | null;
-    loyaltyProfile: LoyaltyProfile;
-  };
-  categories: Array<{
-    id: string;
-    label: string;
-  }>;
-  menuItems: MenuItem[];
-  orderHistoryItemIds: string[];
-  weather: WeatherData;
-  availableTables: Array<{
-    code: string;
-    label: string;
-    seatCount: number;
-  }>;
-}
-
 export interface OrderPricingPreview {
   pricing: PricingBreakdown;
   availableDiscounts: AvailableDiscount[];
@@ -117,20 +95,6 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export type BackendMenuItemPairing = {
-  sourceMenuItemId: string;
-  targetMenuItemId: string;
-  weight: number;
-  reason: string | null;
-};
-
-export async function fetchCustomerOrderHistory(phoneNumber: string): Promise<string[]> {
-  const response = await apiFetch<{ itemIds: string[] }>(
-    `/api/loyalty/${encodeURIComponent(phoneNumber)}/history`,
-  );
-  return response.itemIds;
-}
-
 export async function fetchMenuItems(): Promise<MenuItem[]> {
   const response = await apiFetch<{ categories: BackendMenuCategory[] }>("/api/menu");
 
@@ -156,22 +120,16 @@ export async function fetchMenuItems(): Promise<MenuItem[]> {
   );
 }
 
-export async function fetchMenuItemPairings(): Promise<BackendMenuItemPairing[]> {
-  const response = await apiFetch<{ pairings: BackendMenuItemPairing[] }>("/api/menu/pairings");
-  return response.pairings;
-}
-
 export async function fetchLoyaltyProfile(phoneNumber: string): Promise<LoyaltyProfile | null> {
   try {
     const response = await apiFetch<BackendLoyaltyResponse>(`/api/loyalty/${encodeURIComponent(phoneNumber)}`);
-    const fallbackProfile = getFallbackCustomerProfile(phoneNumber);
 
     return {
-      tier: response.loyaltyAccount?.tier ?? fallbackProfile.loyaltyProfile.tier,
+      tier: response.loyaltyAccount?.tier ?? "silver",
       points: response.loyaltyAccount?.pointsBalance ?? 0,
       name: response.user.fullName,
-      isBirthday: response.user.isBirthday ?? fallbackProfile.loyaltyProfile.isBirthday,
-      referralCode: response.user.referralCode ?? fallbackProfile.loyaltyProfile.referralCode,
+      isBirthday: response.user.isBirthday,
+      referralCode: response.user.referralCode ?? "",
     };
   } catch {
     return null;
@@ -181,18 +139,17 @@ export async function fetchLoyaltyProfile(phoneNumber: string): Promise<LoyaltyP
 export async function fetchCustomerProfile(phoneNumber: string): Promise<CustomerProfile | null> {
   try {
     const response = await apiFetch<BackendLoyaltyResponse>(`/api/loyalty/${encodeURIComponent(phoneNumber)}`);
-    const fallbackProfile = getFallbackCustomerProfile(phoneNumber);
 
     return {
       phoneNumber,
       fullName: response.user.fullName,
       flavorProfile: response.user.flavorProfile,
       loyaltyProfile: {
-        tier: response.loyaltyAccount?.tier ?? fallbackProfile.loyaltyProfile.tier,
+        tier: response.loyaltyAccount?.tier ?? "silver",
         points: response.loyaltyAccount?.pointsBalance ?? 0,
         name: response.user.fullName,
-        isBirthday: response.user.isBirthday ?? fallbackProfile.loyaltyProfile.isBirthday,
-        referralCode: response.user.referralCode ?? fallbackProfile.loyaltyProfile.referralCode,
+        isBirthday: response.user.isBirthday,
+        referralCode: response.user.referralCode ?? "",
       },
     };
   } catch {
@@ -205,7 +162,6 @@ export async function saveCustomerPreferences(input: {
   fullName: string;
   flavorProfile: FlavorPreferences;
 }): Promise<CustomerProfile> {
-  const fallbackProfile = getFallbackCustomerProfile(input.phoneNumber);
   const response = await apiFetch<BackendLoyaltyResponse>(
     `/api/loyalty/${encodeURIComponent(input.phoneNumber)}/preferences`,
     {
@@ -222,11 +178,11 @@ export async function saveCustomerPreferences(input: {
     fullName: response.user.fullName,
     flavorProfile: response.user.flavorProfile,
     loyaltyProfile: {
-      tier: response.loyaltyAccount?.tier ?? fallbackProfile.loyaltyProfile.tier,
+      tier: response.loyaltyAccount?.tier ?? "silver",
       points: response.loyaltyAccount?.pointsBalance ?? 0,
       name: response.user.fullName,
-      isBirthday: response.user.isBirthday ?? fallbackProfile.loyaltyProfile.isBirthday,
-      referralCode: response.user.referralCode ?? fallbackProfile.loyaltyProfile.referralCode,
+      isBirthday: response.user.isBirthday,
+      referralCode: response.user.referralCode ?? "",
     },
   };
 }
@@ -257,12 +213,6 @@ export async function createOrder(input: {
     method: "POST",
     body: JSON.stringify(input)
   });
-}
-
-export async function fetchCustomerExperience(phoneNumber: string): Promise<CustomerExperienceResponse> {
-  return apiFetch<CustomerExperienceResponse>(
-    `/api/customer/experience?phoneNumber=${encodeURIComponent(phoneNumber)}`,
-  );
 }
 
 export async function fetchCustomerRecommendations(input: {

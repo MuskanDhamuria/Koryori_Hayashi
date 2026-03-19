@@ -4,6 +4,15 @@ import { prisma } from "../../lib/prisma.js";
 
 const GAME_KEYS = ["PLATE_DASH", "SAKE_POUR", "SUSHI_MEMORY"] as const;
 type GameKey = (typeof GAME_KEYS)[number];
+type LeaderboardScoreEntry = {
+  userId: string | null;
+  score: number;
+  earnedPoints: number;
+  createdAt: Date;
+  user: {
+    fullName: string;
+  } | null;
+};
 
 const submitGameScoreSchema = z.object({
   phoneNumber: z.string().min(6),
@@ -26,6 +35,51 @@ function getTierFromPoints(points: number) {
   return "silver";
 }
 
+function getLeaderboardIdentity(entry: LeaderboardScoreEntry) {
+  return entry.userId ?? `guest:${entry.user?.fullName ?? "Guest"}`;
+}
+
+function buildLeaderboard(entries: LeaderboardScoreEntry[]) {
+  const bestScoresByPlayer = new Map<string, LeaderboardScoreEntry>();
+
+  for (const entry of entries) {
+    const identity = getLeaderboardIdentity(entry);
+    const currentBest = bestScoresByPlayer.get(identity);
+
+    if (!currentBest) {
+      bestScoresByPlayer.set(identity, entry);
+      continue;
+    }
+
+    if (entry.score > currentBest.score) {
+      bestScoresByPlayer.set(identity, entry);
+      continue;
+    }
+
+    if (entry.score === currentBest.score && entry.createdAt < currentBest.createdAt) {
+      bestScoresByPlayer.set(identity, entry);
+    }
+  }
+
+  return [...bestScoresByPlayer.values()]
+    .sort((left, right) => {
+      if (right.score !== left.score) {
+        return right.score - left.score;
+      }
+
+      return left.createdAt.getTime() - right.createdAt.getTime();
+    })
+    .slice(0, 10)
+    .map((entry, index) => ({
+      rank: index + 1,
+      playerName: entry.user?.fullName ?? "Guest",
+      score: entry.score,
+      earnedPoints: entry.earnedPoints,
+      createdAt: entry.createdAt,
+      userId: entry.userId,
+    }));
+}
+
 export const gamesRoutes: FastifyPluginAsync = async (app) => {
   app.get("/leaderboards", async () => {
     const leaderboardEntries = await prisma.gameScore.findMany({
@@ -42,16 +96,9 @@ export const gamesRoutes: FastifyPluginAsync = async (app) => {
       earnedPoints: number;
       createdAt: Date;
     }>>>((accumulator, gameKey) => {
-      const topScores = leaderboardEntries
-        .filter((entry) => entry.gameKey === gameKey)
-        .slice(0, 10)
-        .map((entry, index) => ({
-          rank: index + 1,
-          playerName: entry.user?.fullName ?? "Guest",
-          score: entry.score,
-          earnedPoints: entry.earnedPoints,
-          createdAt: entry.createdAt,
-        }));
+      const topScores = buildLeaderboard(
+        leaderboardEntries.filter((entry) => entry.gameKey === gameKey),
+      ).map(({ userId: _userId, ...entry }) => entry);
 
       accumulator[gameKey] = topScores;
       return accumulator;
@@ -138,16 +185,7 @@ export const gamesRoutes: FastifyPluginAsync = async (app) => {
       };
     }
 
-    const higherScoresCount = await prisma.gameScore.count({
-      where: {
-        gameKey: payload.gameKey as any,
-        score: {
-          gt: payload.score,
-        },
-      },
-    });
-
-    const latestTopScores = await prisma.gameScore.findMany({
+    const latestScoresForGame = await prisma.gameScore.findMany({
       where: {
         gameKey: payload.gameKey as any,
       },
@@ -155,8 +193,11 @@ export const gamesRoutes: FastifyPluginAsync = async (app) => {
         user: true,
       },
       orderBy: [{ score: "desc" }, { createdAt: "asc" }],
-      take: 10,
     });
+
+    const latestTopScores = buildLeaderboard(latestScoresForGame);
+    const playerRank =
+      latestTopScores.find((entry) => entry.userId === user.id)?.rank ?? null;
 
     return {
       score: {
@@ -164,16 +205,10 @@ export const gamesRoutes: FastifyPluginAsync = async (app) => {
         gameKey: scoreEntry.gameKey,
         score: scoreEntry.score,
         earnedPoints: scoreEntry.earnedPoints,
-        rank: higherScoresCount + 1,
+        rank: playerRank ?? latestTopScores.length + 1,
       },
       loyalty,
-      leaderboard: latestTopScores.map((entry, index) => ({
-        rank: index + 1,
-        playerName: entry.user?.fullName ?? "Guest",
-        score: entry.score,
-        earnedPoints: entry.earnedPoints,
-        createdAt: entry.createdAt,
-      })),
+      leaderboard: latestTopScores.map(({ userId: _userId, ...entry }) => entry),
     };
   });
 };

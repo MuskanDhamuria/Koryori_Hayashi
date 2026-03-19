@@ -1,9 +1,9 @@
+import { motion } from "motion/react";
+import { Clock, Flame, Plus, Sparkles, Star } from "lucide-react";
 import { MenuItem as MenuItemType } from "../types";
+import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
-import { Badge } from "./ui/badge";
-import { Plus, Sparkles, Flame, Clock } from "lucide-react";
-import { motion } from "motion/react";
 
 interface MenuItemProps {
   item: MenuItemType;
@@ -13,109 +13,125 @@ interface MenuItemProps {
 export function MenuItem({ item, onAddToCart }: MenuItemProps) {
   const hasFlashSale = item.flashSaleRemaining && item.flashSaleRemaining > 0;
   const isNew = item.isNew === true;
-  
+  const spiceLevel = item.spicy ?? 0;
+
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 border border-[#E5E7EB] hover:border-[#D4AF37] bg-white group">
-      <div className="relative">
-        {/* Image */}
-        <div className="relative aspect-[4/3] overflow-hidden bg-[#F3F4F6]">
+    <Card className="paper-panel group overflow-hidden rounded-[28px] border-[color:var(--border)] transition-all duration-300 hover:-translate-y-1 hover:border-[color:var(--gold)]/45 hover:shadow-[0_28px_56px_rgba(40,52,90,0.1)]">
+      <div className="relative aspect-[4/3] overflow-hidden bg-[color:var(--paper-strong)]">
+        {item.image ? (
           <img
             src={item.image}
             alt={item.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        ) : (
+          <div className="flex h-full items-center justify-center bg-[linear-gradient(135deg,rgba(40,52,90,0.08),rgba(196,163,91,0.18))]">
+            <Sparkles className="h-10 w-10 text-[color:var(--ink-soft)]" />
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-[rgba(24,28,42,0.5)] via-transparent to-transparent" />
+
+        <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+          {hasFlashSale ? (
+            <motion.div
+              animate={{ scale: [1, 1.04, 1] }}
+              transition={{ duration: 1.8, repeat: Infinity }}
+            >
+              <Badge className="rounded-full border border-white/14 bg-[color:var(--wine)] text-white shadow-lg">
+                <Flame className="mr-1 h-3.5 w-3.5" />
+                Daily Special -{item.discountPercentage}%
+              </Badge>
+            </motion.div>
+          ) : null}
+
+          {isNew && !hasFlashSale ? (
+            <Badge className="rounded-full border border-white/14 bg-[color:var(--ink)] text-[color:var(--paper)] shadow-lg">
+              <Sparkles className="mr-1 h-3.5 w-3.5 text-[color:var(--gold)]" />
+              Seasonal
+            </Badge>
+          ) : null}
+
+          {item.isHighMargin && !hasFlashSale && !isNew ? (
+            <Badge className="rounded-full border border-white/20 bg-white/86 text-[color:var(--ink)] shadow-lg">
+              <Star className="mr-1 h-3.5 w-3.5 text-[color:var(--gold)]" />
+              Chef Recommends
+            </Badge>
+          ) : null}
         </div>
 
-        {/* Badges */}
-        {hasFlashSale && (
-          <motion.div
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="absolute top-3 left-3"
-          >
-            <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold px-3 py-1 shadow-lg">
-              <Flame className="w-3.5 h-3.5 mr-1" />
-              FLASH -{item.discountPercentage}%
-            </Badge>
-          </motion.div>
-        )}
-        
-        {isNew && !hasFlashSale && (
-          <Badge className="absolute top-3 right-3 bg-purple-600 text-white font-bold px-3 py-1 shadow-lg">
-            <Sparkles className="w-3.5 h-3.5 mr-1" />
-            NEW
-          </Badge>
-        )}
+        <div className="absolute bottom-4 right-4 flex items-center gap-1 rounded-full bg-white/88 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[color:var(--ink)] shadow-lg">
+          <span>{item.category}</span>
+          {spiceLevel > 0 ? (
+            <>
+              <span className="text-[color:var(--ink-soft)]">|</span>
+              <span className="flex items-center gap-1 text-[color:var(--wine)]">
+                {Array.from({ length: spiceLevel }).map((_, index) => (
+                  <Flame key={`${item.id}-spice-${index}`} className="h-3 w-3 fill-current" />
+                ))}
+              </span>
+            </>
+          ) : null}
+        </div>
 
-        {item.isHighMargin && !hasFlashSale && !isNew && (
-          <Badge className="absolute top-3 right-3 bg-[#D4AF37] text-white font-semibold px-3 py-1 shadow-md">
-            <Sparkles className="w-3 h-3 mr-1" />
-            Chef's Pick
-          </Badge>
-        )}
-        
-        {item.spicy && (
-          <div className="absolute top-3 right-3 flex gap-0.5 bg-white/90 px-2 py-1 rounded-full">
-            {Array.from({ length: item.spicy }).map((_, i) => (
-              <span key={i} className="text-sm">🌶️</span>
-            ))}
-          </div>
-        )}
-
-        {hasFlashSale && (
-          <div className="absolute bottom-3 left-3 right-3 bg-black/80 px-3 py-2 rounded-lg">
-            <div className="flex items-center justify-between text-white text-xs">
-              <div className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5" />
-                <span>Only {item.flashSaleRemaining} left</span>
-              </div>
+        {hasFlashSale ? (
+          <div className="absolute bottom-4 left-4 rounded-[18px] bg-black/72 px-3 py-2 text-white shadow-lg backdrop-blur-sm">
+            <div className="flex items-center gap-1.5 text-xs">
+              <Clock className="h-3.5 w-3.5" />
+              <span>Only {item.flashSaleRemaining} left today</span>
             </div>
-            {item.surplusIngredient && (
-              <p className="text-[10px] text-white/70 mt-0.5">♻️ Fresh {item.surplusIngredient}</p>
-            )}
+            {item.surplusIngredient ? (
+              <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-white/72">
+                Fresh {item.surplusIngredient}
+              </p>
+            ) : null}
           </div>
-        )}
+        ) : null}
       </div>
 
-      <div className="p-5">
-        {/* Name and Price */}
-        <div className="flex justify-between items-start mb-2 gap-2">
-          <h3 className="font-bold text-[#0F1729] text-base leading-tight">
-            {item.name}
-          </h3>
-          <div className="flex flex-col items-end">
-            {hasFlashSale && item.originalPrice && (
-              <span className="text-xs text-[#9CA3AF] line-through">
+      <div className="space-y-4 p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="menu-kicker mb-2">{item.category}</p>
+            <h3 className="text-[1.4rem] font-semibold leading-tight text-[color:var(--ink)]">
+              {item.name}
+            </h3>
+          </div>
+          <div className="text-right">
+            {hasFlashSale && item.originalPrice ? (
+              <span className="block text-xs text-[color:var(--ink-soft)] line-through">
                 ${item.originalPrice.toFixed(2)}
               </span>
-            )}
-            <span className={`font-bold text-lg whitespace-nowrap ${hasFlashSale ? 'text-red-600' : 'text-[#0F1729]'}`}>
+            ) : null}
+            <span className={`text-xl font-bold whitespace-nowrap ${hasFlashSale ? "text-[color:var(--wine)]" : "text-[color:var(--ink)]"}`}>
               ${item.price.toFixed(2)}
             </span>
           </div>
         </div>
 
-        {/* Description */}
-        <p className="text-sm text-[#6B7280] mb-4 line-clamp-2">
+        <p className="line-clamp-2 text-sm leading-6 text-[color:var(--ink-soft)]">
           {item.description}
         </p>
 
-        {/* Add Button */}
-       <Button
-  onClick={(e) => {
-    e.stopPropagation();
-    onAddToCart(item);
-  }}
-  className={`w-full h-9 sm:h-10 text-xs sm:text-sm ${
-    hasFlashSale 
-      ? 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600' 
-      : 'bg-[#0F1729] hover:bg-[#1A2642]'
-  } text-white shadow-sm transition-all`}
->
-  <Plus className="w-4 h-4 mr-1.5" />
-  {hasFlashSale ? 'Grab Deal' : 'Add to Cart'}
-</Button>
+        <div className="flex items-center justify-between gap-3">
+          <div className="rounded-full border border-[color:var(--border)] bg-white/76 px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-[color:var(--ink-soft)]">
+            {spiceLevel > 0 ? `${spiceLevel} heat level` : "house favourite"}
+          </div>
+
+          <Button
+            onClick={(event) => {
+              event.stopPropagation();
+              onAddToCart(item);
+            }}
+            className={`h-11 rounded-full px-5 text-sm font-semibold ${
+              hasFlashSale
+                ? "bg-[color:var(--wine)] text-white hover:bg-[color:var(--wine)]/92"
+                : "bg-[color:var(--ink)] text-[color:var(--paper)] hover:bg-[color:var(--ink)]/92"
+            }`}
+          >
+            <Plus className="mr-1.5 h-4 w-4" />
+            {hasFlashSale ? "Add Deal" : "Add to Order"}
+          </Button>
+        </div>
       </div>
     </Card>
   );

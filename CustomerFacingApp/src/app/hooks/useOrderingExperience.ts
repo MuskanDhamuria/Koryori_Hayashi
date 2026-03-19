@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { LoyaltyProfile } from "../components/LoyaltyCard";
 import { BASE_MENU_ITEMS, mergeMenuImages } from "../data/ordering";
-import { getFallbackCustomerProfile } from "../lib/customerProfiles";
 import {
   createOrder,
-  fetchCustomerExperience,
   fetchCustomerRecommendations,
+  fetchLoyaltyProfile,
+  fetchMenuItems,
   fetchOrderPreview,
 } from "../services/api";
 import type {
@@ -31,20 +31,15 @@ export function useOrderingExperience({
   tableNumber,
   flavorPreferences,
 }: UseOrderingExperienceInput) {
-  const fallbackCustomerProfile = useMemo(
-    () => getFallbackCustomerProfile(phoneNumber),
-    [phoneNumber],
-  );
-
   const [recommendations, setRecommendations] = useState<Array<{ item: MenuItem; reason: string }>>(
     [],
   );
   const [loyaltyProfile, setLoyaltyProfile] = useState<LoyaltyProfile>({
-    tier: fallbackCustomerProfile.loyaltyProfile.tier,
-    points: fallbackCustomerProfile.loyaltyProfile.points,
-    name: userName || fallbackCustomerProfile.fullName,
-    isBirthday: fallbackCustomerProfile.loyaltyProfile.isBirthday,
-    referralCode: fallbackCustomerProfile.loyaltyProfile.referralCode,
+    tier: "silver",
+    points: 0,
+    name: userName || "Guest",
+    isBirthday: false,
+    referralCode: "",
   });
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>(BASE_MENU_ITEMS);
@@ -61,15 +56,37 @@ export function useOrderingExperience({
       setIsExperienceLoading(true);
 
       try {
-        const experience = await fetchCustomerExperience(phoneNumber);
         if (cancelled) {
           return;
         }
 
-        const mergedMenu = mergeMenuImages(experience.menuItems);
-        setMenuItems(mergedMenu.length > 0 ? mergedMenu : BASE_MENU_ITEMS);
-        setLoyaltyProfile(experience.customer.loyaltyProfile);
-        setWeatherData(experience.weather);
+        const [menuResult, loyaltyResult] = await Promise.allSettled([
+          fetchMenuItems(),
+          fetchLoyaltyProfile(phoneNumber),
+        ]);
+
+        if (cancelled) {
+          return;
+        }
+
+        if (menuResult.status === "fulfilled") {
+          const mergedMenu = mergeMenuImages(menuResult.value);
+          setMenuItems(mergedMenu.length > 0 ? mergedMenu : BASE_MENU_ITEMS);
+        } else {
+          setMenuItems(BASE_MENU_ITEMS);
+        }
+
+        if (loyaltyResult.status === "fulfilled" && loyaltyResult.value) {
+          setLoyaltyProfile(loyaltyResult.value);
+        } else {
+          setLoyaltyProfile({
+            tier: "silver",
+            points: 0,
+            name: userName || "Guest",
+            isBirthday: false,
+            referralCode: "",
+          });
+        }
       } catch {
         if (cancelled) {
           return;
@@ -77,8 +94,11 @@ export function useOrderingExperience({
 
         setMenuItems(BASE_MENU_ITEMS);
         setLoyaltyProfile({
-          ...fallbackCustomerProfile.loyaltyProfile,
-          name: userName || fallbackCustomerProfile.fullName,
+          tier: "silver",
+          points: 0,
+          name: userName || "Guest",
+          isBirthday: false,
+          referralCode: "",
         });
       } finally {
         if (!cancelled) {
@@ -92,7 +112,7 @@ export function useOrderingExperience({
     return () => {
       cancelled = true;
     };
-  }, [fallbackCustomerProfile, phoneNumber, userName]);
+  }, [phoneNumber, userName]);
 
   const refreshRecommendationsForCart = useCallback(
     async (cart: CartItem[]) => {
@@ -152,7 +172,7 @@ export function useOrderingExperience({
       setIsPreviewLoading(true);
       try {
         const preview = await fetchOrderPreview({
-          customerName: userName || fallbackCustomerProfile.fullName,
+          customerName: userName || "Guest",
           phoneNumber,
           tableCode: tableNumber,
           items: cart.map((item) => ({ menuItemId: item.id, quantity: item.quantity })),
@@ -166,7 +186,7 @@ export function useOrderingExperience({
         setIsPreviewLoading(false);
       }
     },
-    [fallbackCustomerProfile.fullName, phoneNumber, selectedDiscountId, tableNumber, userName],
+    [phoneNumber, selectedDiscountId, tableNumber, userName],
   );
 
   const submitOrder = useCallback(
@@ -176,7 +196,7 @@ export function useOrderingExperience({
       discountId = selectedDiscountId,
     ) => {
       const response = await createOrder({
-        customerName: userName || fallbackCustomerProfile.fullName,
+        customerName: userName || "Guest",
         phoneNumber,
         tableCode: tableNumber,
         items: cart.map((item) => ({ menuItemId: item.id, quantity: item.quantity })),
@@ -194,11 +214,10 @@ export function useOrderingExperience({
 
       return response;
     },
-    [fallbackCustomerProfile.fullName, phoneNumber, selectedDiscountId, tableNumber, userName],
+    [phoneNumber, selectedDiscountId, tableNumber, userName],
   );
 
   return {
-    fallbackCustomerProfile,
     recommendations,
     loyaltyProfile,
     weatherData,

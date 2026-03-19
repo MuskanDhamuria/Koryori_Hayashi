@@ -19,81 +19,149 @@ export function OrderingItemDialog({
 }: OrderingItemDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto" style={{ background: "var(--card-bg)" }}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         {item && (
           <>
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-3 text-xl" style={{ color: "var(--navy)", fontFamily: "'Georgia', serif" }}>
-                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "var(--navy)" }}>
-                  <UtensilsCrossed className="w-5 h-5" style={{ color: "var(--gold)" }} />
+              <DialogTitle className="flex items-center gap-3 text-2xl">
+                <div className="w-10 h-10 bg-gradient-to-br from-[#0F1729] to-[#2D3E5F] rounded-full flex items-center justify-center">
+                  <UtensilsCrossed className="w-5 h-5 text-[#D4AF37]" />
                 </div>
                 {item.name}
               </DialogTitle>
-              <DialogDescription style={{ color: "var(--text-muted)" }}>{item.description}</DialogDescription>
+              <DialogDescription>
+                {item.description}
+              </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-5">
+            <div className="space-y-6">
               <div className="relative aspect-[16/9] rounded-xl overflow-hidden">
-                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                <div className="absolute top-3 left-3 flex gap-2">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-full h-full object-cover"
+                />
+
+                <div className="absolute top-4 left-4 flex gap-2">
                   {item.isNew && (
-                    <Badge className="bg-purple-600 text-white px-3 py-1"><Sparkles className="w-3 h-3 mr-1" />NEW</Badge>
+                    <Badge className="bg-purple-600 text-white px-3 py-1.5">
+                      <Sparkles className="w-4 h-4 mr-1.5" />
+                      NEW
+                    </Badge>
                   )}
                   {item.spicy && (
-                    <Badge className="bg-red-500 text-white px-2 py-1">
-                      {Array.from({ length: item.spicy }).map((_, i) => <span key={i}>🌶️</span>)}
+                    <Badge className="bg-red-500 text-white px-3 py-1.5">
+                      {Array.from({ length: item.spicy }).map((_, index) => (
+                        <span key={index}>🌶️</span>
+                      ))}
                     </Badge>
                   )}
                 </div>
+
                 {item.isHighMargin && !item.isNew && (
-                  <Badge className="absolute top-3 right-3 px-3 py-1" style={{ background: "var(--gold)", color: "var(--navy)" }}>
-                    <Sparkles className="w-3 h-3 mr-1" />Chef&apos;s Pick
+                  <Badge className="absolute top-4 right-4 bg-[#D4AF37] text-white px-3 py-1.5">
+                    <Sparkles className="w-4 h-4 mr-1.5" />
+                    Chef&apos;s Pick
                   </Badge>
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl p-4" style={{ background: "var(--gold-bg)" }}>
-                  <p className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>Price</p>
-                  <p className="text-2xl font-bold" style={{ color: "var(--navy)", fontFamily: "'Georgia', serif" }}>${item.price.toFixed(2)}</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-[#F3F4F6] rounded-xl p-4">
+                  <p className="text-xs text-[#6B7280] mb-1">Price</p>
+                  <p className="text-2xl font-bold text-[#0F1729]">
+                    ${item.price.toFixed(2)}
+                  </p>
                   {item.originalPrice && (
-                    <p className="text-xs line-through" style={{ color: "var(--text-muted)" }}>${item.originalPrice.toFixed(2)}</p>
+                    <p className="text-xs text-[#9CA3AF] line-through">
+                      ${item.originalPrice.toFixed(2)}
+                    </p>
                   )}
                 </div>
-                <div className="rounded-xl p-4" style={{ background: "var(--gold-bg)" }}>
-                  <p className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>Category</p>
-                  <p className="text-lg font-semibold capitalize" style={{ color: "var(--navy)" }}>{item.category}</p>
+
+                <div className="bg-[#F3F4F6] rounded-xl p-4">
+                  <p className="text-xs text-[#6B7280] mb-1">Category</p>
+                  <p className="text-lg font-semibold text-[#0F1729] capitalize">
+                    {item.category}
+                  </p>
                 </div>
               </div>
 
               {item.flavorProfile && (
-                <div className="rounded-xl p-4" style={{ background: "var(--gold-bg)" }}>
-                  <h3 className="font-semibold mb-3" style={{ color: "var(--navy)" }}>Flavor Profile</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {(["umami", "citrus", "refreshing", "hearty"] as const).map((key) =>
-                      item.flavorProfile?.[key] !== undefined ? (
-                        <div key={key}>
-                          <div className="flex justify-between text-xs mb-1">
-                            <span className="capitalize" style={{ color: "var(--text-muted)" }}>{key}</span>
-                            <span className="font-medium" style={{ color: "var(--navy)" }}>{((item.flavorProfile[key] ?? 0) * 100).toFixed(0)}%</span>
-                          </div>
-                          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--border)" }}>
-                            <div className="h-full rounded-full" style={{ width: `${(item.flavorProfile[key] ?? 0) * 100}%`, background: "var(--gold)" }} />
-                          </div>
+                <div className="bg-gradient-to-br from-[#F3F4F6] to-white rounded-xl p-4">
+                  <h3 className="font-semibold text-[#0F1729] mb-3">Flavor Profile</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    {item.flavorProfile.umami !== undefined && (
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span>Umami</span>
+                          <span className="font-medium">{(item.flavorProfile.umami * 100).toFixed(0)}%</span>
                         </div>
-                      ) : null
+                        <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-amber-600 rounded-full"
+                            style={{ width: `${item.flavorProfile.umami * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {item.flavorProfile.citrus !== undefined && (
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span>Citrus</span>
+                          <span className="font-medium">{(item.flavorProfile.citrus * 100).toFixed(0)}%</span>
+                        </div>
+                        <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-yellow-400 rounded-full"
+                            style={{ width: `${item.flavorProfile.citrus * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {item.flavorProfile.refreshing !== undefined && (
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span>Refreshing</span>
+                          <span className="font-medium">{(item.flavorProfile.refreshing * 100).toFixed(0)}%</span>
+                        </div>
+                        <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-blue-400 rounded-full"
+                            style={{ width: `${item.flavorProfile.refreshing * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {item.flavorProfile.hearty !== undefined && (
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span>Hearty</span>
+                          <span className="font-medium">{(item.flavorProfile.hearty * 100).toFixed(0)}%</span>
+                        </div>
+                        <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-red-600 rounded-full"
+                            style={{ width: `${item.flavorProfile.hearty * 100}%` }}
+                          />
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
               )}
 
               {item.weatherTags && item.weatherTags.length > 0 && (
-                <div className="rounded-xl p-4 bg-blue-50">
-                  <h3 className="font-semibold mb-2" style={{ color: "var(--navy)" }}>Perfect for</h3>
-                  <div className="flex gap-2 flex-wrap">
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4">
+                  <h3 className="font-semibold text-[#0F1729] mb-2">Perfect for</h3>
+                  <div className="flex gap-2">
                     {item.weatherTags.map((tag) => (
                       <Badge key={tag} variant="outline" className="bg-white capitalize">
-                        {tag === "sunny" && "☀️ "}{tag === "rainy" && "🌧️ "}{tag === "cold" && "❄️ "}{tag === "hot" && "🔥 "}{tag}
+                        {tag === "sunny" && "☀️ "}
+                        {tag === "rainy" && "🌧️ "}
+                        {tag === "cold" && "❄️ "}
+                        {tag === "hot" && "🔥 "}
+                        {tag}
                       </Badge>
                     ))}
                   </div>
@@ -101,25 +169,40 @@ export function OrderingItemDialog({
               )}
 
               {item.flashSaleRemaining && item.flashSaleRemaining > 0 && (
-                <div className="rounded-xl p-4 text-white bg-gradient-to-r from-orange-500 to-red-500">
-                  <div className="flex items-center gap-2 mb-1"><Flame className="w-5 h-5" /><h3 className="font-bold">Flash Sale!</h3></div>
-                  <p className="text-sm">{item.discountPercentage}% OFF · Only {item.flashSaleRemaining} left!</p>
-                  {item.surplusIngredient && <p className="text-xs text-white/80 mt-1">♻️ Made with fresh {item.surplusIngredient}</p>}
+                <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 text-white">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Flame className="w-5 h-5" />
+                    <h3 className="font-bold">Flash Sale!</h3>
+                  </div>
+                  <p className="text-sm mb-1">
+                    {item.discountPercentage}% OFF - Only {item.flashSaleRemaining} left!
+                  </p>
+                  {item.surplusIngredient && (
+                    <p className="text-xs text-white/90">
+                      ♻️ Made with fresh {item.surplusIngredient}
+                    </p>
+                  )}
                 </div>
               )}
 
-              <div className="flex gap-3 pt-2">
-                <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">Close</Button>
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  className="flex-1"
+                >
+                  Close
+                </Button>
                 <Button
                   onClick={() => onAddFromDialog(item)}
-                  className="flex-1 text-white"
-                  style={
+                  className={`flex-1 ${
                     item.flashSaleRemaining && item.flashSaleRemaining > 0
-                      ? { background: "linear-gradient(to right, #f97316, #ef4444)" }
-                      : { background: "var(--navy)" }
-                  }
+                      ? "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                      : "bg-[#0F1729] hover:bg-[#1A2642]"
+                  } text-white`}
                 >
-                  <Plus className="w-4 h-4 mr-2" /> Add to Cart
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add to Cart
                 </Button>
               </div>
             </div>

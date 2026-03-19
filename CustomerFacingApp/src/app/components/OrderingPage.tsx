@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { InAppGames } from "./InAppGames";
+import { SeigaihaPattern } from "./JapanesePattern";
 import type { LoyaltyProfile } from "./LoyaltyCard";
 import { PaymentDialog } from "./PaymentDialog";
 import { ShoppingCart } from "./ShoppingCart";
 import { OrderingCatalog } from "./ordering/OrderingCatalog";
 import { OrderingHeader } from "./ordering/OrderingHeader";
 import { OrderingItemDialog } from "./ordering/OrderingItemDialog";
-import { OrderingLoadingState } from "./ordering/OrderingLoadingState";
 import { OrderingLoyaltyInfoDialog } from "./ordering/OrderingLoyaltyInfoDialog";
 import { OrderingStyles } from "./ordering/OrderingStyles";
 import {
@@ -16,7 +16,6 @@ import {
   getTierFromPoints,
   getWeatherIcon,
   mergeMenuImages,
-  ORDERING_CATEGORIES,
 } from "../data/ordering";
 import { useOrderingExperience } from "../hooks/useOrderingExperience";
 import type { CartItem, DiscountId, FlavorPreferences, MenuItem as MenuItemType } from "../types";
@@ -237,39 +236,44 @@ export function OrderingPage({
   const hydratedMenuItems = menuItems.length > 0 ? mergeMenuImages(menuItems) : BASE_MENU_ITEMS;
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--bg-cream)" }}>
+    <div className="relative min-h-screen overflow-hidden" style={{ background: "var(--paper)" }}>
+      <SeigaihaPattern />
+      <div className="pointer-events-none absolute left-[-6rem] top-12 h-64 w-64 rounded-full bg-[color:var(--gold)]/10 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-[-7rem] right-[-4rem] h-72 w-72 rounded-full bg-[color:var(--olive)]/10 blur-3xl" />
+
       <OrderingHeader tableNumber={tableNumber} weatherData={weatherData} />
 
       {currentView === "games" ? (
-        <InAppGames
-          currentPoints={loyaltyProfile.points}
-          phoneNumber={phoneNumber}
-          userName={userName}
-          onEarnPoints={addLoyaltyPoints}
-          onBackToOrdering={() => setCurrentView("ordering")}
-        />
+        <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <InAppGames
+            currentPoints={loyaltyProfile.points}
+            phoneNumber={phoneNumber}
+            userName={userName}
+            onEarnPoints={addLoyaltyPoints}
+            onBackToOrdering={() => setCurrentView("ordering")}
+          />
+        </main>
       ) : (
-        <main className="container mx-auto px-4 py-6 sm:px-6">
-          {isExperienceLoading ? (
-            <OrderingLoadingState />
-          ) : (
-            <OrderingCatalog
-              hasPlacedOrder={hasPlacedOrder}
-              onShowGames={() => setCurrentView("games")}
-              onUpdateFlavorPreferences={onUpdateFlavorPreferences}
-              loyaltyProfile={loyaltyProfile}
-              weatherData={weatherData}
-              getWeatherIcon={getWeatherIcon}
-              getPerfectWeatherMessage={getPerfectWeatherMessage}
-              categories={ORDERING_CATEGORIES}
-              activeCategory={activeCategory}
-              onSelectCategory={setActiveCategory}
-              menuItems={hydratedMenuItems}
-              onItemClick={handleItemClick}
-              recommendations={recommendations}
-              onAddToCart={handleAddToCart}
-            />
-          )}
+        <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 relative">
+          <OrderingCatalog
+            tableNumber={tableNumber}
+            userName={userName}
+            flavorPreferences={flavorPreferences}
+            hasPlacedOrder={hasPlacedOrder}
+            onShowGames={() => setCurrentView("games")}
+            onUpdateFlavorPreferences={onUpdateFlavorPreferences}
+            loyaltyProfile={loyaltyProfile}
+            weatherData={weatherData}
+            getWeatherIcon={getWeatherIcon}
+            getPerfectWeatherMessage={getPerfectWeatherMessage}
+            activeCategory={activeCategory}
+            onSelectCategory={setActiveCategory}
+            menuItems={hydratedMenuItems}
+            onItemClick={handleItemClick}
+            recommendations={recommendations}
+            onAddToCart={handleAddToCart}
+            isLoading={isExperienceLoading}
+          />
         </main>
       )}
 

@@ -19,90 +19,212 @@ export function OrderingLoyaltyInfoDialog({
 }: OrderingLoyaltyInfoDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto" style={{ background: "var(--card-bg)" }}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-3 text-xl" style={{ color: "var(--navy)", fontFamily: "'Georgia', serif" }}>
-            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "var(--navy)" }}>
-              <Star className="w-5 h-5" style={{ color: "var(--gold)" }} />
+          <DialogTitle className="flex items-center gap-3 text-2xl">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#0F1729] to-[#2D3E5F] rounded-full flex items-center justify-center">
+              <Star className="w-5 h-5 text-[#D4AF37]" />
             </div>
             Loyalty Program
           </DialogTitle>
-          <DialogDescription style={{ color: "var(--text-muted)" }}>
+          <DialogDescription>
             Earn points, unlock rewards, and enjoy exclusive benefits
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-5">
-          <div className="rounded-xl p-5 text-white" style={{ background: "linear-gradient(135deg, var(--navy), var(--navy-light))" }}>
-            <h3 className="text-base font-bold mb-3" style={{ fontFamily: "'Georgia', serif" }}>How It Works</h3>
-            {[
-              { n: "1", title: "Order & Earn", desc: "Earn points automatically with every purchase" },
-              { n: "2", title: "Level Up", desc: "Reach Silver, Gold, and Platinum tiers" },
-              { n: "3", title: "Redeem Rewards", desc: "Use points for discounts and exclusive items" },
-            ].map((step) => (
-              <div key={step.n} className="flex items-start gap-3 mb-3">
-                <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-sm font-bold" style={{ background: "var(--gold)", color: "var(--navy)" }}>{step.n}</div>
-                <div><p className="font-semibold text-sm">{step.title}</p><p className="text-xs text-white/75">{step.desc}</p></div>
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-[#0F1729] to-[#2D3E5F] rounded-xl p-6 text-white">
+            <h3 className="text-lg font-bold mb-4">How It Works</h3>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-[#D4AF37] rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="text-sm font-bold text-[#0F1729]">1</span>
+                </div>
+                <div>
+                  <p className="font-semibold">Order & Earn</p>
+                  <p className="text-sm text-white/80">Earn points automatically with every purchase</p>
+                </div>
               </div>
-            ))}
-            <Button onClick={onUpdateFlavorPreferences} variant="outline" className="mt-2 border-white/30 bg-white/10 text-white hover:bg-white/20 text-sm">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-[#D4AF37] rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="text-sm font-bold text-[#0F1729]">2</span>
+                </div>
+                <div>
+                  <p className="font-semibold">Level Up</p>
+                  <p className="text-sm text-white/80">Reach Silver, Gold, and Platinum tiers</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-[#D4AF37] rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="text-sm font-bold text-[#0F1729]">3</span>
+                </div>
+                <div>
+                  <p className="font-semibold">Redeem Rewards</p>
+                  <p className="text-sm text-white/80">Use points for discounts and exclusive items</p>
+                </div>
+              </div>
+            </div>
+            <Button
+              onClick={onUpdateFlavorPreferences}
+              variant="outline"
+              className="mt-4 border-white/30 bg-white/10 text-white hover:bg-white/20"
+            >
               Update My Taste Profile
             </Button>
           </div>
 
           <div>
-            <h3 className="text-base font-bold mb-3" style={{ color: "var(--navy)", fontFamily: "'Georgia', serif" }}>Membership Tiers</h3>
-            <div className="space-y-3">
-              {[
-                { tier: "silver", emoji: "🌸", label: "Silver", sub: "Starting tier", benefits: ["Earn 1 point per $1 spent", "5% birthday discount", "Early access to seasonal menu"] },
-                { tier: "gold", emoji: "⭐", label: "Gold", sub: "500+ points", benefits: ["Earn 1.5 points per $1 spent", "10% birthday discount", "Free appetizer on birthday", "Priority seating"] },
-                { tier: "platinum", emoji: "💎", label: "Platinum", sub: "1500+ points", benefits: ["Earn 2 points per $1 spent", "15% birthday discount", "Free meal on birthday", "Exclusive VIP events", "Personal chef recommendations"] },
-              ].map((tierInfo) => (
-                <div key={tierInfo.tier} className="border-2 rounded-xl p-4" style={loyaltyProfile.tier === tierInfo.tier ? { borderColor: "var(--gold)", background: "var(--gold-bg)" } : { borderColor: "var(--border)" }}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">{tierInfo.emoji}</span>
-                      <div><h4 className="font-bold text-sm" style={{ color: "var(--navy)" }}>{tierInfo.label}</h4><p className="text-xs" style={{ color: "var(--text-muted)" }}>{tierInfo.sub}</p></div>
+            <h3 className="text-lg font-bold text-[#0F1729] mb-4">Membership Tiers</h3>
+            <div className="space-y-4">
+              <div className={`border-2 rounded-xl p-4 ${loyaltyProfile.tier === "silver" ? "border-[#D4AF37] bg-[#D4AF37]/5" : "border-[#E5E7EB]"}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">🌸</span>
+                    <div>
+                      <h4 className="font-bold text-[#0F1729]">Silver</h4>
+                      <p className="text-xs text-[#6B7280]">Starting tier</p>
                     </div>
-                    {loyaltyProfile.tier === tierInfo.tier && <Badge style={{ background: "var(--gold)", color: "var(--navy)" }}>Current</Badge>}
                   </div>
-                  <ul className="space-y-1">
-                    {tierInfo.benefits.map((benefit) => (
-                      <li key={benefit} className="flex items-center gap-2 text-xs"><span className="text-emerald-600">✓</span><span style={{ color: "var(--text-muted)" }}>{benefit}</span></li>
-                    ))}
-                  </ul>
+                  {loyaltyProfile.tier === "silver" && (
+                    <Badge className="bg-[#D4AF37] text-white">Current</Badge>
+                  )}
                 </div>
-              ))}
-            </div>
-          </div>
+                <ul className="space-y-2">
+                  <li className="flex items-center gap-2 text-sm">
+                    <span className="text-emerald-600">✓</span>
+                    <span className="text-[#6B7280]">Earn 1 point per $1 spent</span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    <span className="text-emerald-600">✓</span>
+                    <span className="text-[#6B7280]">5% birthday discount</span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    <span className="text-emerald-600">✓</span>
+                    <span className="text-[#6B7280]">Early access to seasonal menu</span>
+                  </li>
+                </ul>
+              </div>
 
-          <div className="rounded-xl p-5" style={{ background: "var(--gold-bg)", border: "1px solid var(--border)" }}>
-            <h3 className="text-base font-bold mb-3 flex items-center gap-2" style={{ color: "var(--navy)", fontFamily: "'Georgia', serif" }}>
-              <Gift className="w-4 h-4" style={{ color: "var(--gold-dark)" }} /> Redeem Your Points
-            </h3>
-            <div className="grid grid-cols-2 gap-2">
-              {[["$5 Off", "100 pts"], ["$10 Off", "200 pts"], ["$15 Off", "300 pts"], ["Free Appetizer", "250 pts"]].map(([label, pts]) => (
-                <div key={label} className="rounded-lg p-3" style={{ background: "var(--card-bg)", border: "1px solid var(--border)" }}>
-                  <p className="font-semibold text-sm" style={{ color: "var(--navy)" }}>{label}</p>
-                  <Badge variant="outline" className="text-xs mt-1" style={{ borderColor: "var(--gold)", color: "var(--gold-dark)" }}>{pts}</Badge>
+              <div className={`border-2 rounded-xl p-4 ${loyaltyProfile.tier === "gold" ? "border-[#D4AF37] bg-[#D4AF37]/5" : "border-[#E5E7EB]"}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">⭐</span>
+                    <div>
+                      <h4 className="font-bold text-[#0F1729]">Gold</h4>
+                      <p className="text-xs text-[#6B7280]">500+ points</p>
+                    </div>
+                  </div>
+                  {loyaltyProfile.tier === "gold" && (
+                    <Badge className="bg-[#D4AF37] text-white">Current</Badge>
+                  )}
                 </div>
-              ))}
+                <ul className="space-y-2">
+                  <li className="flex items-center gap-2 text-sm">
+                    <span className="text-emerald-600">✓</span>
+                    <span className="text-[#6B7280]">Earn 1.5 points per $1 spent</span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    <span className="text-emerald-600">✓</span>
+                    <span className="text-[#6B7280]">10% birthday discount</span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    <span className="text-emerald-600">✓</span>
+                    <span className="text-[#6B7280]">Free appetizer on birthday</span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    <span className="text-emerald-600">✓</span>
+                    <span className="text-[#6B7280]">Priority seating</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className={`border-2 rounded-xl p-4 ${loyaltyProfile.tier === "platinum" ? "border-[#D4AF37] bg-[#D4AF37]/5" : "border-[#E5E7EB]"}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">💎</span>
+                    <div>
+                      <h4 className="font-bold text-[#0F1729]">Platinum</h4>
+                      <p className="text-xs text-[#6B7280]">1500+ points</p>
+                    </div>
+                  </div>
+                  {loyaltyProfile.tier === "platinum" && (
+                    <Badge className="bg-[#D4AF37] text-white">Current</Badge>
+                  )}
+                </div>
+                <ul className="space-y-2">
+                  <li className="flex items-center gap-2 text-sm">
+                    <span className="text-emerald-600">✓</span>
+                    <span className="text-[#6B7280]">Earn 2 points per $1 spent</span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    <span className="text-emerald-600">✓</span>
+                    <span className="text-[#6B7280]">15% birthday discount</span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    <span className="text-emerald-600">✓</span>
+                    <span className="text-[#6B7280]">Free meal on birthday</span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    <span className="text-emerald-600">✓</span>
+                    <span className="text-[#6B7280]">Exclusive VIP events</span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    <span className="text-emerald-600">✓</span>
+                    <span className="text-[#6B7280]">Personal chef recommendations</span>
+                  </li>
+                </ul>
+              </div>
             </div>
-            <p className="text-xs mt-3" style={{ color: "var(--text-muted)" }}>Redeem points at checkout when placing your order</p>
           </div>
 
-          <div className="rounded-xl p-5 border-2 bg-blue-50 border-blue-200">
-            <h3 className="text-base font-bold mb-2 flex items-center gap-2" style={{ color: "var(--navy)", fontFamily: "'Georgia', serif" }}>
-              <Users className="w-4 h-4 text-blue-600" /> Refer a Friend
+          <div className="bg-[#F9FAFB] rounded-xl p-6">
+            <h3 className="text-lg font-bold text-[#0F1729] mb-4 flex items-center gap-2">
+              <Gift className="w-5 h-5 text-[#D4AF37]" />
+              Redeem Your Points
             </h3>
-            <p className="text-xs text-blue-700/70 mb-3">Share your referral code and both of you get 100 bonus points!</p>
-            <div className="rounded-lg p-3 bg-white border-2 border-dashed border-blue-300">
-              <p className="text-xs text-blue-400 mb-1">Your Referral Code</p>
-              <p className="text-lg font-bold text-blue-600 tracking-widest">{loyaltyProfile.referralCode}</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-white rounded-lg p-3 border border-[#E5E7EB]">
+                <p className="font-semibold text-sm text-[#0F1729]">$5 Off</p>
+                <Badge variant="outline" className="text-xs border-[#D4AF37] text-[#D4AF37] mt-1">100 pts</Badge>
+              </div>
+              <div className="bg-white rounded-lg p-3 border border-[#E5E7EB]">
+                <p className="font-semibold text-sm text-[#0F1729]">$10 Off</p>
+                <Badge variant="outline" className="text-xs border-[#D4AF37] text-[#D4AF37] mt-1">200 pts</Badge>
+              </div>
+              <div className="bg-white rounded-lg p-3 border border-[#E5E7EB]">
+                <p className="font-semibold text-sm text-[#0F1729]">$15 Off</p>
+                <Badge variant="outline" className="text-xs border-[#D4AF37] text-[#D4AF37] mt-1">300 pts</Badge>
+              </div>
+              <div className="bg-white rounded-lg p-3 border border-[#E5E7EB]">
+                <p className="font-semibold text-sm text-[#0F1729]">Free Appetizer</p>
+                <Badge variant="outline" className="text-xs border-[#D4AF37] text-[#D4AF37] mt-1">250 pts</Badge>
+              </div>
+            </div>
+            <p className="text-xs text-[#6B7280] mt-4">
+              Redeem points at checkout when placing your order
+            </p>
+          </div>
+
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border-2 border-blue-200">
+            <h3 className="text-lg font-bold text-[#0F1729] mb-3 flex items-center gap-2">
+              <Users className="w-5 h-5 text-blue-600" />
+              Refer a Friend
+            </h3>
+            <p className="text-sm text-[#6B7280] mb-4">
+              Share your referral code and both of you get 100 bonus points!
+            </p>
+            <div className="bg-white rounded-lg p-4 border-2 border-dashed border-blue-300">
+              <p className="text-xs text-[#6B7280] mb-1">Your Referral Code</p>
+              <p className="text-xl font-bold text-blue-600 tracking-wider">{loyaltyProfile.referralCode}</p>
             </div>
           </div>
 
-          <Button onClick={() => onOpenChange(false)} className="w-full text-white" style={{ background: "var(--navy)" }}>Got it!</Button>
+          <Button
+            onClick={() => onOpenChange(false)}
+            className="w-full bg-[#0F1729] hover:bg-[#1A2642] text-white"
+          >
+            Got it!
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

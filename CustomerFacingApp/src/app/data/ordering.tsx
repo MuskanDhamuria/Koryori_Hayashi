@@ -293,13 +293,13 @@ export const ORDERING_CATEGORIES = [
 export function getWeatherIcon(condition: string): JSX.Element {
   switch (condition) {
     case "rainy":
-      return <CloudRain className="w-4 h-4" />;
+      return <CloudRain className="w-5 h-5" />;
     case "sunny":
-      return <Sun className="w-4 h-4" />;
+      return <Sun className="w-5 h-5" />;
     case "cloudy":
-      return <Cloud className="w-4 h-4" />;
+      return <Cloud className="w-5 h-5" />;
     default:
-      return <Sun className="w-4 h-4" />;
+      return <Sun className="w-5 h-5" />;
   }
 }
 
