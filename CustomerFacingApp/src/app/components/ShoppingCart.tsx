@@ -85,18 +85,21 @@ export function ShoppingCart({
                         >
                           <Plus className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="ml-auto h-6 w-6 p-0 text-red-600 sm:h-7 sm:w-7"
-                          onClick={() => onRemoveItem(item.id)}
-                        >
-                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                        </Button>
                       </div>
                     </div>
-                    <div className="whitespace-nowrap text-sm font-semibold sm:text-base">
-                      ${(item.price * item.quantity).toFixed(2)}
+                    {/* Price + delete stacked on the right */}
+                    <div className="flex flex-col items-end justify-between shrink-0">
+                      <span className="whitespace-nowrap text-sm font-semibold sm:text-base">
+                        ${(item.price * item.quantity).toFixed(2)}
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 w-6 p-0 text-red-500 hover:text-red-700 sm:h-7 sm:w-7"
+                        onClick={() => onRemoveItem(item.id)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      </Button>
                     </div>
                   </div>
                 ))}
