@@ -376,6 +376,7 @@ async function main() {
     })));
     const categories = await prisma.category.findMany();
     const categoryMap = new Map(categories.map((category) => [category.slug, category.id]));
+    const skuToId = new Map();
     for (const item of menuSeed) {
         const menuItem = await prisma.menuItem.upsert({
             where: { sku: item.sku },
@@ -405,6 +406,7 @@ async function main() {
                 categoryId: categoryMap.get(item.categorySlug)
             }
         });
+        skuToId.set(item.sku, menuItem.id);
         await prisma.inventoryItem.upsert({
             where: { menuItemId: menuItem.id },
             update: {
@@ -419,6 +421,68 @@ async function main() {
                 stockOnHand: item.inventory.stockOnHand,
                 reorderPoint: item.inventory.reorderPoint,
                 unit: item.inventory.unit
+            }
+        });
+    }
+    const pairingSeed = [
+        {
+            fromSku: "MAIN-119",
+            toSku: "DRK-123",
+            weight: 0.35,
+            reason: "Citrus soda helps cool the heat of spicy ramen"
+        },
+        {
+            fromSku: "MAIN-119",
+            toSku: "DRK-126",
+            weight: 0.3,
+            reason: "Hydrating pairing with extra spicy ramen"
+        },
+        {
+            fromSku: "APP-118",
+            toSku: "DRK-124",
+            weight: 0.3,
+            reason: "Bright citrus tea pairs well with spicy tuna"
+        },
+        {
+            fromSku: "RAM-114",
+            toSku: "DRK-124",
+            weight: 0.28,
+            reason: "A refreshing tea balances rich tempura udon"
+        },
+        {
+            fromSku: "RAM-113",
+            toSku: "DRK-125",
+            weight: 0.25,
+            reason: "Creamy milk tea complements sweet sukiyaki broth"
+        },
+        {
+            fromSku: "MAIN-111",
+            toSku: "DRK-123",
+            weight: 0.22,
+            reason: "Yuzu soda cuts through teriyaki richness"
+        }
+    ];
+    for (const pairing of pairingSeed) {
+        const sourceMenuItemId = skuToId.get(pairing.fromSku);
+        const targetMenuItemId = skuToId.get(pairing.toSku);
+        if (!sourceMenuItemId || !targetMenuItemId)
+            continue;
+        await prisma.menuItemPairing.upsert({
+            where: {
+                sourceMenuItemId_targetMenuItemId: {
+                    sourceMenuItemId,
+                    targetMenuItemId
+                }
+            },
+            update: {
+                weight: pairing.weight,
+                reason: pairing.reason
+            },
+            create: {
+                sourceMenuItemId,
+                targetMenuItemId,
+                weight: pairing.weight,
+                reason: pairing.reason
             }
         });
     }

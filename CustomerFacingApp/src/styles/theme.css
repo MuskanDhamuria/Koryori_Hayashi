@@ -2,89 +2,102 @@
 
 :root {
   --font-size: 16px;
-  --background: #FFFFFF;
-  --foreground: #0A0E1A;
-  --card: #FFFFFF;
-  --card-foreground: #0A0E1A;
-  --popover: #FFFFFF;
-  --popover-foreground: #0A0E1A;
-  --primary: #0F1729;
-  --primary-foreground: #FFFFFF;
-  --secondary: #2D3E5F;
-  --secondary-foreground: #FFFFFF;
-  --muted: #F5F7FA;
-  --muted-foreground: #6B7280;
-  --accent: #D4AF37;
-  --accent-foreground: #0F1729;
-  --destructive: #DC2626;
-  --destructive-foreground: #FFFFFF;
-  --border: rgba(45, 62, 95, 0.15);
+  --background: #f4efe2;
+  --foreground: #28345a;
+  --card: rgba(255, 251, 244, 0.86);
+  --card-foreground: #28345a;
+  --popover: #fffaf1;
+  --popover-foreground: #28345a;
+  --primary: #28345a;
+  --primary-foreground: #fbf6eb;
+  --secondary: #6f7987;
+  --secondary-foreground: #fdf8ef;
+  --muted: #ebe4d5;
+  --muted-foreground: #6d7282;
+  --accent: #c4a35b;
+  --accent-foreground: #28345a;
+  --destructive: #b95544;
+  --destructive-foreground: #fff9f3;
+  --border: rgba(40, 52, 90, 0.14);
   --input: transparent;
-  --input-background: #F8FAFC;
-  --switch-background: #CBD5E1;
+  --input-background: rgba(255, 250, 242, 0.92);
+  --switch-background: #cdbfa8;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #D4AF37;
-  --chart-1: #0F1729;
-  --chart-2: #2D3E5F;
-  --chart-3: #D4AF37;
-  --chart-4: #B8952B;
-  --chart-5: #E8C95A;
-  --radius: 0.75rem;
-  --sidebar: #0F1729;
-  --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #D4AF37;
-  --sidebar-primary-foreground: #0F1729;
-  --sidebar-accent: #1A2642;
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: rgba(212, 175, 55, 0.2);
-  --sidebar-ring: #D4AF37;
-  
-  /* Custom theme colors */
-  --navy-dark: #0F1729;
-  --navy-medium: #1A2642;
-  --navy-light: #2D3E5F;
-  --gold: #D4AF37;
-  --gold-dark: #B8952B;
-  --gold-light: #E8C95A;
-  --black: #0A0E1A;
+  --ring: rgba(196, 163, 91, 0.42);
+  --chart-1: #28345a;
+  --chart-2: #71826f;
+  --chart-3: #c4a35b;
+  --chart-4: #8d6642;
+  --chart-5: #c48376;
+  --radius: 1.25rem;
+  --sidebar: rgba(40, 52, 90, 0.95);
+  --sidebar-foreground: #fff8ef;
+  --sidebar-primary: #c4a35b;
+  --sidebar-primary-foreground: #28345a;
+  --sidebar-accent: rgba(255, 255, 255, 0.12);
+  --sidebar-accent-foreground: #fff8ef;
+  --sidebar-border: rgba(255, 248, 239, 0.12);
+  --sidebar-ring: rgba(196, 163, 91, 0.48);
+  --paper: #f4efe2;
+  --paper-strong: #e8decb;
+  --paper-soft: rgba(255, 251, 244, 0.76);
+  --ink: #28345a;
+  --ink-soft: #6d7282;
+  --gold: #c4a35b;
+  --gold-soft: #e0c997;
+  --olive: #71826f;
+  --wood: #8d6642;
+  --rose: #c48376;
+  --wine: #8b4d4a;
 }
 
 .dark {
-  --background: #0A0E1A;
-  --foreground: #F8FAFC;
-  --card: #0F1729;
-  --card-foreground: #F8FAFC;
-  --popover: #0F1729;
-  --popover-foreground: #F8FAFC;
-  --primary: #D4AF37;
-  --primary-foreground: #0F1729;
-  --secondary: #1A2642;
-  --secondary-foreground: #F8FAFC;
-  --muted: #1A2642;
-  --muted-foreground: #94A3B8;
-  --accent: #D4AF37;
-  --accent-foreground: #0F1729;
-  --destructive: #EF4444;
-  --destructive-foreground: #F8FAFC;
-  --border: rgba(212, 175, 55, 0.2);
-  --input: rgba(212, 175, 55, 0.1);
-  --ring: #D4AF37;
+  --background: #161c2f;
+  --foreground: #f8f4ea;
+  --card: rgba(26, 34, 57, 0.94);
+  --card-foreground: #f8f4ea;
+  --popover: #202841;
+  --popover-foreground: #f8f4ea;
+  --primary: #f0dcad;
+  --primary-foreground: #1a2239;
+  --secondary: #485268;
+  --secondary-foreground: #fbf5ea;
+  --muted: #232c43;
+  --muted-foreground: #bbc1cf;
+  --accent: #e3be73;
+  --accent-foreground: #1a2239;
+  --destructive: #ef7b64;
+  --destructive-foreground: #1a2239;
+  --border: rgba(248, 244, 234, 0.14);
+  --input: rgba(255, 255, 255, 0.04);
+  --ring: rgba(227, 190, 115, 0.36);
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --chart-1: #D4AF37;
-  --chart-2: #2D3E5F;
-  --chart-3: #B8952B;
-  --chart-4: #E8C95A;
-  --chart-5: #1A2642;
-  --sidebar: #0F1729;
-  --sidebar-foreground: #F8FAFC;
-  --sidebar-primary: #D4AF37;
-  --sidebar-primary-foreground: #0F1729;
-  --sidebar-accent: #1A2642;
-  --sidebar-accent-foreground: #F8FAFC;
-  --sidebar-border: rgba(212, 175, 55, 0.2);
-  --sidebar-ring: #D4AF37;
+  --chart-1: #e3be73;
+  --chart-2: #8fa18b;
+  --chart-3: #c48376;
+  --chart-4: #9f7250;
+  --chart-5: #4d5870;
+  --sidebar: #1a2239;
+  --sidebar-foreground: #f8f4ea;
+  --sidebar-primary: #e3be73;
+  --sidebar-primary-foreground: #1a2239;
+  --sidebar-accent: rgba(255, 255, 255, 0.08);
+  --sidebar-accent-foreground: #f8f4ea;
+  --sidebar-border: rgba(248, 244, 234, 0.12);
+  --sidebar-ring: rgba(227, 190, 115, 0.36);
+  --paper: #1c2338;
+  --paper-strong: #252d45;
+  --paper-soft: rgba(29, 36, 56, 0.82);
+  --ink: #f8f4ea;
+  --ink-soft: #c7cfe0;
+  --gold: #e3be73;
+  --gold-soft: #f3ddb0;
+  --olive: #8fa18b;
+  --wood: #bb8d5f;
+  --rose: #d59a92;
+  --wine: #e38e77;
 }
 
 @theme inline {
@@ -133,58 +146,138 @@
     @apply border-border outline-ring/50;
   }
 
-  body {
-    @apply bg-background text-foreground;
-  }
-
-  /**
-  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
-  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
-  */
-
   html {
     font-size: var(--font-size);
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Manrope", sans-serif;
+    background-image:
+      radial-gradient(circle at top left, rgba(196, 163, 91, 0.18), transparent 24%),
+      radial-gradient(circle at bottom right, rgba(113, 130, 111, 0.12), transparent 28%),
+      linear-gradient(180deg, #f7f1e6 0%, var(--paper) 100%);
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.35;
+    background-image:
+      linear-gradient(rgba(40, 52, 90, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(40, 52, 90, 0.045) 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: radial-gradient(circle at center, black 30%, transparent 85%);
   }
 
   h1 {
     font-size: var(--text-2xl);
     font-weight: var(--font-weight-medium);
     line-height: 1.5;
+    font-family: "Cormorant Garamond", "Noto Serif JP", serif;
+    letter-spacing: 0.03em;
   }
 
   h2 {
     font-size: var(--text-xl);
     font-weight: var(--font-weight-medium);
     line-height: 1.5;
+    font-family: "Cormorant Garamond", "Noto Serif JP", serif;
+    letter-spacing: 0.03em;
   }
 
   h3 {
     font-size: var(--text-lg);
     font-weight: var(--font-weight-medium);
     line-height: 1.5;
+    font-family: "Cormorant Garamond", "Noto Serif JP", serif;
+    letter-spacing: 0.02em;
   }
 
   h4 {
     font-size: var(--text-base);
     font-weight: var(--font-weight-medium);
     line-height: 1.5;
+    font-family: "Cormorant Garamond", "Noto Serif JP", serif;
+    letter-spacing: 0.02em;
+  }
+
+  p {
+    font-family: "Manrope", sans-serif;
   }
 
   label {
     font-size: var(--text-base);
     font-weight: var(--font-weight-medium);
     line-height: 1.5;
+    font-family: "Manrope", sans-serif;
   }
 
   button {
     font-size: var(--text-base);
     font-weight: var(--font-weight-medium);
     line-height: 1.5;
+    font-family: "Manrope", sans-serif;
   }
 
   input {
     font-size: var(--text-base);
     font-weight: var(--font-weight-normal);
     line-height: 1.5;
+    font-family: "Manrope", sans-serif;
+  }
+
+  ::selection {
+    background: rgba(196, 163, 91, 0.25);
+    color: var(--ink);
+  }
+}
+
+@layer components {
+  .paper-panel {
+    background:
+      linear-gradient(180deg, rgba(255, 253, 248, 0.88), rgba(255, 249, 240, 0.75));
+    border: 1px solid rgba(40, 52, 90, 0.12);
+    box-shadow:
+      0 24px 70px rgba(38, 45, 70, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(18px);
+  }
+
+  .paper-panel-dark {
+    background:
+      linear-gradient(180deg, rgba(40, 52, 90, 0.96), rgba(45, 57, 92, 0.92));
+    border: 1px solid rgba(196, 163, 91, 0.2);
+    box-shadow: 0 28px 64px rgba(28, 33, 47, 0.22);
+  }
+
+  .menu-kicker {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .menu-rule {
+    height: 1px;
+    width: 100%;
+    background: linear-gradient(90deg, transparent, rgba(40, 52, 90, 0.42), transparent);
+  }
+
+  .menu-title {
+    font-family: "Cormorant Garamond", "Noto Serif JP", serif;
+    letter-spacing: 0.05em;
+    color: var(--ink);
+  }
+
+  .stamp-badge {
+    border: 1px solid rgba(40, 52, 90, 0.14);
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--ink);
+    backdrop-filter: blur(12px);
   }
 }

@@ -17,10 +17,10 @@ import { ExportButton } from './components/ExportButton';
 import { ComparisonView } from './components/ComparisonView';
 import { PricingStrategy } from './components/PricingStrategy';
 import { AiAssistantPanel } from './components/AiAssistantPanel';
-import { 
-  DollarSign, 
-  TrendingUp, 
-  ShoppingCart, 
+import {
+  DollarSign,
+  TrendingUp,
+  ShoppingCart,
   Percent,
   BarChart3,
   Clock,
@@ -33,33 +33,12 @@ import {
   ArrowUpDown,
   MessageSquare
 } from 'lucide-react';
-import { 
-  calculatePeakHours, 
-  getTopItems, 
-  getWorstItems,
-  forecastNextWeek,
-  type MenuItem,
-  type SalesRecord
-} from './utils/mockData';
 import {
   fetchDashboardAnalytics,
   fetchInventoryAlerts,
-  fetchMenuCatalog,
-  fetchOrders,
   staffLogin,
   type DashboardAnalyticsResponse,
 } from './services/api';
-import {
-  buildCategoryData,
-  buildComboData,
-  buildComparisonData,
-  buildHeatMapData,
-  buildInventoryAlerts,
-  buildMenuCatalog,
-  buildRevenueChartData,
-  buildSalesRecords,
-  buildSeasonalData,
-} from './lib/dashboardData';
 
 const STORAGE_KEY = 'koryori-staff-token';
 const authStorage = window.sessionStorage;
@@ -74,10 +53,7 @@ function isAuthError(error: unknown) {
 
 export default function App() {
   const [selectedPeriod, setSelectedPeriod] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
-  const [orders, setOrders] = useState<Awaited<ReturnType<typeof fetchOrders>>["orders"]>([]);
-  const [historicalSales, setHistoricalSales] = useState<SalesRecord[]>([]);
-  const [menuCatalog, setMenuCatalog] = useState<MenuItem[]>([]);
-  const [inventoryAlerts, setInventoryAlerts] = useState<ReturnType<typeof buildInventoryAlerts>>([]);
+  const [inventoryAlerts, setInventoryAlerts] = useState<Awaited<ReturnType<typeof fetchInventoryAlerts>>['alerts']>([]);
   const [dashboardAnalytics, setDashboardAnalytics] = useState<DashboardAnalyticsResponse | null>(null);
   const [authToken, setAuthToken] = useState<string>(() => authStorage.getItem(STORAGE_KEY) ?? '');
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -89,7 +65,6 @@ export default function App() {
   const [password, setPassword] = useState('');
 
   useEffect(() => {
-    // Force dark mode
     document.documentElement.classList.add('dark');
   }, []);
 
@@ -103,20 +78,14 @@ export default function App() {
     const loadDashboard = async () => {
       setIsLoadingData(true);
       try {
-        const [menuResponse, ordersResponse, inventoryResponse, analyticsResponse] = await Promise.all([
-          fetchMenuCatalog(),
-          fetchOrders(authToken),
+        const [analyticsResponse, inventoryResponse] = await Promise.all([
+          fetchDashboardAnalytics(authToken),
           fetchInventoryAlerts(authToken),
-          fetchDashboardAnalytics(authToken)
         ]);
 
-        const catalog = buildMenuCatalog(menuResponse.categories);
-        setMenuCatalog(catalog);
-        setOrders(ordersResponse.orders);
-        setHistoricalSales(buildSalesRecords(ordersResponse.orders));
         setDashboardAnalytics(analyticsResponse);
+        setInventoryAlerts(inventoryResponse.alerts);
         setLastUpdatedAt(new Date().toLocaleString());
-        setInventoryAlerts(buildInventoryAlerts(inventoryResponse.alerts));
         setAuthError('');
         setDashboardError('');
       } catch (error) {
@@ -138,91 +107,68 @@ export default function App() {
     void loadDashboard();
   }, [authToken, reloadNonce]);
 
-  // Calculate metrics
-  const metrics = useMemo(() => {
-    return dashboardAnalytics?.metrics ?? null;
-  }, [dashboardAnalytics]);
-
-  // Category breakdown
-  const categoryData = useMemo(() => {
-    return buildCategoryData(historicalSales, menuCatalog);
-  }, [historicalSales, menuCatalog]);
-
-  // Heat map data
-  const heatMapData = useMemo(() => {
-    return buildHeatMapData(historicalSales);
-  }, [historicalSales]);
-
-  // Combo chart data
-  const comboData = useMemo(() => {
-    return buildComboData(orders);
-  }, [orders]);
+  const metrics = dashboardAnalytics?.metrics ?? null;
+  const comparisonData = dashboardAnalytics
+    ? {
+        currentPeriod: dashboardAnalytics.comparison.currentPeriod,
+        previousPeriod: dashboardAnalytics.comparison.previousPeriod,
+        industryBenchmark: {
+          avgOrderValue: dashboardAnalytics.comparison.benchmark.avgOrderValue,
+          margin: dashboardAnalytics.comparison.benchmark.margin,
+          peakHourRevenue: dashboardAnalytics.comparison.benchmark.peakHourRevenue,
+        },
+      }
+    : null;
 
   const revenueChartData = useMemo(() => {
-    return buildRevenueChartData(historicalSales, selectedPeriod);
-  }, [historicalSales, selectedPeriod]);
+    if (!dashboardAnalytics) {
+      return [];
+    }
 
-  const hourlySalesData = useMemo(() => {
-    if (historicalSales.length === 0) return [];
+    if (selectedPeriod === 'daily') {
+      return dashboardAnalytics.charts.revenue.daily;
+    }
 
-    const peakHours = calculatePeakHours(historicalSales);
-    const avgSales = peakHours.reduce((sum, h) => sum + h.totalSales, 0) / peakHours.length;
-    
-    return peakHours.map(h => ({
-      hour: h.hour,
-      sales: h.totalSales,
-      isPeak: h.totalSales > avgSales * 1.5,
-    }));
-  }, [historicalSales]);
+    if (selectedPeriod === 'weekly') {
+      return dashboardAnalytics.charts.revenue.weekly;
+    }
 
-  const topItems = useMemo(() => getTopItems(historicalSales, menuCatalog, 5), [historicalSales, menuCatalog]);
-  const worstItems = useMemo(() => getWorstItems(historicalSales, menuCatalog, 5), [historicalSales, menuCatalog]);
+    return dashboardAnalytics.charts.revenue.monthly;
+  }, [dashboardAnalytics, selectedPeriod]);
 
-  const forecastData = useMemo(() => {
-    if (topItems.length === 0) return [];
+  const exportData = useMemo(() => {
+    if (!dashboardAnalytics || !metrics) {
+      return null;
+    }
 
-    const topItem = topItems[0].item;
-    const forecast = forecastNextWeek(historicalSales, topItem.id);
-    
-    const dailySales: { [key: string]: number } = {};
-    historicalSales
-      .filter(s => s.itemId === topItem.id)
-      .forEach(sale => {
-        const dateKey = sale.date.toISOString().split('T')[0];
-        dailySales[dateKey] = (dailySales[dateKey] || 0) + sale.quantity;
-      });
-
-    const sortedDates = Object.keys(dailySales).sort();
-    const last7Days = sortedDates.slice(-7);
-
-    const historicalData = last7Days.map(date => ({
-      date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      actual: dailySales[date],
-      isHistorical: true,
-    }));
-
-    const now = new Date();
-    const forecastDates = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(now);
-      date.setDate(date.getDate() + i + 1);
-      return {
-        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        forecast: forecast[i],
-        isHistorical: false,
-      };
-    });
-
-    return [...historicalData, ...forecastDates];
-  }, [historicalSales, topItems]);
-
-  const seasonalData = useMemo(() => {
-    return buildSeasonalData(historicalSales);
-  }, [historicalSales]);
-
-  // Comparison data for previous period
-  const comparisonData = useMemo(() => {
-    return buildComparisonData(dashboardAnalytics);
-  }, [dashboardAnalytics]);
+    return {
+      todayRevenue: metrics.todayRevenue,
+      weekRevenue: metrics.weekRevenue,
+      monthRevenue: metrics.monthRevenue,
+      todayOrders: metrics.todayOrders,
+      weekOrders: metrics.weekOrders,
+      avgMargin: metrics.avgMargin,
+      topItems: dashboardAnalytics.performance.topItems.map((item) => ({
+        item: {
+          name: item.item.name,
+          category: item.item.category,
+          price: item.item.price,
+        },
+        revenue: item.totalRevenue,
+        quantity: item.totalQuantity,
+      })),
+      worstItems: dashboardAnalytics.performance.worstItems.map((item) => ({
+        item: {
+          name: item.item.name,
+          category: item.item.category,
+          price: item.item.price,
+        },
+        revenue: item.totalRevenue,
+        quantity: item.totalQuantity,
+      })),
+      categoryData: dashboardAnalytics.categoryBreakdown,
+    };
+  }, [dashboardAnalytics, metrics]);
 
   const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -242,9 +188,6 @@ export default function App() {
   const handleLogout = () => {
     authStorage.removeItem(STORAGE_KEY);
     setAuthToken('');
-    setOrders([]);
-    setHistoricalSales([]);
-    setMenuCatalog([]);
     setInventoryAlerts([]);
     setDashboardAnalytics(null);
     setDashboardError('');
@@ -294,7 +237,7 @@ export default function App() {
     );
   }
 
-  if (isLoadingData || !metrics || !comparisonData || !dashboardAnalytics) {
+  if (isLoadingData || !metrics || !comparisonData || !dashboardAnalytics || !exportData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-red-950 to-gray-900">
         <div className="text-center">
@@ -305,22 +248,9 @@ export default function App() {
     );
   }
 
-  const exportData = {
-    todayRevenue: metrics.todayRevenue,
-    weekRevenue: metrics.weekRevenue,
-    monthRevenue: metrics.monthRevenue,
-    todayOrders: metrics.todayOrders,
-    weekOrders: metrics.weekOrders,
-    avgMargin: metrics.avgMargin,
-    topItems,
-    worstItems,
-    categoryData,
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4 md:p-6">
       <div className="max-w-[1800px] mx-auto space-y-4">
-        {/* Header with Japanese-inspired design */}
         <div className="relative overflow-hidden bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-600/50">
           <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500 opacity-5 rounded-full -mr-32 -mt-32"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-teal-500 opacity-5 rounded-full -ml-24 -mb-24"></div>
@@ -336,7 +266,7 @@ export default function App() {
                 <p className="hidden text-slate-300 text-lg">
                   Smart Analytics
                 </p>
-                
+
                 <div className="flex items-center gap-4 mt-3">
                   <div className="flex items-center gap-2 text-slate-400">
                     <Users className="h-4 w-4" />
@@ -357,8 +287,7 @@ export default function App() {
                   Sign Out
                 </button>
                 <div className="text-right">
-                  
-                  <div >{lastUpdatedAt ? `Last sync: ${lastUpdatedAt}` : 'Waiting for data'}</div>
+                  <div>{lastUpdatedAt ? `Last sync: ${lastUpdatedAt}` : 'Waiting for data'}</div>
                 </div>
                 <ExportButton data={exportData} />
               </div>
@@ -366,7 +295,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* Sparkline KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <SparklineCard
             title="Today's Revenue"
@@ -388,7 +316,7 @@ export default function App() {
             title="Total Orders"
             value={metrics.weekOrders}
             change={metrics.ordersGrowth}
-            data={comboData.map((point) => ({ value: point.orders }))}
+            data={dashboardAnalytics.charts.combo.map((point) => ({ value: point.orders }))}
             icon={ShoppingCart}
             color="#8b5cf6"
           />
@@ -402,7 +330,6 @@ export default function App() {
           />
         </div>
 
-        {/* Main Tabs */}
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList className="bg-slate-800/50 p-1.5 shadow-lg border border-slate-700/50 rounded-xl">
             <TabsTrigger value="overview" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-teal-600 data-[state=active]:text-white rounded-lg text-slate-400">
@@ -439,14 +366,13 @@ export default function App() {
             </TabsTrigger>
           </TabsList>
 
-          {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="lg:col-span-2">
-                <ComboChart data={comboData} />
+                <ComboChart data={dashboardAnalytics.charts.combo} />
               </div>
               <div>
-                <CategoryPieChart data={categoryData} />
+                <CategoryPieChart data={dashboardAnalytics.categoryBreakdown} />
               </div>
             </div>
 
@@ -526,41 +452,38 @@ export default function App() {
                 </div>
                 <RevenueChart data={revenueChartData} />
               </div>
-              <SeasonalTrends data={seasonalData} />
+              <SeasonalTrends data={dashboardAnalytics.charts.seasonal} />
             </div>
           </TabsContent>
 
-          {/* Performance Tab */}
           <TabsContent value="performance" className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <ItemPerformanceTable
                 title="Best-Selling Items"
                 description="Top 5 performers by revenue"
-                items={topItems}
+                items={dashboardAnalytics.performance.topItems}
                 type="best"
               />
               <ItemPerformanceTable
                 title="Slow-Moving Items"
                 description="Items requiring attention"
-                items={worstItems}
+                items={dashboardAnalytics.performance.worstItems}
                 type="worst"
               />
             </div>
 
-            <HourlySalesChart data={hourlySalesData} />
+            <HourlySalesChart data={dashboardAnalytics.charts.hourlySales} />
           </TabsContent>
 
-          {/* Trends Tab */}
           <TabsContent value="trends" className="space-y-4">
-            <HeatMapChart data={heatMapData} />
-            
+            <HeatMapChart data={dashboardAnalytics.charts.heatMap} />
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <HourlySalesChart data={hourlySalesData} />
-              <SeasonalTrends data={seasonalData} />
+              <HourlySalesChart data={dashboardAnalytics.charts.hourlySales} />
+              <SeasonalTrends data={dashboardAnalytics.charts.seasonal} />
             </div>
           </TabsContent>
 
-          {/* Forecast Tab */}
           <TabsContent value="forecast" className="space-y-4">
             <div className="bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-slate-600/50 rounded-xl p-6 shadow-lg">
               <div className="flex items-start gap-4">
@@ -570,43 +493,40 @@ export default function App() {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-white mb-2">AI-Powered Demand Forecasting Engine</h3>
                   <p className="text-slate-300">
-                    Using time-series analysis and moving averages to predict next week's demand for optimal inventory management. 
-                    Our forecasting helps reduce waste by up to 30% and ensures popular items never run out during lunch rush.
+                    Forecast cards and the chart below are now computed in the backend from recent order history, so
+                    stock planning and demand outlook use the same source of truth as the rest of the dashboard.
                   </p>
                 </div>
               </div>
             </div>
 
-            {topItems.length > 0 && (
+            {dashboardAnalytics.forecast.chart.length > 0 && (
               <>
-                <ForecastChart 
-                  data={forecastData} 
-                  itemName={topItems[0].item.name}
+                <ForecastChart
+                  data={dashboardAnalytics.forecast.chart}
+                  itemName={dashboardAnalytics.forecast.focusItemName}
                 />
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {topItems.slice(0, 3).map((item, index) => {
-                    const forecast = forecastNextWeek(historicalSales, item.item.id);
-                    const weekTotal = forecast.reduce((sum, val) => sum + val, 0);
-                    const avgDaily = weekTotal / 7;
+                  {dashboardAnalytics.forecast.cards.map((item, index) => {
                     const colors = ['from-cyan-600 to-teal-600', 'from-teal-600 to-emerald-600', 'from-blue-600 to-cyan-600'];
-                    
+
                     return (
-                      <div key={item.item.id} className={`bg-gradient-to-br ${colors[index]} rounded-xl shadow-lg p-6 border-2 border-gray-700 text-white`}>
-                        <h4 className="text-xl font-bold mb-4">{item.item.name}</h4>
+                      <div key={item.itemId} className={`bg-gradient-to-br ${colors[index % colors.length]} rounded-xl shadow-lg p-6 border-2 border-gray-700 text-white`}>
+                        <h4 className="text-xl font-bold mb-4">{item.itemName}</h4>
                         <div className="space-y-3">
                           <div className="flex justify-between items-center pb-2 border-b border-white/30">
                             <span className="text-white/90">7-Day Forecast:</span>
-                            <span className="text-2xl font-bold">{weekTotal}</span>
+                            <span className="text-2xl font-bold">{item.weekTotal}</span>
                           </div>
                           <div className="flex justify-between items-center pb-2 border-b border-white/30">
                             <span className="text-white/90">Avg Daily:</span>
-                            <span className="text-xl font-bold">{avgDaily.toFixed(1)}</span>
+                            <span className="text-xl font-bold">{item.avgDaily.toFixed(1)}</span>
                           </div>
                           <div className="flex justify-between items-center pt-2">
                             <span className="text-white/90">Current Stock:</span>
-                            <span className={`text-xl font-bold ${item.item.stock < weekTotal ? 'bg-white text-red-600 px-2 py-1 rounded' : ''}`}>
-                              {item.item.stock}
+                            <span className={`text-xl font-bold ${item.currentStock < item.weekTotal ? 'bg-white text-red-600 px-2 py-1 rounded' : ''}`}>
+                              {item.currentStock}
                             </span>
                           </div>
                         </div>
@@ -622,7 +542,6 @@ export default function App() {
             <AiAssistantPanel token={authToken} />
           </TabsContent>
 
-          {/* Staff & Inventory Tab */}
           <TabsContent value="staff" className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="lg:col-span-2">
@@ -670,9 +589,6 @@ export default function App() {
                       <span className="font-bold text-yellow-400 text-lg">{dashboardAnalytics.marginSummary.lowCount} items</span>
                     </div>
                   </div>
-                  <div className="hidden mt-4 p-3 bg-gradient-to-r from-purple-900/50 to-pink-900/50 border-2 border-purple-700 rounded-lg text-sm text-purple-200">
-                    💡 Promote high-margin items during peak 12-1 PM rush
-                  </div>
                   <div className="mt-4 p-3 bg-gradient-to-r from-purple-900/50 to-pink-900/50 border-2 border-purple-700 rounded-lg text-sm text-purple-200">
                     {dashboardAnalytics.marginSummary.recommendation}
                   </div>
@@ -681,28 +597,32 @@ export default function App() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <StaffScheduleCard />
-              <StaffAllocationPlanner peakHours={hourlySalesData} />
+              <StaffScheduleCard
+                staffSchedule={dashboardAnalytics.staffing.schedule.staff}
+                coverage={dashboardAnalytics.staffing.schedule.coverage}
+              />
+              <StaffAllocationPlanner allocations={dashboardAnalytics.staffing.allocation} />
             </div>
           </TabsContent>
 
-          {/* Pricing Strategy Tab */}
           <TabsContent value="pricing" className="space-y-4">
-            <PricingStrategy topItems={topItems} worstItems={worstItems} />
+            <PricingStrategy
+              topPerformers={dashboardAnalytics.pricingStrategy.topPerformers}
+              slowMovers={dashboardAnalytics.pricingStrategy.slowMovers}
+              strategicInsights={dashboardAnalytics.pricingStrategy.strategicInsights}
+            />
           </TabsContent>
 
-          {/* Compare Tab */}
           <TabsContent value="compare" className="space-y-4">
             <ComparisonView data={comparisonData} />
           </TabsContent>
         </Tabs>
 
-        {/* Footer */}
         <div className="bg-gradient-to-r from-slate-800/50 to-slate-700/50 rounded-xl shadow-lg p-6 border border-slate-600/50">
           <div className="flex items-center justify-between text-white flex-wrap gap-3">
             <div className="flex items-center gap-3">
               <div className="w-3 h-3 bg-cyan-500 rounded-full animate-pulse"></div>
-              <span className="font-semibold text-slate-300">Live Dashboard • Real-time Updates </span>
+              <span className="font-semibold text-slate-300">Live Dashboard - Backend-driven analytics</span>
             </div>
             <div className="text-sm text-slate-400">
               Last updated: {lastUpdatedAt ?? 'Waiting for data'}

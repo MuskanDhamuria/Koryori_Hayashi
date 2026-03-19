@@ -3,24 +3,27 @@ import { Users, Clock } from 'lucide-react';
 import { Badge } from './ui/badge';
 
 interface StaffMember {
+  id: string;
   name: string;
   role: string;
   shift: string;
   hours: string;
 }
 
-export function StaffScheduleCard() {
-  const staffSchedule: StaffMember[] = [
-    { name: 'Kenji', role: 'Head Chef', shift: 'Morning', hours: '10:00-15:30' },
-    { name: 'Yuki', role: 'Sushi Chef', shift: 'Morning', hours: '10:30-15:30' },
-    { name: 'Sakura', role: 'Server', shift: 'Full', hours: '11:00-15:00' },
-    { name: 'Hiroshi', role: 'Server', shift: 'Full', hours: '11:00-15:00' },
-    { name: 'Aiko', role: 'Cashier', shift: 'Full', hours: '11:00-15:00' },
-  ];
+interface StaffScheduleCardProps {
+  staffSchedule: StaffMember[];
+  coverage: {
+    peak: string;
+    offPeak: string;
+    peakHourRange: string;
+  };
+}
 
+export function StaffScheduleCard({ staffSchedule, coverage }: StaffScheduleCardProps) {
   const getShiftColor = (shift: string) => {
     if (shift === 'Morning') return 'bg-blue-100 text-blue-800 border-blue-300';
     if (shift === 'Full') return 'bg-green-100 text-green-800 border-green-300';
+    if (shift === 'Peak Rush') return 'bg-orange-100 text-orange-800 border-orange-300';
     return 'bg-gray-100 text-gray-800 border-gray-300';
   };
 
@@ -31,13 +34,13 @@ export function StaffScheduleCard() {
           <Users className="h-5 w-5 text-purple-400" />
           Today's Staff Schedule
         </CardTitle>
-        <CardDescription className="text-gray-400">5 employees on duty</CardDescription>
+        <CardDescription className="text-gray-400">{staffSchedule.length} employees on duty</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {staffSchedule.map((staff, index) => (
+          {staffSchedule.map((staff) => (
             <div
-              key={index}
+              key={staff.id}
               className="flex items-center justify-between p-3 rounded-lg border-2 border-gray-700 hover:shadow-md hover:border-purple-500 transition-all bg-gray-800"
             >
               <div className="flex items-center gap-3">
@@ -66,12 +69,16 @@ export function StaffScheduleCard() {
           <div className="text-sm font-semibold mb-2 text-blue-200">Coverage Status</div>
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div className="flex justify-between text-gray-300">
-              <span>Peak (12-1 PM):</span>
-              <span className="font-bold text-green-400">✓ Full</span>
+              <span>Peak ({coverage.peakHourRange}):</span>
+              <span className={`font-bold ${coverage.peak === 'Full' ? 'text-green-400' : 'text-yellow-400'}`}>
+                {coverage.peak}
+              </span>
             </div>
             <div className="flex justify-between text-gray-300">
               <span>Off-Peak:</span>
-              <span className="font-bold text-green-400">✓ Adequate</span>
+              <span className={`font-bold ${coverage.offPeak === 'Adequate' ? 'text-green-400' : 'text-yellow-400'}`}>
+                {coverage.offPeak}
+              </span>
             </div>
           </div>
         </div>
