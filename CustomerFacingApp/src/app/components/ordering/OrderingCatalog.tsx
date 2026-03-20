@@ -151,27 +151,21 @@ export function OrderingCatalog({
         </div>
 
         <div className="paper-panel rounded-3xl border-[color:var(--border)] p-4 sm:rounded-[30px] sm:p-6 lg:p-8">
-          <div className="mb-5 flex flex-col gap-3 sm:mb-6 md:flex-row md:items-start md:justify-between md:gap-4">
+          <div className="mb-5 flex items-start justify-between gap-4 sm:mb-6">
             <div>
               <p className="menu-kicker mb-1.5 text-xs sm:mb-2 sm:text-sm">Menu</p>
               <h2 className="menu-title text-2xl text-[color:var(--ink)] sm:text-3xl lg:text-4xl">{activeCategoryLabel}</h2>
             </div>
 
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              {flavorPreferences && (
-                <div className="rounded-full border border-emerald-600/18 bg-emerald-50 px-2.5 py-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-emerald-700 sm:px-3 sm:py-2 sm:text-xs sm:tracking-[0.14em]">
-                  Personalized
-                </div>
-              )}
-              {loyaltyProfile.isBirthday && (
-                <div className="rounded-full border border-[color:var(--rose)]/20 bg-pink-50 px-2.5 py-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-pink-700 sm:px-3 sm:py-2 sm:text-xs sm:tracking-[0.14em]">
-                  Birthday Bonus Active
-                </div>
-              )}
-            </div>
+            {/* Birthday bonus badge kept, Personalized badge removed */}
+            {loyaltyProfile.isBirthday && (
+              <div className="rounded-full border border-[color:var(--rose)]/20 bg-pink-50 px-2.5 py-1.5 text-[10px] font-medium uppercase tracking-[0.12em] text-pink-700 sm:px-3 sm:py-2 sm:text-xs sm:tracking-[0.14em]">
+                Birthday Bonus Active
+              </div>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-6 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4 md:gap-5 md:grid-cols-2">
             {activeMenuItems.map((item) => (
               <div
                 key={item.id}
