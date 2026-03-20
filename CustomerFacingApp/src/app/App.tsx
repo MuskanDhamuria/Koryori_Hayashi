@@ -73,6 +73,7 @@ export default function App() {
           userName={userName}
           initialPreferences={flavorPreferences}
           onComplete={handleFlavorProfileComplete}
+          onClose={() => setAppState(postQuizState)}
         />
       )}
 

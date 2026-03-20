@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "motion/react";
-import { ChefHat } from "lucide-react";
+import { ChefHat, X } from "lucide-react";
 import { FlavorPreferences } from "../types";
 import { Card } from "./ui/card";
 import { Progress } from "./ui/progress";
@@ -10,12 +10,14 @@ interface FlavorProfileQuizProps {
   onComplete: (preferences: FlavorPreferences) => Promise<void> | void;
   userName: string;
   initialPreferences?: FlavorPreferences;
+  onClose?: () => void;
 }
 
 export function FlavorProfileQuiz({
   onComplete,
   userName,
   initialPreferences,
+  onClose,
 }: FlavorProfileQuizProps) {
   const [step, setStep] = useState(0);
   const [preferences, setPreferences] = useState<Partial<FlavorPreferences>>(
@@ -73,97 +75,114 @@ export function FlavorProfileQuiz({
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden px-4 py-8 sm:px-6 lg:px-8">
+    <div className="relative min-h-screen overflow-hidden px-3 py-4 sm:px-4 sm:py-6 lg:px-8 lg:py-8">
       <SeigaihaPattern />
       <div className="pointer-events-none absolute left-[-4rem] top-16 h-48 w-48 rounded-full bg-[color:var(--gold)]/12 blur-3xl" />
       <div className="pointer-events-none absolute bottom-[-5rem] right-[-2rem] h-56 w-56 rounded-full bg-[color:var(--rose)]/10 blur-3xl" />
 
-      <div className="mx-auto flex min-h-screen max-w-6xl items-center">
-        <Card className="paper-panel w-full gap-0 rounded-[32px] border-[color:var(--border)]">
-          <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[0.8fr_1.2fr] lg:p-10">
-            <aside className="paper-panel-dark rounded-[28px] p-6 text-[color:var(--paper)]">
-              <div className="mb-6 flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-white/10 text-[color:var(--gold-soft)]">
-                  <ChefHat className="h-6 w-6" />
+      <div className="mx-auto flex min-h-screen max-w-6xl items-center py-4 sm:py-8">
+        <Card className="paper-panel relative w-full gap-0 rounded-2xl border-[color:var(--border)] sm:rounded-3xl lg:rounded-[32px]">
+
+          {/* ── Close button — sits inside the top-right corner of the card ── */}
+          <button
+            onClick={onClose}
+            className="absolute right-3 top-3 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--ink)] text-[color:var(--paper)] shadow-lg transition-all hover:scale-110 hover:bg-[color:var(--navy)] active:scale-95 sm:right-4 sm:top-4 sm:h-11 sm:w-11"
+            aria-label="Close and return to ordering"
+          >
+            <X className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={2.8} />
+          </button>
+
+          {/* Mobile: Stack vertically, Desktop: Side by side */}
+          <div className="flex flex-col gap-0 lg:grid lg:grid-cols-[0.8fr_1.2fr] lg:gap-6">
+            {/* Sidebar - Compact on mobile */}
+            <aside className="paper-panel-dark rounded-t-2xl p-4 text-[color:var(--paper)] sm:rounded-t-3xl sm:p-6 lg:rounded-l-[28px] lg:rounded-tr-none lg:p-8">
+
+              {/* Header row: icon + title */}
+              <div className="mb-4 flex items-center gap-2.5 sm:mb-5 sm:gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-[color:var(--gold-soft)] sm:h-12 sm:w-12 sm:rounded-[16px]">
+                  <ChefHat className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
                 <div>
-                  <p className="menu-kicker text-[color:var(--gold-soft)]">Taste Profile</p>
-                  <h1 className="menu-title text-4xl text-[color:var(--paper)]">Welcome, {userName}</h1>
+                  <p className="menu-kicker text-[9px] text-[color:var(--gold-soft)] sm:text-[10px]">Taste Profile</p>
+                  <h1 className="menu-title text-2xl text-[color:var(--paper)] sm:text-3xl lg:text-4xl">Welcome, {userName}</h1>
                 </div>
               </div>
 
-              <p className="text-sm leading-7 text-[color:var(--paper)]/78">
+              <p className="text-xs leading-6 text-[color:var(--paper)]/78 sm:text-sm sm:leading-7">
                 Three quick questions help us shape the menu around what feels most appealing today.
               </p>
 
-              <div className="my-6 h-px bg-white/12" />
+              <div className="my-4 h-px bg-white/12 sm:my-5 lg:my-6" />
 
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="menu-kicker text-[color:var(--paper)]/68">Progress</span>
-                  <span className="text-sm font-semibold text-[color:var(--gold-soft)]">
+                  <span className="menu-kicker text-[9px] text-[color:var(--paper)]/68 sm:text-[10px]">Progress</span>
+                  <span className="text-xs font-semibold text-[color:var(--gold-soft)] sm:text-sm">
                     {step + 1} / {questions.length}
                   </span>
                 </div>
-                <Progress value={progress} className="h-2 bg-white/10" />
+                <Progress value={progress} className="h-1.5 bg-white/10 sm:h-2" />
               </div>
 
-              <div className="mt-8 rounded-[24px] border border-white/10 bg-white/6 p-5">
+              {/* Why this matters - Hide on mobile, show on tablet+ */}
+              <div className="mt-4 hidden rounded-2xl border border-white/10 bg-white/6 p-4 sm:mt-6 sm:block sm:rounded-[24px] sm:p-5">
                 <p className="menu-kicker mb-2 text-[color:var(--gold-soft)]">Why this matters</p>
-                <p className="text-sm leading-7 text-[color:var(--paper)]/74">
+                <p className="text-xs leading-6 text-[color:var(--paper)]/74 sm:text-sm sm:leading-7">
                   Your selections inform pairings, personalized recommendations, and which dishes get
                   featured first during ordering.
                 </p>
               </div>
             </aside>
 
-            <section className="flex flex-col justify-between">
+            {/* Question Section - More compact on mobile */}
+            <section className="flex flex-col justify-between p-4 sm:p-6 lg:p-8 lg:py-10">
               <div>
-                <p className="menu-kicker mb-3">Question {step + 1}</p>
-                <h2 className="menu-title text-4xl leading-tight">{currentQuestion.question}</h2>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-[color:var(--ink-soft)]">
+                <p className="menu-kicker mb-2 text-[9px] sm:mb-3 sm:text-[10px]">Question {step + 1}</p>
+                <h2 className="menu-title text-2xl leading-tight sm:text-3xl lg:text-4xl">{currentQuestion.question}</h2>
+                <p className="mt-2 max-w-2xl text-xs leading-6 text-[color:var(--ink-soft)] sm:mt-3 sm:text-sm sm:leading-7">
                   {currentQuestion.subtitle}
                 </p>
               </div>
 
               <motion.div
                 key={step}
-                initial={{ opacity: 0, y: 18 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.28 }}
-                className="mt-8 grid gap-4"
+                className="mt-5 grid gap-3 sm:mt-6 sm:gap-4 lg:mt-8"
               >
                 {currentQuestion.options.map((option, index) => (
                   <motion.button
                     key={option.value}
                     type="button"
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.28, delay: index * 0.06 }}
                     onClick={() => void handleSelect(option.value)}
-                    className="group rounded-[28px] border border-[color:var(--border)] bg-white/80 px-5 py-5 text-left transition-all hover:-translate-y-0.5 hover:border-[color:var(--gold)]/55 hover:bg-white"
+                    className="group rounded-2xl border border-[color:var(--border)] bg-white/80 px-4 py-4 text-left transition-all hover:-translate-y-0.5 hover:border-[color:var(--gold)]/55 hover:bg-white sm:rounded-[24px] sm:px-5 sm:py-5 lg:rounded-[28px]"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[color:var(--ink)]/7 text-xs font-bold tracking-[0.2em] text-[color:var(--ink)]">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[color:var(--ink)]/7 text-[10px] font-bold tracking-[0.2em] text-[color:var(--ink)] sm:h-12 sm:w-12 sm:text-xs">
                         {option.marker}
                       </div>
                       <div className="flex-1">
-                        <div className="text-sm font-semibold uppercase tracking-[0.14em] text-[color:var(--ink)]">
+                        <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[color:var(--ink)] sm:text-sm">
                           {option.label}
                         </div>
-                        <div className="mt-1 text-sm leading-6 text-[color:var(--ink-soft)]">
+                        <div className="mt-0.5 text-xs leading-5 text-[color:var(--ink-soft)] sm:mt-1 sm:text-sm sm:leading-6">
                           {option.description}
                         </div>
                       </div>
-                      <div className="h-3 w-3 rounded-full bg-[color:var(--gold)]/18 transition-all group-hover:scale-125 group-hover:bg-[color:var(--gold)]" />
+                      <div className="h-2.5 w-2.5 rounded-full bg-[color:var(--gold)]/18 transition-all group-hover:scale-125 group-hover:bg-[color:var(--gold)] sm:h-3 sm:w-3" />
                     </div>
                   </motion.button>
                 ))}
               </motion.div>
 
-              <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-[color:var(--border)] pt-5">
-                <p className="text-sm leading-6 text-[color:var(--ink-soft)]">
-                  Prefer not to customize? We can start with balanced recommendations.
+              {/* Skip button - More compact on mobile */}
+              <div className="mt-5 flex flex-col gap-2 border-t border-[color:var(--border)] pt-4 sm:mt-6 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:pt-5 lg:mt-8">
+                <p className="text-xs leading-5 text-[color:var(--ink-soft)] sm:text-sm sm:leading-6">
+                  Prefer not to customize? Use balanced defaults.
                 </p>
                 <button
                   type="button"
@@ -174,9 +193,9 @@ export function FlavorProfileQuiz({
                       spicyTolerance: "medium",
                     })
                   }
-                  className="rounded-full border border-[color:var(--border)] px-4 py-2 text-sm font-semibold text-[color:var(--ink)] transition-colors hover:border-[color:var(--gold)]/55 hover:bg-white"
+                  className="w-full whitespace-nowrap rounded-full border border-[color:var(--border)] px-4 py-2.5 text-xs font-semibold text-[color:var(--ink)] transition-colors hover:border-[color:var(--gold)]/55 hover:bg-white sm:w-auto sm:text-sm"
                 >
-                  Use Balanced Preferences
+                  Use Balanced
                 </button>
               </div>
             </section>
