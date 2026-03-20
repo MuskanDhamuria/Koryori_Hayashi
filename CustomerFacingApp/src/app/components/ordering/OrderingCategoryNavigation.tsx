@@ -46,8 +46,8 @@ export function OrderingCategoryMobileNavigation({
           style={{ background: "linear-gradient(to right, transparent, var(--bg-cream))" }}
         />
 
-        <div className="cat-scroll -mx-4 overflow-x-auto px-4 pb-2.5">
-          <div className="flex gap-2" style={{ width: "max-content" }}>
+        <div className="cat-scroll -mx-4 overflow-x-scroll overflow-y-hidden px-4 pb-5" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="flex gap-2 pb-2" style={{ width: "max-content", minWidth: "120%" }}>
             {ORDERING_CATEGORIES.map((category) => (
               <button
                 key={category.key}
@@ -83,6 +83,32 @@ export function OrderingCategoryMobileNavigation({
             ))}
           </div>
         </div>
+
+        <style>{`
+          .cat-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(156, 163, 175, 0.4) transparent;
+            -webkit-overflow-scrolling: touch;
+          }
+          
+          .cat-scroll::-webkit-scrollbar {
+            height: 8px;
+          }
+          
+          .cat-scroll::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+          }
+          
+          .cat-scroll::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.4);
+            border-radius: 4px;
+          }
+          
+          .cat-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.6);
+          }
+        `}</style>
       </div>
     </div>
   );

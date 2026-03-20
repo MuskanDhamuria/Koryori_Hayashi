@@ -238,13 +238,13 @@ export function OrderingPage({
   return (
     <div className="relative min-h-screen overflow-hidden" style={{ background: "var(--paper)" }}>
       <SeigaihaPattern />
-      <div className="pointer-events-none absolute left-[-6rem] top-12 h-64 w-64 rounded-full bg-[color:var(--gold)]/10 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-[-7rem] right-[-4rem] h-72 w-72 rounded-full bg-[color:var(--olive)]/10 blur-3xl" />
+      <div className="pointer-events-none absolute left-[-8rem] top-8 h-56 w-56 rounded-full bg-[color:var(--gold)]/10 blur-3xl sm:left-[-6rem] sm:top-12 sm:h-64 sm:w-64" />
+      <div className="pointer-events-none absolute bottom-[-8rem] right-[-6rem] h-64 w-64 rounded-full bg-[color:var(--olive)]/10 blur-3xl sm:bottom-[-7rem] sm:right-[-4rem] sm:h-72 sm:w-72" />
 
       <OrderingHeader tableNumber={tableNumber} weatherData={weatherData} />
 
       {currentView === "games" ? (
-        <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <main className="mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6 lg:px-8">
           <InAppGames
             currentPoints={loyaltyProfile.points}
             phoneNumber={phoneNumber}
@@ -254,7 +254,7 @@ export function OrderingPage({
           />
         </main>
       ) : (
-        <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 relative">
+        <main className="relative mx-auto max-w-7xl px-3 py-4 sm:px-4 sm:py-6 lg:px-8">
           <OrderingCatalog
             tableNumber={tableNumber}
             userName={userName}
