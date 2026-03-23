@@ -149,18 +149,17 @@ type Candidate = {
   flavorScore: number;
   weatherScore: number;
   uncertaintyScore: number;
+  normalizedUncertaintyScore: number;
   historyScore: number;
-  mabScore: number;
-  thompsonRankScore: number;
+  banditScore: number;
   weatherRankScore: number;
   flavorRankScore: number;
-  combinedScore: number;
   pairingReason?: string;
 };
 
 /**
  * Generate recommendations with guaranteed strategy coverage:
- * 1 MAB, 1 Thompson, 1 Weather-aware, 1 Flavor-matched, 1 Pairing, 1 History
+ * 2 Bandit (MAB + Thompson), 1 Weather-aware, 1 Flavor-matched, 1 Pairing, 1 History
  */
 export function generateRecommendations(
   allItems: MenuItem[],
@@ -171,6 +170,7 @@ export function generateRecommendations(
   const historyInsights = userHistory.length ? buildUserHistoryInsights(userHistory) : undefined;
   const targetCount = Math.max(1, Math.floor(maxRecommendations));
   const pairingIndex = buildPairingIndex(menuItemPairings);
+  const isExplorationRound = shouldExplore();
 
   const cartItemIds = cartItems.map((item) => item.id);
   const candidates: Candidate[] = [];
@@ -195,24 +195,24 @@ export function generateRecommendations(
     const flavorScore = calculateFlavorMatchScore(item, flavorPreferences);
     const weatherScore = weather ? getWeatherBoostScore(weather, item.weatherTags) : 0.5;
     const uncertaintyScore = getUncertaintyScore(item.id);
+    // Beta variance is bounded and small (max near ~0.083 for Beta(1,1)). Scale to [0,1] for blending.
+    const normalizedUncertaintyScore = clamp01(uncertaintyScore * 12);
     const marginScore = item.isHighMargin ? 0.15 : 0;
     const historyScore = getHistoryScore(item.id, historyInsights);
 
-    // MAB emphasis = uncertainty + exploration value
-    const mabScore =
-      uncertaintyScore * 0.55 +
-      (item.isNew ? 0.25 : 0) +
-      pairingScore * 0.1 +
-      flavorScore * 0.05 +
-      weatherScore * 0.05;
-
-    // Thompson emphasis = highest sampled conversion probability
-    const thompsonRankScore =
-      thompsonScore * 0.65 +
+    // Unified bandit score: Thompson Sampling (exploit) + uncertainty/newness (explore) at the same time.
+    const thompsonWeight = isExplorationRound ? 0.35 : 0.55;
+    const uncertaintyWeight = isExplorationRound ? 0.35 : 0.2;
+    const newItemBonus = item.isNew ? (isExplorationRound ? 0.15 : 0.05) : 0;
+    const banditScore =
+      thompsonScore * thompsonWeight +
+      normalizedUncertaintyScore * uncertaintyWeight +
+      newItemBonus +
       pairingScore * 0.15 +
-      flavorScore * 0.1 +
-      weatherScore * 0.1 +
-      historyScore * 0.08;
+      flavorScore * 0.05 +
+      weatherScore * 0.05 +
+      historyScore * 0.05 +
+      marginScore * 0.05;
 
     // Weather emphasis = weather alignment (prefer explicit weather-tagged dishes)
     const weatherTagBonus = item.weatherTags?.length ? 0.1 : -0.2;
@@ -232,14 +232,6 @@ export function generateRecommendations(
       weatherScore * 0.05 +
       historyScore * 0.05;
 
-    const combinedScore =
-      thompsonScore * 0.3 +
-      pairingScore * 0.25 +
-      flavorScore * 0.2 +
-      weatherScore * 0.15 +
-      marginScore * 0.1 +
-      historyScore * 0.05;
-
     candidates.push({
       item,
       pairingScore,
@@ -247,17 +239,15 @@ export function generateRecommendations(
       flavorScore,
       weatherScore,
       uncertaintyScore,
+      normalizedUncertaintyScore,
       historyScore,
-      mabScore,
-      thompsonRankScore,
+      banditScore,
       weatherRankScore,
       flavorRankScore,
-      combinedScore,
       pairingReason,
     });
   });
 
-  const isExplorationRound = shouldExplore();
   const usedIds = new Set<string>();
   const results: Array<{ item: MenuItem; reason: string }> = [];
 
@@ -283,31 +273,28 @@ export function generateRecommendations(
     results.push({ item: candidate.item, reason: reasonBuilder(candidate) });
   };
 
-  const mabSorted = [...candidates].sort((a, b) => b.mabScore - a.mabScore);
-  const thompsonSorted = [...candidates].sort((a, b) => b.thompsonRankScore - a.thompsonRankScore);
+  const banditSorted = [...candidates].sort((a, b) => b.banditScore - a.banditScore);
   const weatherSorted = [...candidates].sort((a, b) => b.weatherRankScore - a.weatherRankScore);
   const flavorSorted = [...candidates].sort((a, b) => b.flavorRankScore - a.flavorRankScore);
   const pairingSorted = [...candidates].sort((a, b) => b.pairingScore - a.pairingScore);
   const historySorted = [...candidates].sort((a, b) => b.historyScore - a.historyScore);
 
-  // Always prioritize MAB + Thompson when space is limited.
-  pushIfAvailable(mabSorted, (candidate) => {
-    const detail =
-      candidate.pairingReason ??
-      historyReason(candidate) ??
+  // Always prioritize the unified bandit score when space is limited.
+  const banditReason = (candidate: Candidate): string => {
+    const detail = candidate.pairingReason ?? historyReason(candidate);
+    const conversion = Math.round(candidate.thompsonScore * 100);
+    const learning = Math.round(candidate.normalizedUncertaintyScore * 100);
+    const headline =
+      detail ??
       (candidate.item.isNew
-        ? 'explore this new dish with high learning value'
-        : 'New dish worth exploring');
-    return `MAB: ${detail}`;
-  });
+        ? 'new dish with strong learn + convert potential'
+        : 'balanced explore + exploit pick');
 
-  pushIfAvailable(thompsonSorted, (candidate) => {
-    const detail =
-      candidate.pairingReason ??
-      historyReason(candidate) ??
-      `strongest conversion estimate (${Math.round(candidate.thompsonScore * 100)}%)`;
-    return `Thompson: ${detail}`;
-  });
+    return `Bandit: ${headline} (conv ${conversion}%, learn ${learning}%)`;
+  };
+
+  pushIfAvailable(banditSorted, banditReason);
+  if (targetCount >= 2) pushIfAvailable(banditSorted, banditReason);
 
   // Add weather / flavor coverage when the caller provides the required context.
   if (weather) {
@@ -354,14 +341,7 @@ export function generateRecommendations(
   );
 
   // Fill remaining slots if caller asks for >4 or collisions occur.
-  const fallbackSorted = [...candidates].sort((a, b) => {
-    if (isExplorationRound) {
-      const exploreA = a.uncertaintyScore * 0.6 + (a.item.isNew ? 0.25 : 0) + a.pairingScore * 0.15;
-      const exploreB = b.uncertaintyScore * 0.6 + (b.item.isNew ? 0.25 : 0) + b.pairingScore * 0.15;
-      return exploreB - exploreA;
-    }
-    return b.combinedScore - a.combinedScore;
-  });
+  const fallbackSorted = [...candidates].sort((a, b) => b.banditScore - a.banditScore);
 
   while (results.length < targetCount) {
     const candidate = fallbackSorted.find((entry) => !usedIds.has(entry.item.id));

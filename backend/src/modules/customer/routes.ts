@@ -5,6 +5,7 @@ import { buildRecommendations } from "./recommendations.js";
 import { resolveCustomerMetadata, normalizeTier } from "./profileMetadata.js";
 import { getCurrentWeather } from "./weather.js";
 import { serializeMenuItem } from "../menu/serializers.js";
+import { recordView } from "./banditStore.js";
 
 const flavorPreferencesSchema = z.object({
   umamiVsCitrus: z.enum(["umami", "citrus", "balanced"]),
@@ -193,6 +194,7 @@ export const customerRoutes: FastifyPluginAsync = async (app) => {
     );
 
     const recommendations = buildRecommendations({
+      phoneNumber: payload.phoneNumber,
       menuItems,
       cartItemIds: payload.cartItemIds,
       flavorPreferences: payload.flavorPreferences ?? null,
@@ -201,6 +203,10 @@ export const customerRoutes: FastifyPluginAsync = async (app) => {
       userHistory: orderHistoryItemIds,
       popularityByItemId,
     });
+
+    for (const recommendation of recommendations) {
+      recordView(payload.phoneNumber, recommendation.item.id);
+    }
 
     return { recommendations, weather };
   });

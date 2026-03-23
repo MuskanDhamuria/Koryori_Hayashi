@@ -11,6 +11,7 @@ import {
   getTierMultiplier,
 } from "./orderHelpers.js";
 import { normalizeTier, resolveCustomerMetadata } from "../customer/profileMetadata.js";
+import { recordSuccess } from "../customer/banditStore.js";
 
 const createOrderSchema = z.object({
   customerName: z.string().min(1),
@@ -244,6 +245,12 @@ export const ordersRoutes: FastifyPluginAsync = async (app) => {
             table: true,
           },
         });
+
+        if (payload.phoneNumber) {
+          for (const item of context.lineItems) {
+            recordSuccess(payload.phoneNumber, item.menuItemId, item.quantity);
+          }
+        }
 
         let loyalty = null;
 

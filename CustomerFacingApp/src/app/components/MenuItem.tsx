@@ -29,24 +29,20 @@ export function MenuItem({ item, onAddToCart }: MenuItemProps) {
             >
               <Badge className="rounded-full border border-[color:var(--wine)]/25 bg-[color:var(--wine)]/12 text-[10px] text-[color:var(--wine)] sm:text-xs">
                 <Flame className="mr-1 h-3 w-3 sm:mr-1.5 sm:h-3.5 sm:w-3.5" />
-                Daily Special
+                Flash Sale
               </Badge>
             </motion.div>
           ) : isNew ? (
             <Badge className="rounded-full border border-[color:var(--ink)]/25 bg-[color:var(--ink)]/12 text-[10px] text-[color:var(--ink)] sm:text-xs">
               <Sparkles className="mr-1 h-3 w-3 text-[color:var(--gold)] sm:mr-1.5 sm:h-3.5 sm:w-3.5" />
-              Seasonal
+              New Item
             </Badge>
           ) : item.isHighMargin ? (
             <Badge className="rounded-full border border-[color:var(--gold)]/25 bg-[color:var(--gold)]/12 text-[10px] text-[color:var(--ink)] sm:text-xs">
               <Star className="mr-1 h-3 w-3 text-[color:var(--gold)] sm:mr-1.5 sm:h-3.5 sm:w-3.5" />
               Chef Recommends
             </Badge>
-          ) : (
-            <Badge className="rounded-full border border-[color:var(--border)] bg-white/72 text-[10px] text-[color:var(--ink-soft)] sm:text-xs">
-              House Favourite
-            </Badge>
-          )}
+          ) : null}
         </div>
 
         {/* Image */}
