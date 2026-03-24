@@ -21,6 +21,19 @@ export default function App() {
   const [tableNumber, setTableNumber] = useState("");
   const [flavorPreferences, setFlavorPreferences] = useState<FlavorPreferences | undefined>();
 
+  const handleLogout = () => {
+    if (!window.confirm("Log out and clear this session?")) {
+      return;
+    }
+
+    setAppState("login");
+    setPostQuizState("qr-scan");
+    setPhoneNumber("");
+    setUserName("");
+    setTableNumber("");
+    setFlavorPreferences(undefined);
+  };
+
   const handleLogin = async (phone: string) => {
     setPhoneNumber(phone);
 
@@ -74,6 +87,7 @@ export default function App() {
           initialPreferences={flavorPreferences}
           onComplete={handleFlavorProfileComplete}
           onClose={() => setAppState(postQuizState)}
+          onLogout={handleLogout}
         />
       )}
 
@@ -81,6 +95,7 @@ export default function App() {
         <QRScanner
           userName={userName}
           onScanComplete={handleScanComplete}
+          onLogout={handleLogout}
         />
       )}
 
@@ -91,6 +106,7 @@ export default function App() {
           phoneNumber={phoneNumber}
           flavorPreferences={flavorPreferences}
           onUpdateFlavorPreferences={handleUpdateFlavorPreferences}
+          onLogout={handleLogout}
         />
       )}
     </>

@@ -1,13 +1,15 @@
-import { QrCode, UtensilsCrossed } from "lucide-react";
+import { LogOut, QrCode, UtensilsCrossed } from "lucide-react";
 import { getWeatherIcon } from "../../data/ordering";
 import type { WeatherData } from "../../types";
+import { Button } from "../ui/button";
 
 type OrderingHeaderProps = {
   tableNumber: string;
   weatherData: WeatherData | null;
+  onLogout: () => void;
 };
 
-export function OrderingHeader({ tableNumber, weatherData }: OrderingHeaderProps) {
+export function OrderingHeader({ tableNumber, weatherData, onLogout }: OrderingHeaderProps) {
   return (
     <header className="sticky top-0 z-50 border-b border-[color:var(--border)] bg-[rgba(248,244,234,0.88)] shadow-sm backdrop-blur-xl">
       <div className="mx-auto max-w-7xl px-3 py-3 sm:px-4 sm:py-4 lg:px-8">
@@ -23,6 +25,17 @@ export function OrderingHeader({ tableNumber, weatherData }: OrderingHeaderProps
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onLogout}
+              className="h-9 rounded-full px-3 text-[color:var(--ink)] hover:bg-white/70 hover:text-[color:var(--ink)] sm:h-10 sm:px-4"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Log out</span>
+            </Button>
+
             {weatherData && (
               <div className="stamp-badge hidden items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[10px] uppercase tracking-[0.12em] sm:flex sm:px-3 sm:py-2 sm:text-xs sm:tracking-[0.14em]">
                 {getWeatherIcon(weatherData.condition)}

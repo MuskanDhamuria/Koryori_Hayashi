@@ -9,9 +9,10 @@ import { fetchAvailableTables } from "../services/api";
 interface QRScannerProps {
   userName: string;
   onScanComplete: (tableNumber: string) => void;
+  onLogout: () => void;
 }
 
-export function QRScanner({ userName, onScanComplete }: QRScannerProps) {
+export function QRScanner({ userName, onScanComplete, onLogout }: QRScannerProps) {
   const [isScanning, setIsScanning] = useState(false);
   const [scanned, setScanned] = useState(false);
   const [tableNumber, setTableNumber] = useState("");
@@ -68,6 +69,18 @@ export function QRScanner({ userName, onScanComplete }: QRScannerProps) {
       <SeigaihaPattern />
       <div className="pointer-events-none absolute right-[-6rem] top-[-5rem] h-48 w-48 rounded-full bg-[color:var(--gold)]/14 blur-3xl sm:right-[-4rem] sm:top-[-3rem] sm:h-56 sm:w-56" />
       <div className="pointer-events-none absolute bottom-[-6rem] left-[-5rem] h-52 w-52 rounded-full bg-[color:var(--olive)]/14 blur-3xl sm:bottom-[-5rem] sm:left-[-3rem] sm:h-60 sm:w-60" />
+
+      <div className="absolute right-4 top-4 z-50 sm:right-6 sm:top-6">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onLogout}
+          className="rounded-full border-[color:var(--border)] bg-white/85 text-[color:var(--ink)] shadow-sm hover:bg-white"
+        >
+          Log out
+        </Button>
+      </div>
 
       <div className="mx-auto flex min-h-screen max-w-4xl items-center justify-center">
         <Card className="paper-panel w-full max-w-3xl gap-0 rounded-3xl border-[color:var(--border)] sm:rounded-[32px]">
