@@ -50,6 +50,7 @@ npm run dev
 - games leaderboard and score endpoints
 - AI assistant endpoint for the company app
 - staff-only spreadsheet sync and live integration event stream
+- digital twin simulation endpoint (`POST /api/digital-twin/simulate`)
 
 ## Staff Integration Endpoints
 
@@ -63,3 +64,20 @@ CSV sync notes:
 - Supported targets: `menuItems`, `inventoryItems`
 - Watch state is stored locally at `SYNC_STATE_PATH`
 - These endpoints require a staff/admin JWT
+
+## Digital Twin: mock ML training CSV
+
+Generate a mock training CSV (use `npm.cmd` instead of `npm` if PowerShell blocks scripts):
+
+```powershell
+cd backend
+node scripts/generate-digital-twin-training-csv.mjs --out data/digital-twin-mock-training.csv --rows 500 --seed 42
+```
+
+To make the ML simulator train from this CSV, set this in `backend/.env`:
+
+```env
+DIGITAL_TWIN_TRAINING_CSV_PATH=data/digital-twin-mock-training.csv
+```
+
+Training uses **CSV samples + previous stored simulations** (when available).

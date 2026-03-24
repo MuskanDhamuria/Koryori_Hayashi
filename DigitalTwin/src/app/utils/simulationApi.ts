@@ -5,6 +5,18 @@ export interface SimulationInput {
   staff: number;
   price_change: number;
   inventory_level: number;
+  engine?: SimulationEngine;
+  record_run?: boolean;
+}
+
+export type SimulationEngine = "rules" | "ml";
+
+export interface MlInfo {
+  sample_count: number;
+  metrics: Record<
+    "wait_time" | "revenue" | "staff_utilisation" | "inventory_usage",
+    { rmse: number; r2: number }
+  >;
 }
 
 export interface SimulationResult {
@@ -13,6 +25,9 @@ export interface SimulationResult {
   staff_utilisation: number;
   inventory_usage: number;
   recommendations: string[];
+  engine_requested?: SimulationEngine;
+  engine_used?: SimulationEngine;
+  ml_info?: MlInfo;
 }
 
 function getApiBaseUrl() {

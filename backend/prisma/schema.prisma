@@ -253,3 +253,16 @@ model GameScore {
   @@index([gameKey, score(sort: Desc)])
   @@index([userId, gameKey, createdAt(sort: Desc)])
 }
+
+model DigitalTwinSimulationRun {
+  id              String   @id @default(cuid())
+  engineRequested String
+  engineUsed      String
+  input           Json
+  output          Json
+  mlInfo          Json?
+  createdAt       DateTime @default(now())
+
+  @@index([createdAt(sort: Desc)])
+  @@index([engineUsed, createdAt(sort: Desc)])
+}

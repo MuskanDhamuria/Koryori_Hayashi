@@ -17,7 +17,8 @@ const envSchema = z.object({
   GEMINI_API_KEY: z.string().min(1).optional(),
   GEMINI_MODEL: z.string().min(1).default("gemini-3-flash-preview"),
   GEMINI_TIMEOUT_MS: z.coerce.number().int().positive().max(120000).default(60000),
-  SYNC_STATE_PATH: z.string().default(".data/spreadsheet-sync.json")
+  SYNC_STATE_PATH: z.string().default(".data/spreadsheet-sync.json"),
+  DIGITAL_TWIN_TRAINING_CSV_PATH: z.string().min(1).optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

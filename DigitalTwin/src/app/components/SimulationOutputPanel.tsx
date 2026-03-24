@@ -1,15 +1,7 @@
-import { TrendingUp, Users, Package, DollarSign, Clock, Lightbulb, Sparkles } from "lucide-react";
+import { Users, Package, DollarSign, Clock, Lightbulb, Sparkles } from "lucide-react";
 import { Card } from "./ui/card";
-import { Progress } from "./ui/progress";
 import { AnimatedMetricCard } from "./AnimatedMetricCard";
-
-interface SimulationResult {
-  wait_time: number;
-  revenue: number;
-  staff_utilisation: number;
-  inventory_usage: number;
-  recommendations: string[];
-}
+import type { SimulationResult } from "../utils/simulationApi";
 
 interface SimulationOutputPanelProps {
   result: SimulationResult | null;
@@ -76,7 +68,15 @@ export function SimulationOutputPanel({ result, isLoading }: SimulationOutputPan
         <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md animate-pulse">
           <Sparkles className="h-5 w-5 text-white" />
         </div>
-        <h3 className="font-semibold text-xl text-gray-200">Predicted Outcomes</h3>
+        <div className="flex-1">
+          <h3 className="font-semibold text-xl text-gray-200">Predicted Outcomes</h3>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Engine: {result.engine_used ?? "unknown"}
+            {result.engine_used === "ml" && result.ml_info
+              ? ` (trained on ${result.ml_info.sample_count} runs)`
+              : ""}
+          </p>
+        </div>
       </div>
 
       {/* Metrics Grid */}

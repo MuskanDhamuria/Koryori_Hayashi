@@ -64,6 +64,7 @@ export function Dashboard() {
         staff: staffCount,
         price_change: priceChange,
         inventory_level: inventoryLevel,
+        engine: "ml",
       });
       
       setResult(simulationResult);
@@ -195,7 +196,7 @@ Report ID: ${reportData.timestamp}
                 </h1>
                 <p className="text-xs text-gray-500 flex items-center gap-1">
                   <Activity className="h-3 w-3" />
-                  Simulation Module Active
+                  Based on Machine Learning Simulation Engine
                 </p>
               </div>
             </motion.div>
