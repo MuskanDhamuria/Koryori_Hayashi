@@ -1,15 +1,92 @@
-# Koryori Hayashi
+# 🍣 Smart Restaurant Intelligence System
 
-This repository contains:
-- `CustomerFacingApp/` - customer ordering app
-- `CompanyFacingApp/` - staff dashboard
-- `backend/` - Fastify + Prisma backend
+*A Data-Driven Digital Transformation Suite for F&B Businesses*
 
-## Architecture
+---
 
-- `CustomerFacingApp` consumes public customer-facing backend APIs for menu browsing, ordering, loyalty, and game rewards.
-- `CompanyFacingApp` consumes staff-only backend APIs for dashboard analytics, order visibility, inventory alerts, and AI assistance.
-- `backend` is the system of record for auth, orders, analytics, inventory, loyalty, and games.
+## 📌 Overview
+
+This project is a **comprehensive digital ecosystem** designed for Koryori Hayashi to enhance **operational efficiency, improved customer experience, and revenue optimization** through data, AI, and simulation.
+
+It consists of four core components:
+
+* 🏢 **Company-Facing Application** (Operations & Analytics)
+* 📱 **Customer-Facing Application** (Customer Experience)
+* 🔁 **Digital Twin** (Simulation)
+* 📱 **Dashboard** (For Samuel- restaurant owner)
+
+
+---
+
+## 🚀 Key Features
+
+### 🏢 Company-Facing App 
+
+Designed for restaurant owners and managers to make **data-driven decisions**:
+
+* 📊 Best-selling & slow-moving items tracking
+* 📈 Multi-metric performance analysis
+* 💰 Revenue breakdown by category
+* 🎯 Daily targets & weekly goals monitoring
+* ⏱ Hourly, daily, weekly & monthly sales tracking
+* 🔥 Sales heatmap visualization
+* 🤖 AI-powered demand forecasting
+* 💬 AI assistant for insights & recommendations
+* 📦 Inventory optimization system
+* 👨‍🍳 Staff allocation planner
+* 💸 Dynamic pricing recommendations
+
+---
+
+### 📱 Customer-Facing App
+
+Enhances **user experience, personalization, and retention**:
+
+* 🎁 Loyalty program & membership benefits
+* 🌦 Weather-responsive menu suggestions (Weather API integration)
+* 🧬 Biometric-style "Flavor Profile" quiz
+* 🎰 Multi-Armed Bandit (MAB) with Thompson Sampling for recommendations
+* ♻️ *Mottainai* dynamic pricing (reduce food waste)
+* 🧠 Personalized suggestions based on order history
+* 🍱 Frequently paired item recommendations
+* 📷 QR code-based ordering system
+* 🎮 In-app gamification to earn rewards
+
+---
+
+### 🔁 Digital Twin System
+
+A virtual replica of restaurant operations used to **simulate scenarios**:
+
+* 🧪 Run simulations using Machine Learning
+* 📉 Predict impact of pricing, staffing, inventory levels and demand changes
+* ⚙️ Optimize operational decisions before real-world implementation
+
+---
+
+## 📊 Dashboard
+
+### 📓 Jupyter Notebook (Data Science Layer)
+
+Used for analysis and modeling:
+
+* Exploratory Data Analysis (EDA)
+* Sales forecasting using:
+
+  * Linear Regression
+  * ARIMA
+  * Exponential Smoothing
+* Monte Carlo Simulation for uncertainty modeling
+
+---
+
+### 🌐 Streamlit App (Interactive Simulation Layer)
+
+* Real-time simulation based on user inputs
+* Scenario testing (pricing, demand, staffing, etc.)
+* Visualization of forecast outcomes and risk ranges
+
+---
 
 ## Quick Start
 
@@ -34,7 +111,7 @@ npm install
 
 ### 2. Configure backend env
 
-Copy [backend/.env.example](/c:/Users/Naren/Documents/SMU/y2s2/DBTT/project/Koryori_Hayashi/backend/.env.example) to [backend/.env](/c:/Users/Naren/Documents/SMU/y2s2/DBTT/project/Koryori_Hayashi/backend/.env).
+Copy [backend/.env.example] to [backend/.env]
 
 Important:
 - `backend/.env` should stay local and should not contain committed secrets.
@@ -58,7 +135,7 @@ CUSTOMER_APP_ORIGIN=http://localhost:5173
 COMPANY_APP_ORIGIN=http://localhost:5174
 
 SEED_STAFF_EMAIL=admin@gmail.com
-SEED_STAFF_PASSWORD=change-this
+SEED_STAFF_PASSWORD=[setyourpassword]
 SYNC_STATE_PATH=.data/spreadsheet-sync.json
 ```
 
@@ -137,26 +214,3 @@ Customer quick access numbers:
 - `+1 (555) 987-6543`
 - `+1 (555) 555-5555`
 
-## Current Behavior
-
-- Customer loyalty points, orders, and taste preferences are stored in the backend database.
-- Customer quick-access cards on the login screen load from backend data.
-- If a customer already has saved taste preferences, the quiz is skipped automatically.
-- Customers can update taste preferences later from the ordering flow.
-- Company dashboard analytics and inventory alerts are backend-driven.
-- The backend includes optional CSV spreadsheet sync for `menuItems` and `inventoryItems` through staff-only integration endpoints.
-
-## Integration Endpoints
-
-The backend exposes staff-only spreadsheet integration endpoints:
-
-- `GET /api/integrations/spreadsheet/status`
-- `POST /api/integrations/spreadsheet/watch`
-- `POST /api/integrations/spreadsheet/sync-now`
-- `DELETE /api/integrations/spreadsheet/watch`
-- `GET /api/integrations/stream`
-
-Notes:
-- Only CSV imports are supported in the current backend.
-- Supported `csvTarget` values are `menuItems` and `inventoryItems`.
-- Stream access requires a staff JWT token.
