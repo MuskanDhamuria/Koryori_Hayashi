@@ -6,7 +6,9 @@ import {
   predictWithDigitalTwinSurrogateModel,
   trainDigitalTwinSurrogateModel,
   type DigitalTwinMlInfo,
-  type DigitalTwinSimulationInput,
+  type DigitalTwinBaselineSnapshot,
+  type DigitalTwinModelInput,
+  type DigitalTwinSimulationLevers,
   type DigitalTwinSimulationOutput,
 } from "./ml.js";
 import { loadDigitalTwinTrainingSamplesFromCsv } from "./csv.js";
@@ -39,7 +41,7 @@ function roundNumber(value: number, decimals = 2) {
 
 function computeRuleBasedOutput(
   baseline: SimulationBaseline,
-  input: DigitalTwinSimulationInput,
+  input: DigitalTwinSimulationLevers,
 ): DigitalTwinSimulationOutput {
   const demandMultiplier = 1 + input.demand_change / 100;
   const priceMultiplier = 1 + input.price_change / 100;
@@ -85,7 +87,7 @@ function computeRuleBasedOutput(
 
 function generateRecommendations(
   baseline: SimulationBaseline,
-  input: DigitalTwinSimulationInput,
+  input: DigitalTwinSimulationLevers,
   output: DigitalTwinSimulationOutput,
   context: {
     engineRequested: "rules" | "ml";
@@ -231,16 +233,29 @@ export const digitalTwinRoutes: FastifyPluginAsync = async (app) => {
     }
 
     const baseline = await getSimulationBaseline();
-    const input: DigitalTwinSimulationInput = {
+    const levers: DigitalTwinSimulationLevers = {
       demand_change: parsed.data.demand_change,
       staff: parsed.data.staff,
       price_change: parsed.data.price_change,
       inventory_level: parsed.data.inventory_level,
     };
 
+    const snapshot: DigitalTwinBaselineSnapshot = {
+      base_wait_time_minutes: baseline.baseWaitTimeMinutes,
+      base_revenue_per_day: baseline.baseRevenuePerDay,
+      base_stockout_risk: baseline.baseStockoutRisk,
+      base_staff_utilisation: baseline.baseStaffUtilisation,
+      baseline_staff_count: baseline.baselineStaffCount,
+    };
+
+    const modelInput: DigitalTwinModelInput = {
+      ...levers,
+      ...snapshot,
+    };
+
     const engineRequested = parsed.data.engine ?? "ml";
     let engineUsed: "rules" | "ml" = "rules";
-    let output = computeRuleBasedOutput(baseline, input);
+    let output = computeRuleBasedOutput(baseline, levers);
     let mlInfo: DigitalTwinMlInfo | undefined;
     let persistenceAvailable = true;
     const simulationRunModel = (prisma as any).digitalTwinSimulationRun as
@@ -251,12 +266,13 @@ export const digitalTwinRoutes: FastifyPluginAsync = async (app) => {
       | undefined;
 
     if (engineRequested === "ml") {
-      const samples: Array<{ input: DigitalTwinSimulationInput; output: DigitalTwinSimulationOutput }> = [];
+      const samples: Array<{ input: DigitalTwinModelInput; output: DigitalTwinSimulationOutput }> = [];
 
-      if (env.DIGITAL_TWIN_TRAINING_CSV_PATH) {
+      const trainingCsvPath = env.DIGITAL_TWIN_TRAINING_CSV_PATH ?? "data/digital-twin-mock-training.csv";
+      if (trainingCsvPath) {
         try {
           samples.push(
-            ...(await loadDigitalTwinTrainingSamplesFromCsv(env.DIGITAL_TWIN_TRAINING_CSV_PATH)),
+            ...(await loadDigitalTwinTrainingSamplesFromCsv(trainingCsvPath)),
           );
         } catch {
           // ignore and continue (DB samples may still be available)
@@ -281,14 +297,19 @@ export const digitalTwinRoutes: FastifyPluginAsync = async (app) => {
 
       const dbSamples = runs
         .map((run) => {
-          const runInput = run.input as Partial<DigitalTwinSimulationInput> | null;
+          const runInput = run.input as Partial<DigitalTwinModelInput> | null;
           const runOutput = run.output as Partial<DigitalTwinSimulationOutput> | null;
           if (!runInput || !runOutput) return null;
           if (
             typeof runInput.demand_change !== "number" ||
             typeof runInput.staff !== "number" ||
             typeof runInput.price_change !== "number" ||
-            typeof runInput.inventory_level !== "number"
+            typeof runInput.inventory_level !== "number" ||
+            typeof runInput.base_wait_time_minutes !== "number" ||
+            typeof runInput.base_revenue_per_day !== "number" ||
+            typeof runInput.base_stockout_risk !== "number" ||
+            typeof runInput.base_staff_utilisation !== "number" ||
+            typeof runInput.baseline_staff_count !== "number"
           ) {
             return null;
           }
@@ -301,19 +322,19 @@ export const digitalTwinRoutes: FastifyPluginAsync = async (app) => {
             return null;
           }
           return {
-            input: runInput as DigitalTwinSimulationInput,
+            input: runInput as DigitalTwinModelInput,
             output: runOutput as DigitalTwinSimulationOutput,
           };
         })
         .filter(
-          (value): value is { input: DigitalTwinSimulationInput; output: DigitalTwinSimulationOutput } =>
+          (value): value is { input: DigitalTwinModelInput; output: DigitalTwinSimulationOutput } =>
             value !== null,
         );
 
       samples.push(...dbSamples);
 
       // de-dupe identical samples (common if you regenerate CSV / rerun scenarios)
-      const unique = new Map<string, { input: DigitalTwinSimulationInput; output: DigitalTwinSimulationOutput }>();
+      const unique = new Map<string, { input: DigitalTwinModelInput; output: DigitalTwinSimulationOutput }>();
       for (const sample of samples) {
         unique.set(JSON.stringify(sample), sample);
       }
@@ -323,11 +344,11 @@ export const digitalTwinRoutes: FastifyPluginAsync = async (app) => {
       if (trained) {
         engineUsed = "ml";
         mlInfo = trained.info;
-        output = predictWithDigitalTwinSurrogateModel(trained.model, input);
+        output = predictWithDigitalTwinSurrogateModel(trained.model, modelInput);
       }
     }
 
-    const recommendations = generateRecommendations(baseline, input, output, {
+    const recommendations = generateRecommendations(baseline, levers, output, {
       engineRequested,
       engineUsed,
       mlInfo,
@@ -344,7 +365,7 @@ export const digitalTwinRoutes: FastifyPluginAsync = async (app) => {
             data: {
               engineRequested,
               engineUsed,
-              input,
+              input: modelInput,
               output,
               mlInfo: mlInfo ? mlInfo : undefined,
             },

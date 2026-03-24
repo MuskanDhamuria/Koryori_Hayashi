@@ -1,12 +1,17 @@
 import { readFile } from "node:fs/promises";
 import { isAbsolute } from "node:path";
-import type { DigitalTwinSimulationInput, DigitalTwinSimulationOutput } from "./ml.js";
+import type { DigitalTwinModelInput, DigitalTwinSimulationOutput } from "./ml.js";
 
 const REQUIRED_HEADERS = [
   "demand_change",
   "staff",
   "price_change",
   "inventory_level",
+  "base_wait_time_minutes",
+  "base_revenue_per_day",
+  "base_stockout_risk",
+  "base_staff_utilisation",
+  "baseline_staff_count",
   "wait_time",
   "revenue",
   "staff_utilisation",
@@ -21,7 +26,7 @@ function parseNumber(value: string) {
 }
 
 export async function loadDigitalTwinTrainingSamplesFromCsv(path: string): Promise<
-  Array<{ input: DigitalTwinSimulationInput; output: DigitalTwinSimulationOutput }>
+  Array<{ input: DigitalTwinModelInput; output: DigitalTwinSimulationOutput }>
 > {
   let raw: string;
   try {
@@ -53,7 +58,7 @@ export async function loadDigitalTwinTrainingSamplesFromCsv(path: string): Promi
     }
   }
 
-  const samples: Array<{ input: DigitalTwinSimulationInput; output: DigitalTwinSimulationOutput }> = [];
+  const samples: Array<{ input: DigitalTwinModelInput; output: DigitalTwinSimulationOutput }> = [];
 
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(",").map((c) => c.trim());
@@ -63,6 +68,11 @@ export async function loadDigitalTwinTrainingSamplesFromCsv(path: string): Promi
     const staff = parseNumber(get("staff"));
     const price_change = parseNumber(get("price_change"));
     const inventory_level = parseNumber(get("inventory_level"));
+    const base_wait_time_minutes = parseNumber(get("base_wait_time_minutes"));
+    const base_revenue_per_day = parseNumber(get("base_revenue_per_day"));
+    const base_stockout_risk = parseNumber(get("base_stockout_risk"));
+    const base_staff_utilisation = parseNumber(get("base_staff_utilisation"));
+    const baseline_staff_count = parseNumber(get("baseline_staff_count"));
     const wait_time = parseNumber(get("wait_time"));
     const revenue = parseNumber(get("revenue"));
     const staff_utilisation = parseNumber(get("staff_utilisation"));
@@ -73,6 +83,11 @@ export async function loadDigitalTwinTrainingSamplesFromCsv(path: string): Promi
       staff === null ||
       price_change === null ||
       inventory_level === null ||
+      base_wait_time_minutes === null ||
+      base_revenue_per_day === null ||
+      base_stockout_risk === null ||
+      base_staff_utilisation === null ||
+      baseline_staff_count === null ||
       wait_time === null ||
       revenue === null ||
       staff_utilisation === null ||
@@ -87,6 +102,11 @@ export async function loadDigitalTwinTrainingSamplesFromCsv(path: string): Promi
         staff,
         price_change,
         inventory_level,
+        base_wait_time_minutes,
+        base_revenue_per_day,
+        base_stockout_risk,
+        base_staff_utilisation,
+        baseline_staff_count,
       },
       output: {
         wait_time,

@@ -91,27 +91,25 @@ function randStep(rng, min, max, step) {
 }
 
 function computeRuleBasedOutput(input) {
-  const baseline = {
-    baseWaitTimeMinutes: 15,
-    baseRevenuePerDay: 1000,
-    baseStaffUtilisation: 70,
-    baseStockoutRisk: 30,
-    baselineStaffCount: 5,
-  };
-
   const demandMultiplier = 1 + input.demand_change / 100;
   const priceMultiplier = 1 + input.price_change / 100;
 
-  const staffingFactor = Math.pow(baseline.baselineStaffCount / Math.max(1, input.staff), 0.7);
+  const staffingFactor = Math.pow(input.baseline_staff_count / Math.max(1, input.staff), 0.7);
 
-  const waitTime = Math.max(1, Math.round(baseline.baseWaitTimeMinutes * demandMultiplier * staffingFactor));
-  const revenue = Math.max(0, Math.round(baseline.baseRevenuePerDay * demandMultiplier * priceMultiplier));
+  const waitTime = Math.max(
+    1,
+    Math.round(input.base_wait_time_minutes * demandMultiplier * staffingFactor),
+  );
+  const revenue = Math.max(
+    0,
+    Math.round(input.base_revenue_per_day * demandMultiplier * priceMultiplier),
+  );
 
   const staffUtilisation = clamp(
     Math.round(
-      baseline.baseStaffUtilisation *
+      input.base_staff_utilisation *
         demandMultiplier *
-        (baseline.baselineStaffCount / Math.max(1, input.staff)),
+        (input.baseline_staff_count / Math.max(1, input.staff)),
     ),
     0,
     100,
@@ -119,7 +117,11 @@ function computeRuleBasedOutput(input) {
 
   const inventoryLevelNormalized = clamp(input.inventory_level, 0, 100) / 100;
   const inventoryLevelFactor = 1.4 - 1.2 * inventoryLevelNormalized;
-  const stockoutRisk = clamp(Math.round(baseline.baseStockoutRisk * demandMultiplier * inventoryLevelFactor), 0, 100);
+  const stockoutRisk = clamp(
+    Math.round(input.base_stockout_risk * demandMultiplier * inventoryLevelFactor),
+    0,
+    100,
+  );
 
   return {
     wait_time: waitTime,
@@ -140,7 +142,7 @@ function main() {
   const rng = mulberry32(args.seed);
 
   const header =
-    "demand_change,staff,price_change,inventory_level,wait_time,revenue,staff_utilisation,inventory_usage";
+    "demand_change,staff,price_change,inventory_level,base_wait_time_minutes,base_revenue_per_day,base_stockout_risk,base_staff_utilisation,baseline_staff_count,wait_time,revenue,staff_utilisation,inventory_usage";
   const lines = [header];
 
   for (let i = 0; i < args.rows; i++) {
@@ -149,6 +151,11 @@ function main() {
       staff: randInt(rng, 1, 20),
       price_change: randStep(rng, -30, 30, 5),
       inventory_level: randStep(rng, 0, 100, 5),
+      base_wait_time_minutes: randStep(rng, 8, 28, 1),
+      base_revenue_per_day: randInt(rng, 500, 6000),
+      base_stockout_risk: randStep(rng, 10, 80, 1),
+      base_staff_utilisation: randStep(rng, 50, 85, 1),
+      baseline_staff_count: randInt(rng, 3, 12),
     };
 
     const out = computeRuleBasedOutput(input);
@@ -169,6 +176,11 @@ function main() {
         input.staff,
         input.price_change,
         input.inventory_level,
+        input.base_wait_time_minutes,
+        input.base_revenue_per_day,
+        input.base_stockout_risk,
+        input.base_staff_utilisation,
+        input.baseline_staff_count,
         noisy.wait_time,
         noisy.revenue,
         noisy.staff_utilisation,
@@ -197,4 +209,3 @@ try {
   console.error(err?.message ?? err);
   printHelpAndExit(1);
 }
-

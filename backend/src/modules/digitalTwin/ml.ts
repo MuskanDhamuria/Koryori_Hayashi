@@ -1,9 +1,19 @@
-export type DigitalTwinSimulationInput = {
+export type DigitalTwinSimulationLevers = {
   demand_change: number;
   staff: number;
   price_change: number;
   inventory_level: number;
 };
+
+export type DigitalTwinBaselineSnapshot = {
+  base_wait_time_minutes: number;
+  base_revenue_per_day: number;
+  base_stockout_risk: number;
+  base_staff_utilisation: number;
+  baseline_staff_count: number;
+};
+
+export type DigitalTwinModelInput = DigitalTwinSimulationLevers & DigitalTwinBaselineSnapshot;
 
 export type DigitalTwinSimulationOutput = {
   wait_time: number;
@@ -23,8 +33,8 @@ export type DigitalTwinMlInfo = {
 };
 
 type TrainedModel = {
-  mean: [number, number, number, number];
-  std: [number, number, number, number];
+  mean: number[];
+  std: number[];
   weights: Record<keyof DigitalTwinSimulationOutput, number[]>;
   metrics: Record<keyof DigitalTwinSimulationOutput, DigitalTwinMlMetric>;
   sampleCount: number;
@@ -182,17 +192,32 @@ function standardizeFeatures(rows: number[][]) {
   return { standardized, mean, std };
 }
 
-function toFeatureRow(input: DigitalTwinSimulationInput): [number, number, number, number] {
+function toFeatureRow(input: DigitalTwinModelInput): [
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+] {
   return [
     input.demand_change,
     input.staff,
     input.price_change,
     input.inventory_level,
+    input.base_wait_time_minutes,
+    input.base_revenue_per_day,
+    input.base_stockout_risk,
+    input.base_staff_utilisation,
+    input.baseline_staff_count,
   ];
 }
 
 export function trainDigitalTwinSurrogateModel(
-  samples: Array<{ input: DigitalTwinSimulationInput; output: DigitalTwinSimulationOutput }>,
+  samples: Array<{ input: DigitalTwinModelInput; output: DigitalTwinSimulationOutput }>,
 ): { model: TrainedModel; info: DigitalTwinMlInfo } | null {
   const minSamples = 20;
   if (samples.length < minSamples) return null;
@@ -222,8 +247,8 @@ export function trainDigitalTwinSurrogateModel(
   }
 
   const model: TrainedModel = {
-    mean: [mean[0], mean[1], mean[2], mean[3]],
-    std: [std[0], std[1], std[2], std[3]],
+    mean,
+    std,
     weights,
     metrics,
     sampleCount: samples.length,
@@ -239,10 +264,10 @@ export function trainDigitalTwinSurrogateModel(
 
 export function predictWithDigitalTwinSurrogateModel(
   trained: TrainedModel,
-  input: DigitalTwinSimulationInput,
+  input: DigitalTwinModelInput,
 ): DigitalTwinSimulationOutput {
   const raw = toFeatureRow(input);
-  const standardized = raw.map((v, i) => (v - trained.mean[i]) / trained.std[i]);
+  const standardized = raw.map((v, i) => (v - (trained.mean[i] ?? 0)) / (trained.std[i] ?? 1));
   const x = [1, ...standardized];
 
   const predict = (key: keyof DigitalTwinSimulationOutput) =>
@@ -260,4 +285,3 @@ export function predictWithDigitalTwinSurrogateModel(
     inventory_usage: inventoryUsage,
   };
 }
-
