@@ -125,11 +125,90 @@ function toDateKey(date: Date) {
   return date.toISOString().split("T")[0];
 }
 
+function parseDateKeyUtc(key: string) {
+  return new Date(`${key}T00:00:00.000Z`);
+}
+
+function addDaysUtc(key: string, days: number) {
+  const date = parseDateKeyUtc(key);
+  date.setUTCDate(date.getUTCDate() + days);
+  return toDateKey(date);
+}
+
 function formatShortDate(dateKey: string) {
   return new Date(dateKey).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
   });
+}
+
+function clampNonNegativeInt(value: number) {
+  return Math.max(0, Math.round(value));
+}
+
+function holtLinearForecast(series: number[], steps: number, opts?: { alpha?: number; beta?: number }) {
+  const alpha = opts?.alpha ?? 0.6;
+  const beta = opts?.beta ?? 0.2;
+
+  const cleaned = series.map((value) => (Number.isFinite(value) ? Math.max(0, value) : 0));
+  if (cleaned.length === 0) return Array.from({ length: steps }, () => 0);
+  if (cleaned.length === 1) return Array.from({ length: steps }, () => clampNonNegativeInt(cleaned[0]));
+
+  let level = cleaned[0];
+  let trend = cleaned[1] - cleaned[0];
+
+  for (let index = 1; index < cleaned.length; index += 1) {
+    const value = cleaned[index];
+    const prevLevel = level;
+    level = alpha * value + (1 - alpha) * (level + trend);
+    trend = beta * (level - prevLevel) + (1 - beta) * trend;
+  }
+
+  const forecast: number[] = [];
+  for (let step = 1; step <= steps; step += 1) {
+    forecast.push(clampNonNegativeInt(level + step * trend));
+  }
+
+  return forecast;
+}
+
+function movingAverageFallback(series: number[], steps: number) {
+  const window = Math.min(7, Math.max(1, series.length));
+  const recent = series.slice(-window);
+  const avg = recent.reduce((sum, value) => sum + value, 0) / recent.length;
+  return Array.from({ length: steps }, () => clampNonNegativeInt(avg));
+}
+
+function buildDailyItemSeries(
+  orders: DashboardOrder[],
+  itemId: string,
+  historyDays: number,
+): { dateKeys: string[]; values: number[] } {
+  const totalsByDateKey = new Map<string, number>();
+  let maxKey: string | null = null;
+
+  for (const order of orders) {
+    for (const item of order.orderItems) {
+      if (item.menuItem.id !== itemId) {
+        continue;
+      }
+
+      const dateKey = toDateKey(order.orderedAt);
+      if (!maxKey || dateKey > maxKey) maxKey = dateKey;
+      totalsByDateKey.set(dateKey, (totalsByDateKey.get(dateKey) ?? 0) + Number(item.quantity));
+    }
+  }
+
+  const endKey = maxKey ?? toDateKey(new Date());
+  const startKey = addDaysUtc(endKey, -(historyDays - 1));
+
+  const dateKeys: string[] = [];
+  for (let offset = 0; offset < historyDays; offset += 1) {
+    dateKeys.push(addDaysUtc(startKey, offset));
+  }
+
+  const values = dateKeys.map((key) => totalsByDateKey.get(key) ?? 0);
+  return { dateKeys, values };
 }
 
 function getWeekStart(date: Date) {
@@ -341,32 +420,15 @@ function buildItemPerformance(menuItems: DashboardMenuItem[], orders: DashboardO
 }
 
 function forecastNextWeek(orders: DashboardOrder[], itemId: string) {
-  const dailySales = new Map<string, number>();
+  const historyDays = 14;
+  const forecastDays = 7;
+  const series = buildDailyItemSeries(orders, itemId, historyDays);
+  const nonZeroDays = series.values.filter((value) => value > 0).length;
+  const forecast = nonZeroDays >= 3
+    ? holtLinearForecast(series.values, forecastDays, { alpha: 0.6, beta: 0.2 })
+    : movingAverageFallback(series.values, forecastDays);
 
-  for (const order of orders) {
-    for (const item of order.orderItems) {
-      if (item.menuItem.id !== itemId) {
-        continue;
-      }
-
-      const dateKey = toDateKey(order.orderedAt);
-      dailySales.set(dateKey, (dailySales.get(dateKey) ?? 0) + Number(item.quantity));
-    }
-  }
-
-  const dates = Array.from(dailySales.keys()).sort();
-  const quantities = dates.map((date) => dailySales.get(date) ?? 0);
-  const recentWindow = quantities.slice(-7);
-  const recentAverage =
-    recentWindow.length === 0
-      ? 0
-      : recentWindow.reduce((sum, value) => sum + value, 0) / recentWindow.length;
-  const trend =
-    quantities.length > 1 ? (quantities[quantities.length - 1] - quantities[0]) / quantities.length : 0;
-
-  return Array.from({ length: 7 }, (_, index) =>
-    Math.max(0, Math.round(recentAverage + trend * index)),
-  );
+  return forecast;
 }
 
 function buildForecast(topItems: Array<{ item: { id: string; name: string; stock: number }; totalRevenue: number; totalQuantity: number }>, orders: DashboardOrder[]) {
@@ -386,23 +448,12 @@ function buildForecast(topItems: Array<{ item: { id: string; name: string; stock
 
   const focusItem = topItems[0].item;
   const focusForecast = forecastNextWeek(orders, focusItem.id);
-  const focusDailySales = new Map<string, number>();
-
-  for (const order of orders) {
-    for (const item of order.orderItems) {
-      if (item.menuItem.id !== focusItem.id) {
-        continue;
-      }
-
-      const dateKey = toDateKey(order.orderedAt);
-      focusDailySales.set(dateKey, (focusDailySales.get(dateKey) ?? 0) + Number(item.quantity));
-    }
-  }
-
-  const historicalDates = Array.from(focusDailySales.keys()).sort().slice(-7);
-  const historicalData = historicalDates.map((date) => ({
-    date: formatShortDate(date),
-    actual: focusDailySales.get(date) ?? 0,
+  const focusSeries = buildDailyItemSeries(orders, focusItem.id, 14);
+  const historicalKeys = focusSeries.dateKeys.slice(-7);
+  const historicalValues = focusSeries.values.slice(-7);
+  const historicalData = historicalKeys.map((dateKey, index) => ({
+    date: formatShortDate(dateKey),
+    actual: historicalValues[index] ?? 0,
     isHistorical: true,
   }));
 

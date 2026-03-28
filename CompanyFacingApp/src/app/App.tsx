@@ -493,8 +493,7 @@ export default function App() {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-white mb-2">AI-Powered Demand Forecasting Engine</h3>
                   <p className="text-slate-300">
-                    Forecast cards and the chart below are now computed in the backend from recent order history, so
-                    stock planning and demand outlook use the same source of truth as the rest of the dashboard.
+                    Stock planning and Demand outlook
                   </p>
                 </div>
               </div>
