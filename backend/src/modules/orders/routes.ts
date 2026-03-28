@@ -195,7 +195,6 @@ export const ordersRoutes: FastifyPluginAsync = async (app) => {
             where: { phoneNumber: payload.phoneNumber },
             update: {
               fullName: context.customerMetadata.fullName,
-              referralCode: context.customerMetadata.referralCode,
             },
             create: {
               phoneNumber: payload.phoneNumber,

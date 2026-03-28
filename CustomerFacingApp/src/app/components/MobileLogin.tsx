@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowRight, Phone, UtensilsCrossed } from "lucide-react";
+import { ArrowRight, Mail, Phone, UtensilsCrossed } from "lucide-react";
 import { toast } from "sonner";
 import { fetchQuickAccessProfiles, type CustomerProfile } from "../services/api";
 import { QUICK_ACCESS_NUMBERS } from "../lib/customerProfiles";
@@ -10,7 +10,7 @@ import { Skeleton } from "./ui/skeleton";
 import { SeigaihaPattern } from "./JapanesePattern";
 
 interface MobileLoginProps {
-  onLogin: (phoneNumber: string) => Promise<void> | void;
+  onLogin: (phoneNumber: string, email?: string) => Promise<void> | void;
 }
 
 function getTierBadgeClasses(tier: string) {
@@ -39,6 +39,7 @@ function getTierLabel(tier: string) {
 
 export function MobileLogin({ onLogin }: MobileLoginProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isQuickAccessLoading, setIsQuickAccessLoading] = useState(true);
   const [quickAccessProfiles, setQuickAccessProfiles] = useState<CustomerProfile[]>([]);
@@ -63,16 +64,23 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
     void loadQuickAccessProfiles();
   }, []);
 
-  const handleLoginAttempt = async (nextPhoneNumber: string) => {
+  const handleLoginAttempt = async (nextPhoneNumber: string, nextEmail?: string) => {
     if (!nextPhoneNumber || nextPhoneNumber.length < 10) {
       toast.error("Please enter a valid phone number");
+      return;
+    }
+
+    const trimmedEmail = (nextEmail ?? "").trim();
+    const emailValue = trimmedEmail.length === 0 ? undefined : trimmedEmail;
+    if (emailValue && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) {
+      toast.error("Please enter a valid email address");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      await onLogin(nextPhoneNumber);
+      await onLogin(nextPhoneNumber, emailValue);
       toast.success("Welcome back");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to sign in");
@@ -83,12 +91,12 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    await handleLoginAttempt(phoneNumber);
+    await handleLoginAttempt(phoneNumber, email);
   };
 
   const handleQuickLogin = async (number: string) => {
     setPhoneNumber(number);
-    await handleLoginAttempt(number);
+    await handleLoginAttempt(number, email);
   };
 
   return (
@@ -144,6 +152,25 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
                         placeholder="+65 8123 4567"
                         value={phoneNumber}
                         onChange={(event) => setPhoneNumber(event.target.value)}
+                        className="h-12 rounded-full border-[color:var(--border)] bg-white/78 pl-10 pr-4 text-sm text-[color:var(--ink)] shadow-[0_6px_24px_rgba(40,52,90,0.04)] focus-visible:border-[color:var(--gold)] focus-visible:ring-[color:var(--gold)]/25 sm:h-14 sm:pl-12 sm:text-base sm:shadow-[0_8px_30px_rgba(40,52,90,0.05)]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <label htmlFor="email" className="menu-kicker block text-xs sm:text-sm">
+                      Email (optional)
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--ink-soft)] sm:left-4" />
+                      <Input
+                        id="email"
+                        type="email"
+                        inputMode="email"
+                        autoComplete="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
                         className="h-12 rounded-full border-[color:var(--border)] bg-white/78 pl-10 pr-4 text-sm text-[color:var(--ink)] shadow-[0_6px_24px_rgba(40,52,90,0.04)] focus-visible:border-[color:var(--gold)] focus-visible:ring-[color:var(--gold)]/25 sm:h-14 sm:pl-12 sm:text-base sm:shadow-[0_8px_30px_rgba(40,52,90,0.05)]"
                       />
                     </div>

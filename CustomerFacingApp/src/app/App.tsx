@@ -7,6 +7,7 @@ import { Toaster } from "./components/ui/sonner";
 import type { FlavorPreferences } from "./types";
 import {
   fetchCustomerProfile,
+  saveCustomerContact,
   saveCustomerPreferences,
 } from "./services/api";
 import { getFallbackCustomerName } from "./lib/customerProfiles";
@@ -17,6 +18,7 @@ export default function App() {
   const [appState, setAppState] = useState<AppState>("login");
   const [postQuizState, setPostQuizState] = useState<"qr-scan" | "ordering">("qr-scan");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [email, setEmail] = useState("");
   const [userName, setUserName] = useState("");
   const [tableNumber, setTableNumber] = useState("");
   const [flavorPreferences, setFlavorPreferences] = useState<FlavorPreferences | undefined>();
@@ -29,13 +31,15 @@ export default function App() {
     setAppState("login");
     setPostQuizState("qr-scan");
     setPhoneNumber("");
+    setEmail("");
     setUserName("");
     setTableNumber("");
     setFlavorPreferences(undefined);
   };
 
-  const handleLogin = async (phone: string) => {
+  const handleLogin = async (phone: string, nextEmail?: string) => {
     setPhoneNumber(phone);
+    setEmail(nextEmail ?? "");
 
     const profile = await fetchCustomerProfile(phone);
     const resolvedName = profile?.fullName || getFallbackCustomerName(phone);
@@ -43,6 +47,18 @@ export default function App() {
 
     if (profile?.loyaltyProfile) {
       setUserName(profile.loyaltyProfile.name);
+    }
+
+    if (nextEmail && nextEmail.trim().length > 0) {
+      try {
+        await saveCustomerContact({
+          phoneNumber: phone,
+          fullName: profile?.fullName ?? resolvedName,
+          email: nextEmail.trim(),
+        });
+      } catch {
+        // Best-effort: customer can still proceed without storing email.
+      }
     }
 
     if (profile?.flavorProfile) {
@@ -60,6 +76,7 @@ export default function App() {
     await saveCustomerPreferences({
       phoneNumber,
       fullName: userName || "Guest",
+      email: email.trim().length > 0 ? email.trim() : undefined,
       flavorProfile: preferences,
     });
     setAppState(postQuizState);

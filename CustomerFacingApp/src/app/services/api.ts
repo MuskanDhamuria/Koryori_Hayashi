@@ -40,6 +40,7 @@ interface BackendLoyaltyResponse {
   user: {
     fullName: string;
     phoneNumber: string;
+    email: string | null;
     flavorProfile: FlavorPreferences | null;
     referralCode: string | null;
     isBirthday: boolean;
@@ -52,6 +53,7 @@ interface BackendLoyaltyResponse {
 
 export interface CustomerProfile {
   phoneNumber?: string;
+  email?: string;
   fullName: string;
   flavorProfile: FlavorPreferences | null;
   loyaltyProfile: LoyaltyProfile | null;
@@ -142,6 +144,7 @@ export async function fetchCustomerProfile(phoneNumber: string): Promise<Custome
 
     return {
       phoneNumber,
+      email: response.user.email ?? undefined,
       fullName: response.user.fullName,
       flavorProfile: response.user.flavorProfile,
       loyaltyProfile: {
@@ -157,9 +160,43 @@ export async function fetchCustomerProfile(phoneNumber: string): Promise<Custome
   }
 }
 
+export async function saveCustomerContact(input: {
+  phoneNumber: string;
+  fullName?: string;
+  email?: string;
+}): Promise<CustomerProfile> {
+  const response = await apiFetch<BackendLoyaltyResponse>(
+    `/api/loyalty/${encodeURIComponent(input.phoneNumber)}/contact`,
+    {
+      method: "PUT",
+      body: JSON.stringify({
+        fullName: input.fullName,
+        email: input.email,
+      }),
+    },
+  );
+
+  return {
+    phoneNumber: input.phoneNumber,
+    email: response.user.email ?? undefined,
+    fullName: response.user.fullName,
+    flavorProfile: response.user.flavorProfile,
+    loyaltyProfile: response.loyaltyAccount
+      ? {
+          tier: response.loyaltyAccount.tier ?? "silver",
+          points: response.loyaltyAccount.pointsBalance ?? 0,
+          name: response.user.fullName,
+          isBirthday: response.user.isBirthday,
+          referralCode: response.user.referralCode ?? "",
+        }
+      : null,
+  };
+}
+
 export async function saveCustomerPreferences(input: {
   phoneNumber: string;
   fullName: string;
+  email?: string;
   flavorProfile: FlavorPreferences;
 }): Promise<CustomerProfile> {
   const response = await apiFetch<BackendLoyaltyResponse>(
@@ -168,6 +205,7 @@ export async function saveCustomerPreferences(input: {
       method: "PUT",
       body: JSON.stringify({
         fullName: input.fullName,
+        email: input.email,
         flavorProfile: input.flavorProfile,
       }),
     },
@@ -175,6 +213,7 @@ export async function saveCustomerPreferences(input: {
 
   return {
     phoneNumber: input.phoneNumber,
+    email: response.user.email ?? undefined,
     fullName: response.user.fullName,
     flavorProfile: response.user.flavorProfile,
     loyaltyProfile: {

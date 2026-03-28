@@ -85,6 +85,7 @@ export const loyaltyRoutes: FastifyPluginAsync = async (app) => {
         id: user.id,
         fullName: metadata.fullName,
         phoneNumber: user.phoneNumber,
+        email: user.email,
         flavorProfile: user.flavorProfile,
         referralCode: metadata.referralCode,
         isBirthday: metadata.isBirthday,
@@ -103,6 +104,7 @@ export const loyaltyRoutes: FastifyPluginAsync = async (app) => {
     const payload = z
       .object({
         fullName: z.string().min(1).optional(),
+        email: z.string().trim().email().optional(),
         flavorProfile: z.object({
           umamiVsCitrus: z.enum(["umami", "citrus", "balanced"]),
           refreshingVsHearty: z.enum(["refreshing", "hearty", "balanced"]),
@@ -120,11 +122,13 @@ export const loyaltyRoutes: FastifyPluginAsync = async (app) => {
       where: { phoneNumber },
       update: {
         fullName: metadata.fullName,
+        email: payload.email,
         flavorProfile: payload.flavorProfile,
       },
       create: {
         phoneNumber,
         fullName: metadata.fullName,
+        email: payload.email,
         role: "CUSTOMER",
         flavorProfile: payload.flavorProfile,
         referralCode: metadata.referralCode,
@@ -139,6 +143,58 @@ export const loyaltyRoutes: FastifyPluginAsync = async (app) => {
         id: user.id,
         fullName: user.fullName,
         phoneNumber: user.phoneNumber,
+        email: user.email,
+        flavorProfile: user.flavorProfile,
+        referralCode: user.referralCode ?? metadata.referralCode,
+        isBirthday: metadata.isBirthday,
+      },
+      loyaltyAccount: user.loyaltyAccount
+        ? {
+            ...user.loyaltyAccount,
+            tier: normalizeTier(user.loyaltyAccount.tier),
+          }
+        : null,
+    };
+  });
+
+  app.put("/:phoneNumber/contact", async (request) => {
+    const { phoneNumber } = request.params as { phoneNumber: string };
+    const payload = z
+      .object({
+        fullName: z.string().min(1).optional(),
+        email: z.string().trim().email().optional(),
+      })
+      .parse(request.body);
+
+    const metadata = resolveCustomerMetadata({
+      phoneNumber,
+      fullName: payload.fullName,
+    });
+
+    const user = await prisma.user.upsert({
+      where: { phoneNumber },
+      update: {
+        fullName: metadata.fullName,
+        email: payload.email,
+      },
+      create: {
+        phoneNumber,
+        fullName: metadata.fullName,
+        email: payload.email,
+        role: "CUSTOMER",
+        referralCode: metadata.referralCode,
+      },
+      include: {
+        loyaltyAccount: true,
+      },
+    });
+
+    return {
+      user: {
+        id: user.id,
+        fullName: user.fullName,
+        phoneNumber: user.phoneNumber,
+        email: user.email,
         flavorProfile: user.flavorProfile,
         referralCode: user.referralCode ?? metadata.referralCode,
         isBirthday: metadata.isBirthday,
