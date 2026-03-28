@@ -1,0 +1,12 @@
+{
+  "id": "sample-welcome",
+  "title": "Promotion: New Menu Item",
+  "subject": "A little something picked for you",
+  "tags": [
+    "category:ramen",
+    "weather:rainy"
+  ],
+  "messageText": "Hi {{name}},\n\nBased on what you’ve ordered before, we thought you might enjoy our new menu item!\n\nSee the poster here: {{posterUrl}}\n\n Hope to see you soon!\n\nBest,\nThe Koryori Team",
+  "messageHtml": "<p>Hi {{name}},</p><p>Based on what you’ve ordered before, we thought you might enjoy something new this week.</p><p>See the poster here: <a href=\"{{posterUrl}}\">open</a></p>",
+  "posterUrl": "https://www.canva.com/design/DAHFN_db2kY/JFYq8dmbo2PF8qSw0P0K9g/view?utm_content=DAHFN_db2kY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h5a0d51a059"
+}

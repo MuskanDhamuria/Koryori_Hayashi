@@ -16,6 +16,7 @@ import { integrationRoutes } from "./modules/integrations/routes.js";
 import { customerRoutes } from "./modules/customer/routes.js";
 import { tablesRoutes } from "./modules/tables/routes.js";
 import { digitalTwinRoutes } from "./modules/digitalTwin/routes.js";
+import { marketingRoutes } from "./modules/marketing/routes.js";
 
 export function buildApp() {
   const allowedOrigins = new Set([
@@ -66,6 +67,7 @@ export function buildApp() {
   app.register(customerRoutes, { prefix: "/api/customer" });
   app.register(tablesRoutes, { prefix: "/api/tables" });
   app.register(digitalTwinRoutes, { prefix: "/api/digital-twin" });
+  app.register(marketingRoutes, { prefix: "/api/marketing" });
 
   return app;
 }

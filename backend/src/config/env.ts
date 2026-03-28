@@ -19,6 +19,12 @@ const envSchema = z.object({
   GEMINI_TIMEOUT_MS: z.coerce.number().int().positive().max(120000).default(60000),
   SYNC_STATE_PATH: z.string().default(".data/spreadsheet-sync.json"),
   DIGITAL_TWIN_TRAINING_CSV_PATH: z.string().min(1).optional(),
+  MARKETING_CONTENT_PATH: z.string().default("../Marketing"),
+  EMAILJS_SERVICE_ID: z.string().min(1).optional(),
+  EMAILJS_TEMPLATE_ID: z.string().min(1).optional(),
+  EMAILJS_PUBLIC_KEY: z.string().min(1).optional(),
+  EMAILJS_PRIVATE_KEY: z.string().min(1).optional(),
+  EMAILJS_API_URL: z.string().url().default("https://api.emailjs.com/api/v1.0/email/send"),
 });
 
 const parsed = envSchema.safeParse(process.env);

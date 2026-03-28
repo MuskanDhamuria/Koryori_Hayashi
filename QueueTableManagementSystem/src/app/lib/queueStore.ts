@@ -118,7 +118,8 @@ class QueueStore {
   }
 
   getEntry(id: string) {
-    return this.queue.find(entry => entry.id === id);
+    const entry = this.queue.find(entry => entry.id === id);
+    return entry ? { ...entry } : undefined;
   }
 
   addToQueue(phoneNumber: string, groupSize: number): QueueEntry {
@@ -419,7 +420,7 @@ class QueueStore {
   }
 
   private startSimulation() {
-    // Refresh estimates and clear tables every 30 seconds.
+    // Refresh estimates and clear tables periodically to keep remaining wait time decreasing in the UI.
     setInterval(() => {
       const now = new Date();
 
@@ -437,7 +438,7 @@ class QueueStore {
 
       this.captureMetrics(now);
       this.notify();
-    }, 30000);
+    }, 10000);
   }
 }
 
