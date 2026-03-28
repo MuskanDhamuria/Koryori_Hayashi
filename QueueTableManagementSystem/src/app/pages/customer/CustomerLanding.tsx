@@ -23,7 +23,7 @@ export function CustomerLanding() {
               <div>
                 <h1 className="text-xl leading-tight">Smart Queue</h1>
                 <p className="text-xs text-muted-foreground">
-                  Real-time updates • instant notifications
+                  Real-time updates
                 </p>
               </div>
             </div>
@@ -47,7 +47,7 @@ export function CustomerLanding() {
               <div className="flex-1">
                 <h2 className="text-xl mb-2">Join in seconds</h2>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Scan the restaurant QR or tap below to get an AI-estimated wait time.
+                  Scan the restaurant QR or tap below to get an estimated wait time.
                 </p>
                 <Button
                   onClick={() => navigate('/join')}
@@ -72,13 +72,13 @@ export function CustomerLanding() {
             >
               <Card className="p-4 bg-white/60 backdrop-blur hover:bg-white/70 transition-colors dark:bg-slate-950/40 dark:hover:bg-slate-950/55 dark:border-slate-800">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-blue-300 flex items-center justify-center flex-shrink-0">
                     <Clock className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
                     <h3 className="mb-1">Real-time Updates</h3>
                     <p className="text-sm text-muted-foreground">
-                      AI-powered predictions based on current conditions.
+                      Predictions based on current conditions.
                     </p>
                   </div>
                 </div>
@@ -92,13 +92,13 @@ export function CustomerLanding() {
             >
               <Card className="p-4 bg-white/60 backdrop-blur hover:bg-white/70 transition-colors dark:bg-slate-950/40 dark:hover:bg-slate-950/55 dark:border-slate-800">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                    <Bell className="w-5 h-5 text-purple-600" />
+                  <div className="w-10 h-10 rounded-full bg-purple-300 flex items-center justify-center flex-shrink-0">
+                    <Bell className="w-5 h-5 text-purple-700" />
                   </div>
                   <div>
                     <h3 className="mb-1">Smart Notifications</h3>
                     <p className="text-sm text-muted-foreground">
-                      Get alerted when your table is ready—no more hovering by the counter.
+                      Get alerted when your table is ready. No more waiting by the counter.
                     </p>
                   </div>
                 </div>
@@ -112,8 +112,8 @@ export function CustomerLanding() {
             >
               <Card className="p-4 bg-white/60 backdrop-blur hover:bg-white/70 transition-colors dark:bg-slate-950/40 dark:hover:bg-slate-950/55 dark:border-slate-800">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                    <Users className="w-5 h-5 text-green-600" />
+                  <div className="w-10 h-10 rounded-full bg-green-300 flex items-center justify-center flex-shrink-0">
+                    <Users className="w-5 h-5 text-green-700" />
                   </div>
                   <div>
                     <h3 className="mb-1">Optimized Seating</h3>

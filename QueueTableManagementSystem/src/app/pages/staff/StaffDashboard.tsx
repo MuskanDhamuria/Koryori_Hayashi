@@ -274,7 +274,7 @@ export function StaffDashboard() {
                           <Card className={`p-4 bg-white/80 backdrop-blur transition-all dark:bg-slate-950/50 dark:border-slate-800 ${isSelected ? 'ring-2 ring-blue-600' : ''}`}>
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex items-start gap-4 flex-1">
-                                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                <div className="w-12 h-12 rounded-full bg-blue-400 flex items-center justify-center flex-shrink-0">
                                   <span className="text-xl">#{party.position}</span>
                                 </div>
                                 <div className="flex-1">
@@ -396,8 +396,8 @@ export function StaffDashboard() {
                     <Card key={table.id} className="p-4 bg-green-50 border-green-200">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="mb-1">Table {table.id}</p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="mb-1 text-black font-bold">Table {table.id}</p>
+                          <p className="text-sm text-black">
                             Capacity: {table.capacity} people
                           </p>
                         </div>
@@ -426,8 +426,8 @@ export function StaffDashboard() {
                       <Card key={table.id} className="p-4 bg-orange-50 border-orange-200">
                         <div className="flex items-center justify-between mb-3">
                           <div>
-                            <p className="mb-1">Table {table.id}</p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="mb-1 text-black font-bold">Table {table.id}</p>
+                            <p className="text-sm text-black">
                               Party of {party.size} • {elapsed} min elapsed
                             </p>
                           </div>
@@ -436,7 +436,7 @@ export function StaffDashboard() {
                           </Badge>
                         </div>
                         <div className="flex items-center justify-between">
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-black">
                             Est. {remaining} min remaining
                           </p>
                           <Button

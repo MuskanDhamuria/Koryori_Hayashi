@@ -123,14 +123,14 @@ export function QueueStatus() {
 
                 <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                   <TrendingDown className="w-4 h-4 text-green-600" />
-                  <span>AI-predicted based on current conditions</span>
+                  <span>Predicted based on current conditions</span>
                 </div>
               </Card>
 
               <div className="grid grid-cols-2 gap-4">
                 <Card className="p-4 bg-white/80 backdrop-blur shadow-sm dark:bg-slate-950/50 dark:border-slate-800">
                   <div className="flex flex-col items-center text-center">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-3">
+                    <div className="w-12 h-12 rounded-full bg-blue-400 flex items-center justify-center mb-3">
                       <span className="text-2xl">#</span>
                     </div>
                     <div className="text-3xl mb-1">{entry.position}</div>
@@ -140,8 +140,8 @@ export function QueueStatus() {
 
                 <Card className="p-4 bg-white/80 backdrop-blur shadow-sm dark:bg-slate-950/50 dark:border-slate-800">
                   <div className="flex flex-col items-center text-center">
-                    <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-3">
-                      <Users className="w-6 h-6 text-purple-600" />
+                    <div className="w-12 h-12 rounded-full bg-purple-300 flex items-center justify-center mb-3">
+                      <Users className="w-6 h-6 text-purple-700" />
                     </div>
                     <div className="text-3xl mb-1">{peopleAhead}</div>
                     <div className="text-sm text-muted-foreground">
