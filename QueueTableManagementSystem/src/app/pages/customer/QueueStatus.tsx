@@ -17,6 +17,8 @@ export function QueueStatus() {
   useEffect(() => {
     if (!queueId) return;
 
+    const unwatch = queueStore.watchEntry(queueId);
+
     // Initial load
     const initial = queueStore.getEntry(queueId);
     lastStatusRef.current = initial?.status;
@@ -38,7 +40,10 @@ export function QueueStatus() {
       }
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      unwatch();
+    };
   }, [queueId]);
 
   const waitProgress = useMemo(() => {

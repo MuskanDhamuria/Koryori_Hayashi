@@ -7,6 +7,7 @@ import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { queueStore } from '../../lib/queueStore';
 import { motion } from 'motion/react';
+import { toast } from 'sonner';
 
 export function QueueJoin() {
   const navigate = useNavigate();
@@ -14,15 +15,20 @@ export function QueueJoin() {
   const [groupSize, setGroupSize] = useState<number>(2);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      const entry = queueStore.addToQueue(phoneNumber, groupSize);
+    try {
+      const entry = await queueStore.addToQueue(phoneNumber, groupSize);
       navigate(`/status/${entry.id}`);
-    }, 500);
+    } catch (error) {
+      toast.error('Unable to join queue', {
+        description: error instanceof Error ? error.message : 'Please try again.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const groupSizes = [1, 2, 3, 4, 5, 6, 7, 8];

@@ -28,16 +28,22 @@ export function StaffDashboard() {
   const [tables, setTables] = useState<Table[]>([]);
   const [selectedParty, setSelectedParty] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(Boolean(queueStore.getStaffToken()));
 
   useEffect(() => {
     // Initial load
     setQueue(queueStore.getQueue());
     setTables(queueStore.getTables());
+    setIsLoggedIn(Boolean(queueStore.getStaffToken()));
 
     // Subscribe to updates
     const unsubscribe = queueStore.subscribe(() => {
       setQueue(queueStore.getQueue());
       setTables(queueStore.getTables());
+      setIsLoggedIn(Boolean(queueStore.getStaffToken()));
     });
 
     return () => {
@@ -45,31 +51,79 @@ export function StaffDashboard() {
     };
   }, []);
 
-  const handleMarkReady = (queueId: string) => {
-    queueStore.markAsReady(queueId);
-    toast.success('Customer notified', {
-      description: 'They will be alerted that their table is ready',
-    });
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+
+    try {
+      await queueStore.staffLogin(email, password);
+      toast.success('Logged in', {
+        description: 'Queue state is now synced with the backend',
+      });
+    } catch (error) {
+      toast.error('Login failed', {
+        description: error instanceof Error ? error.message : 'Please check your credentials.',
+      });
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
-  const handleSeatParty = (queueId: string, tableId: number) => {
-    queueStore.seatParty(queueId, tableId);
+  const handleLogout = () => {
+    queueStore.setStaffToken(null);
     setSelectedParty(null);
-    toast.success('Party seated', {
-      description: `Successfully seated at Table ${tableId}`,
-    });
+    toast.success('Logged out');
   };
 
-  const handleClearTable = (tableId: number) => {
-    queueStore.clearTable(tableId);
-    toast.success('Table cleared', {
-      description: 'Table is now available',
-    });
+  const handleMarkReady = async (queueId: string) => {
+    try {
+      await queueStore.markAsReady(queueId);
+      toast.success('Customer notified', {
+        description: 'They will be alerted that their table is ready',
+      });
+    } catch (error) {
+      toast.error('Unable to mark ready', {
+        description: error instanceof Error ? error.message : 'Please try again.',
+      });
+    }
   };
 
-  const handleRemoveFromQueue = (queueId: string) => {
-    queueStore.removeFromQueue(queueId);
-    toast.success('Removed from queue');
+  const handleSeatParty = async (queueId: string, tableId: number) => {
+    try {
+      await queueStore.seatParty(queueId, tableId);
+      setSelectedParty(null);
+      toast.success('Party seated', {
+        description: `Successfully seated at Table ${tableId}`,
+      });
+    } catch (error) {
+      toast.error('Unable to seat party', {
+        description: error instanceof Error ? error.message : 'Please try again.',
+      });
+    }
+  };
+
+  const handleClearTable = async (tableId: number) => {
+    try {
+      await queueStore.clearTable(tableId);
+      toast.success('Table cleared', {
+        description: 'Table is now available',
+      });
+    } catch (error) {
+      toast.error('Unable to clear table', {
+        description: error instanceof Error ? error.message : 'Please try again.',
+      });
+    }
+  };
+
+  const handleRemoveFromQueue = async (queueId: string) => {
+    try {
+      await queueStore.removeFromQueue(queueId);
+      toast.success('Removed from queue');
+    } catch (error) {
+      toast.error('Unable to remove from queue', {
+        description: error instanceof Error ? error.message : 'Please try again.',
+      });
+    }
   };
 
   const waitingParties = queue.filter(e => e.status === 'waiting');
@@ -111,6 +165,49 @@ export function StaffDashboard() {
             Customer View
           </Button>
         </div>
+
+        {!isLoggedIn && (
+          <Card className="p-5 mb-6 bg-white/80 backdrop-blur dark:bg-slate-950/50 dark:border-slate-800">
+            <div className="flex items-start gap-3 mb-4">
+              <AlertCircle className="w-5 h-5 text-orange-600 mt-0.5" />
+              <div>
+                <p className="mb-1">Staff login required</p>
+                <p className="text-sm text-muted-foreground">
+                  Log in to sync the live queue state from the backend and perform staff actions.
+                </p>
+              </div>
+            </div>
+            <form onSubmit={handleLogin} className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <Input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="staff@example.com"
+                type="email"
+                autoComplete="email"
+                required
+              />
+              <Input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                type="password"
+                autoComplete="current-password"
+                required
+              />
+              <Button type="submit" disabled={isLoggingIn}>
+                {isLoggingIn ? 'Signing in...' : 'Sign in'}
+              </Button>
+            </form>
+          </Card>
+        )}
+
+        {isLoggedIn && (
+          <div className="flex justify-end mb-6">
+            <Button variant="outline" onClick={handleLogout}>
+              Log out
+            </Button>
+          </div>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
