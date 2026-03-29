@@ -1,0 +1,11 @@
+{
+  "id": "eggs",
+  "title": "eggs",
+  "subject": "eggs",
+  "tags": [
+    "category:desserts"
+  ],
+  "messageText": "Hi {{name}}!\n\nNew item!!\n\n{{posterUrl}}\n\nlove,\nmk",
+  "messageHtml": "<p>Hi {{name}}!</p><p>New item!!</p><p>love,<br/>mk</p>",
+  "posterUrl": "https://www.bing.com/search?pglt=427&q=eggs&cvid=940725524df1456d8c480c4311534123&gs_lcrp=EgRlZGdlKgYIABBFGDkyBggAEEUYOTIGCAEQABhAMgYIAhAAGEAyBggDEAAYQDIGCAQQABhAMgYIBRAAGEAyBggGEAAYQDIGCAcQABhAMgYICBAAGEDSAQc5OTlqMGoxqAIIsAIB&FORM=ANNTA1&PC=LCTS&ntref=1"
+}

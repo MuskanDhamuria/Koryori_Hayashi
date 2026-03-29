@@ -17,6 +17,7 @@ import { ExportButton } from './components/ExportButton';
 import { ComparisonView } from './components/ComparisonView';
 import { PricingStrategy } from './components/PricingStrategy';
 import { AiAssistantPanel } from './components/AiAssistantPanel';
+import { MarketingCampaigns } from './components/MarketingCampaigns';
 import {
   DollarSign,
   TrendingUp,
@@ -31,7 +32,8 @@ import {
   Target,
   Zap,
   ArrowUpDown,
-  MessageSquare
+  MessageSquare,
+  Megaphone
 } from 'lucide-react';
 import {
   fetchDashboardAnalytics,
@@ -364,6 +366,10 @@ export default function App() {
               <ArrowUpDown className="h-4 w-4" />
               Compare
             </TabsTrigger>
+            <TabsTrigger value="marketing" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-sky-600 data-[state=active]:text-white rounded-lg text-slate-400">
+              <Megaphone className="h-4 w-4" />
+              Marketing
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -614,6 +620,10 @@ export default function App() {
 
           <TabsContent value="compare" className="space-y-4">
             <ComparisonView data={comparisonData} />
+          </TabsContent>
+
+          <TabsContent value="marketing" className="space-y-4">
+            <MarketingCampaigns token={authToken} />
           </TabsContent>
         </Tabs>
 

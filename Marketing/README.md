@@ -34,23 +34,31 @@ Campaign tags are matched against a customer's order history. The backend derive
 - `item:<menuItemId>`
 - `category:<categorySlug>`
 - `weather:<weatherTag>` (e.g. `weather:hot`, `weather:rainy`)
+- `flavor:<flavorTag>` (e.g. `flavor:spicy`, `flavor:umami`)
 
 You can also use shorthand tags:
 
 - `<categorySlug>` (same as `category:<slug>`)
 - `<weatherTag>` (same as `weather:<tag>`)
+- `<flavorTag>` (same as `flavor:<tag>`)
 
 If a campaign has an empty `tags` array, it is sent to **all customers with an email**.
 
+You can also force this behaviour by adding the tag `audience:all`.
+
 ## Backend endpoints
 
-- `GET /api/marketing/campaigns` - list campaigns loaded from `Marketing/campaigns`
-- `POST /api/marketing/campaigns/:id/send` - send a campaign via EmailJS (supports `dryRun`)
+- `GET /api/marketing/campaigns` - list campaigns loaded from `Marketing/campaigns` (**staff auth required**)
+- `GET /api/marketing/campaigns/:id` - fetch a single campaign (**staff auth required**)
+- `POST /api/marketing/campaigns` - create/update a campaign JSON file (**staff auth required**)
+- `GET /api/marketing/tag-options` - tag suggestions from the DB (**staff auth required**)
+- `POST /api/marketing/campaigns/:id/send` - send a campaign via EmailJS (supports `dryRun`, **staff auth required**)
 
 Example (dry run, returns matched recipients without sending):
 
 ```bash
 curl -X POST http://localhost:4000/api/marketing/campaigns/sample-welcome/send \
+  -H "Authorization: Bearer <staff-token>" \
   -H "Content-Type: application/json" \
   -d "{\"dryRun\": true, \"lookbackDays\": 90, \"limit\": 200}"
 ```

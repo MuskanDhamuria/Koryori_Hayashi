@@ -2,6 +2,7 @@ import { z } from "zod";
 import { prisma } from "../../lib/prisma.js";
 import { buildOrderLineItems, calculateOrderPricing, getAvailableDiscounts, getBirthdayDiscountPercent, getSelectedDiscount, getTierFromPoints, getTierMultiplier, } from "./orderHelpers.js";
 import { normalizeTier, resolveCustomerMetadata } from "../customer/profileMetadata.js";
+import { recordSuccess } from "../customer/banditStore.js";
 const createOrderSchema = z.object({
     customerName: z.string().min(1),
     phoneNumber: z.string().min(6).optional(),
@@ -159,7 +160,6 @@ export const ordersRoutes = async (app) => {
                         where: { phoneNumber: payload.phoneNumber },
                         update: {
                             fullName: context.customerMetadata.fullName,
-                            referralCode: context.customerMetadata.referralCode,
                         },
                         create: {
                             phoneNumber: payload.phoneNumber,
@@ -208,6 +208,11 @@ export const ordersRoutes = async (app) => {
                         table: true,
                     },
                 });
+                if (payload.phoneNumber) {
+                    for (const item of context.lineItems) {
+                        recordSuccess(payload.phoneNumber, item.menuItemId, item.quantity);
+                    }
+                }
                 let loyalty = null;
                 if (customer) {
                     const earnedPoints = Math.floor(context.pricing.totalAmount * getTierMultiplier(currentTier));

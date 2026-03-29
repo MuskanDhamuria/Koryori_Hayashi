@@ -40,7 +40,9 @@ export function StaffDashboard() {
       setTables(queueStore.getTables());
     });
 
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   const handleMarkReady = (queueId: string) => {

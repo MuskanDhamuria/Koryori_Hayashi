@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowRight, Mail, Phone, UtensilsCrossed } from "lucide-react";
+import { ArrowRight, Mail, Phone, User, UtensilsCrossed } from "lucide-react";
 import { toast } from "sonner";
 import { fetchQuickAccessProfiles, type CustomerProfile } from "../services/api";
 import { QUICK_ACCESS_NUMBERS } from "../lib/customerProfiles";
@@ -10,7 +10,7 @@ import { Skeleton } from "./ui/skeleton";
 import { SeigaihaPattern } from "./JapanesePattern";
 
 interface MobileLoginProps {
-  onLogin: (phoneNumber: string, email?: string) => Promise<void> | void;
+  onLogin: (phoneNumber: string, email?: string, fullName?: string) => Promise<void> | void;
 }
 
 function getTierBadgeClasses(tier: string) {
@@ -39,6 +39,7 @@ function getTierLabel(tier: string) {
 
 export function MobileLogin({ onLogin }: MobileLoginProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isQuickAccessLoading, setIsQuickAccessLoading] = useState(true);
@@ -64,9 +65,25 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
     void loadQuickAccessProfiles();
   }, []);
 
-  const handleLoginAttempt = async (nextPhoneNumber: string, nextEmail?: string) => {
+  const handleLoginAttempt = async (
+    nextPhoneNumber: string,
+    nextEmail?: string,
+    nextFullName?: string,
+  ) => {
     if (!nextPhoneNumber || nextPhoneNumber.length < 10) {
       toast.error("Please enter a valid phone number");
+      return;
+    }
+
+    const trimmedName = (nextFullName ?? "").trim();
+    const nameValue = trimmedName.length === 0 ? undefined : trimmedName;
+    if (nameValue && nameValue.length < 2) {
+      toast.error("Please enter your name");
+      return;
+    }
+
+    if (nameValue && nameValue.length > 60) {
+      toast.error("Name is too long");
       return;
     }
 
@@ -80,7 +97,7 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
     setIsLoading(true);
 
     try {
-      await onLogin(nextPhoneNumber, emailValue);
+      await onLogin(nextPhoneNumber, emailValue, nameValue);
       toast.success("Welcome back");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to sign in");
@@ -91,12 +108,12 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    await handleLoginAttempt(phoneNumber, email);
+    await handleLoginAttempt(phoneNumber, email, fullName);
   };
 
   const handleQuickLogin = async (number: string) => {
     setPhoneNumber(number);
-    await handleLoginAttempt(number, email);
+    await handleLoginAttempt(number, email, fullName);
   };
 
   return (
@@ -152,6 +169,24 @@ export function MobileLogin({ onLogin }: MobileLoginProps) {
                         placeholder="+65 8123 4567"
                         value={phoneNumber}
                         onChange={(event) => setPhoneNumber(event.target.value)}
+                        className="h-12 rounded-full border-[color:var(--border)] bg-white/78 pl-10 pr-4 text-sm text-[color:var(--ink)] shadow-[0_6px_24px_rgba(40,52,90,0.04)] focus-visible:border-[color:var(--gold)] focus-visible:ring-[color:var(--gold)]/25 sm:h-14 sm:pl-12 sm:text-base sm:shadow-[0_8px_30px_rgba(40,52,90,0.05)]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <label htmlFor="name" className="menu-kicker block text-xs sm:text-sm">
+                      Name (optional)
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--ink-soft)] sm:left-4" />
+                      <Input
+                        id="name"
+                        type="text"
+                        autoComplete="name"
+                        placeholder="Your name"
+                        value={fullName}
+                        onChange={(event) => setFullName(event.target.value)}
                         className="h-12 rounded-full border-[color:var(--border)] bg-white/78 pl-10 pr-4 text-sm text-[color:var(--ink)] shadow-[0_6px_24px_rgba(40,52,90,0.04)] focus-visible:border-[color:var(--gold)] focus-visible:ring-[color:var(--gold)]/25 sm:h-14 sm:pl-12 sm:text-base sm:shadow-[0_8px_30px_rgba(40,52,90,0.05)]"
                       />
                     </div>

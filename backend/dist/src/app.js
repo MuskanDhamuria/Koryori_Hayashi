@@ -15,14 +15,18 @@ import { aiRoutes } from "./modules/ai/routes.js";
 import { integrationRoutes } from "./modules/integrations/routes.js";
 import { customerRoutes } from "./modules/customer/routes.js";
 import { tablesRoutes } from "./modules/tables/routes.js";
+import { digitalTwinRoutes } from "./modules/digitalTwin/routes.js";
+import { marketingRoutes } from "./modules/marketing/routes.js";
 export function buildApp() {
     const allowedOrigins = new Set([
         env.CUSTOMER_APP_ORIGIN,
         env.COMPANY_APP_ORIGIN,
         "http://localhost:5173",
         "http://localhost:5174",
+        "http://localhost:5175",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
+        "http://127.0.0.1:5175",
     ]);
     const app = Fastify({
         logger: {
@@ -57,5 +61,7 @@ export function buildApp() {
     app.register(integrationRoutes, { prefix: "/api/integrations" });
     app.register(customerRoutes, { prefix: "/api/customer" });
     app.register(tablesRoutes, { prefix: "/api/tables" });
+    app.register(digitalTwinRoutes, { prefix: "/api/digital-twin" });
+    app.register(marketingRoutes, { prefix: "/api/marketing" });
     return app;
 }
