@@ -6,6 +6,7 @@ import { MenuItem } from "../MenuItem";
 import { RecommendationCard } from "../RecommendationCard";
 import { LoyaltyCard, type LoyaltyProfile } from "../LoyaltyCard";
 import { Button } from "../ui/button";
+import { normalizeMenuCategory } from "../../data/ordering";
 import type { FlavorPreferences, MenuItem as MenuItemType, WeatherData } from "../../types";
 
 const CATEGORY_OPTIONS = [
@@ -57,7 +58,9 @@ export function OrderingCatalog({
 }: OrderingCatalogProps) {
   const activeCategoryLabel =
     CATEGORY_OPTIONS.find((category) => category.id === activeCategory)?.label ?? "Mains";
-  const activeMenuItems = menuItems.filter((item) => item.category === activeCategory);
+  const activeMenuItems = menuItems.filter(
+    (item) => normalizeMenuCategory(item.category) === normalizeMenuCategory(activeCategory),
+  );
 
   if (isLoading) {
     return (

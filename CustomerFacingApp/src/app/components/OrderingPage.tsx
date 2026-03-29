@@ -15,6 +15,7 @@ import {
   getPerfectWeatherMessage,
   getTierFromPoints,
   getWeatherIcon,
+  normalizeMenuCategory,
   mergeMenuImages,
 } from "../data/ordering";
 import { useOrderingExperience } from "../hooks/useOrderingExperience";
@@ -71,7 +72,9 @@ export function OrderingPage({
   useEffect(() => {
     if (menuItems.length > 0) {
       setActiveCategory((currentCategory) =>
-        menuItems.some((item) => item.category === currentCategory)
+        menuItems.some(
+          (item) => normalizeMenuCategory(item.category) === normalizeMenuCategory(currentCategory),
+        )
           ? currentCategory
           : menuItems[0]?.category ?? "mains",
       );
