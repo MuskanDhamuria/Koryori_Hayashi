@@ -35,6 +35,50 @@ function getApiBaseUrl() {
   return apiUrl?.trim() ? apiUrl.trim().replace(/\/+$/, "") : "http://localhost:4000";
 }
 
+export interface StaffLoginResponse {
+  token: string;
+  user: {
+    id: string;
+    email: string | null;
+    fullName: string;
+    role: string;
+  };
+}
+
+export async function staffLogin(email: string, password: string): Promise<StaffLoginResponse> {
+  const baseUrl = getApiBaseUrl();
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+
+  try {
+    const response = await fetch(`${baseUrl}/api/auth/staff-login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      let errorDetail = "";
+      try {
+        const data = (await response.json()) as { message?: string };
+        errorDetail = data?.message ? `: ${data.message}` : "";
+      } catch {
+        // ignore
+      }
+
+      throw new Error(`Login failed (${response.status})${errorDetail}`);
+    }
+
+    return (await response.json()) as StaffLoginResponse;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function runSimulation(input: SimulationInput): Promise<SimulationResult> {
   const baseUrl = getApiBaseUrl();
 

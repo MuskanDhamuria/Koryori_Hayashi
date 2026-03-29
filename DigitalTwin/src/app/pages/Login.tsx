@@ -7,22 +7,32 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Card } from "../components/ui/card";
 import { AnimatedBackground } from "../components/AnimatedBackground";
+import { staffLogin } from "../utils/simulationApi";
+
+const STORAGE_KEY = "koryori-staff-token";
+const authStorage = window.sessionStorage;
 
 export function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Mock login - in production, validate against real API
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const response = await staffLogin(email, password);
+      authStorage.setItem(STORAGE_KEY, response.token);
+      setAuthError("");
       navigate("/dashboard");
-    }, 1000);
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : "Unable to sign in");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -114,7 +124,7 @@ export function Login() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="admin@restaurant.com"
+                    placeholder="you@restaurant.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 h-12 bg-gray-950 border-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-white placeholder:text-gray-600"
@@ -138,14 +148,21 @@ export function Login() {
                   <Input
                     id="password"
                     type="password"
-                    placeholder="••••••••"
+                    placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    minLength={8}
                     className="pl-10 h-12 bg-gray-950 border-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-white placeholder:text-gray-600"
                     required
                   />
                 </div>
               </motion.div>
+
+              {authError ? (
+                <p className="text-sm text-red-300 bg-red-950/30 border border-red-900/40 rounded-lg px-4 py-3">
+                  {authError}
+                </p>
+              ) : null}
 
               {/* Remember & Forgot */}
               <div className="flex items-center justify-between">
@@ -193,21 +210,7 @@ export function Login() {
             </form>
 
             {/* Demo Credentials */}
-            <motion.div 
-              className="mt-6 p-4 rounded-lg bg-blue-950/50 border border-blue-900/50"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-            >
-              <p className="text-sm text-blue-300 font-medium mb-2 flex items-center gap-2">
-                <Sparkles className="h-4 w-4" />
-                Demo Credentials
-              </p>
-              <p className="text-xs text-blue-400/80">
-                Email: admin@restaurant.com<br />
-                Password: Any password
-              </p>
-            </motion.div>
+            
           </Card>
         </motion.div>
 

@@ -1,5 +1,4 @@
 import { Label } from "./ui/label";
-import { Slider } from "./ui/slider";
 import { Input } from "./ui/input";
 import { TrendingUp, Users, DollarSign, Package } from "lucide-react";
 import { motion } from "motion/react";
@@ -213,7 +212,7 @@ export function SimulationInputPanel({
         </div>
       </motion.div>
 
-      {/* Inventory Level Slider */}
+      {/* Inventory Level Input */}
       <motion.div
         className="space-y-3 p-4 rounded-xl bg-gradient-to-br from-blue-900/40 to-cyan-900/40 border border-blue-700/50 relative overflow-hidden group"
         initial={{ opacity: 0, y: 20 }}
@@ -236,14 +235,26 @@ export function SimulationInputPanel({
             {inventoryLevel}%
           </motion.span>
         </div>
-        <Slider
+        <Input
           id="inventory-level"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          type="number"
           min={0}
           max={100}
           step={5}
-          value={[inventoryLevel]}
-          onValueChange={(values) => onInventoryLevelChange(values[0])}
-          className="w-full"
+          value={inventoryLevel}
+          onKeyDown={(e) => {
+            if (e.key === "e" || e.key === "E" || e.key === "+" || e.key === "-" || e.key === ".") {
+              e.preventDefault();
+            }
+          }}
+          onChange={(e) => {
+            const parsed = Number.parseInt(e.target.value, 10);
+            const next = Number.isFinite(parsed) ? Math.min(100, Math.max(0, parsed)) : 0;
+            onInventoryLevelChange(next);
+          }}
+          className="w-full h-12 text-lg font-semibold bg-gray-950 border-blue-700 text-blue-100 placeholder:text-blue-500/50 relative z-10"
         />
         <div className="flex justify-between text-xs text-blue-300/60">
           <span>0%</span>

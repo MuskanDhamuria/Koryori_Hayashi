@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Play, Zap, LogOut, User, Sparkles, Activity, Download } from "lucide-react";
 import { motion } from "motion/react";
@@ -9,6 +9,9 @@ import { SimulationOutputPanel } from "../components/SimulationOutputPanel";
 import { runSimulation, SimulationResult } from "../utils/simulationApi";
 import { AnimatedBackground } from "../components/AnimatedBackground";
 
+const STORAGE_KEY = "koryori-staff-token";
+const authStorage = window.sessionStorage;
+
 export function Dashboard() {
   const navigate = useNavigate();
   const [demandChange, setDemandChange] = useState(0);
@@ -17,6 +20,13 @@ export function Dashboard() {
   const [inventoryLevel, setInventoryLevel] = useState(0);
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const token = authStorage.getItem(STORAGE_KEY) ?? "";
+    if (!token) {
+      navigate("/");
+    }
+  }, [navigate]);
 
   const formatSingaporeTimestamp = (date: Date) => {
     const parts = new Intl.DateTimeFormat("en-GB", {
@@ -77,6 +87,7 @@ export function Dashboard() {
   };
 
   const handleLogout = () => {
+    authStorage.removeItem(STORAGE_KEY);
     navigate("/");
   };
 
