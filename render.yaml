@@ -48,5 +48,4 @@ services:
 
       # Prisma auto-sync on boot (disable if you prefer migrate deploy)
       - key: PRISMA_DB_PUSH_ON_START
-        value: "1"
-
+        value: "0"
