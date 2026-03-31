@@ -3,24 +3,13 @@ import { prisma } from "../../lib/prisma.js";
 
 export const healthRoutes: FastifyPluginAsync = async (app) => {
   app.get("/", async () => {
-    let databaseOk = false;
-    let databaseError: string | null = null;
-
-    try {
-      await prisma.$queryRaw`SELECT 1`;
-      databaseOk = true;
-    } catch (error) {
-      databaseOk = false;
-      databaseError = error instanceof Error ? error.message : "Unknown database error";
-    }
-
     return {
       status: "ok",
       service: "backend",
       timestamp: new Date().toISOString(),
       database: {
-        ok: databaseOk,
-        error: databaseError
+        ok: null,
+        error: null
       }
     };
   });
