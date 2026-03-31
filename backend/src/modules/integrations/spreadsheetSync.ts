@@ -60,6 +60,14 @@ function defaultStatus(): SpreadsheetSyncStatus {
   };
 }
 
+function preserveExistingImageUrl(existingImageUrl: string | null | undefined, nextImageUrl: string | null | undefined) {
+  if (typeof existingImageUrl === "string" && existingImageUrl.trim().length > 0) {
+    return existingImageUrl;
+  }
+
+  return nextImageUrl ?? null;
+}
+
 function asErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Unexpected sync error";
 }
@@ -284,12 +292,18 @@ async function syncMenuItems(rows: MenuRow[]) {
       },
     });
 
+    const existingMenuItem = await prisma.menuItem.findUnique({
+      where: { sku: row.sku },
+      select: { imageUrl: true },
+    });
+    const imageUrl = preserveExistingImageUrl(existingMenuItem?.imageUrl, row.imageUrl);
+
     await prisma.menuItem.upsert({
       where: { sku: row.sku },
       update: {
         name: row.name,
         description: row.description,
-        imageUrl: row.imageUrl,
+        imageUrl,
         price: row.price,
         cost: row.cost,
         categoryId: category.id,
@@ -302,7 +316,7 @@ async function syncMenuItems(rows: MenuRow[]) {
         sku: row.sku,
         name: row.name,
         description: row.description,
-        imageUrl: row.imageUrl,
+        imageUrl,
         price: row.price,
         cost: row.cost,
         categoryId: category.id,
