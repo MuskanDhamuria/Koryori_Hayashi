@@ -37,24 +37,26 @@ export default function App() {
     setFlavorPreferences(undefined);
   };
 
-  const handleLogin = async (phone: string, nextEmail?: string) => {
+  const handleLogin = async (phone: string, nextEmail?: string, nextFullName?: string) => {
     setPhoneNumber(phone);
     setEmail(nextEmail ?? "");
 
     const profile = await fetchCustomerProfile(phone);
-    const resolvedName = profile?.fullName || getFallbackCustomerName(phone);
+    const trimmedName = (nextFullName ?? "").trim();
+    const nameOverride = trimmedName.length > 0 ? trimmedName : undefined;
+
+    const resolvedName = nameOverride || profile?.fullName || getFallbackCustomerName(phone);
     setUserName(resolvedName);
 
-    if (profile?.loyaltyProfile) {
-      setUserName(profile.loyaltyProfile.name);
-    }
+    const emailValue = nextEmail && nextEmail.trim().length > 0 ? nextEmail.trim() : undefined;
+    const shouldPersistName = Boolean(nameOverride);
 
-    if (nextEmail && nextEmail.trim().length > 0) {
+    if (emailValue || shouldPersistName) {
       try {
         await saveCustomerContact({
           phoneNumber: phone,
-          fullName: profile?.fullName ?? resolvedName,
-          email: nextEmail.trim(),
+          fullName: nameOverride ?? profile?.fullName ?? resolvedName,
+          email: emailValue,
         });
       } catch {
         // Best-effort: customer can still proceed without storing email.

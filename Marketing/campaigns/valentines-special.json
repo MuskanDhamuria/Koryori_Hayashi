@@ -1,0 +1,11 @@
+{
+  "id": "valentines-special",
+  "title": "Offer for limited time only",
+  "subject": "Valentines Day PROMO",
+  "tags": [
+    "audience:all"
+  ],
+  "messageText": "Hi {{name}}!\n\nCome down now for our limited time offer! Only for the first 500 customers!\n\n{{posterUrl}}\n\nLove,\nKoryori Hayashi Team",
+  "messageHtml": "<p>Hi {{name}}!</p><p>Come down now for our limited time offer! Only for the first 500 customers!</p><p>{{posterUrl}}</p><p>Love,<br/>Koryori Hayashi Team</p>",
+  "posterUrl": "https://www.facebook.com/RairaikenOfficial/photos/happy-valentines-day-enjoy-two-bowls-of-ramen-with-your-choice-of-ippin-ryori-fo/10158947667352733/"
+}

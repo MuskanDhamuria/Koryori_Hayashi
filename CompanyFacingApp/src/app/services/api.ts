@@ -307,3 +307,89 @@ export async function askDashboardAi(token: string, question: string) {
     body: JSON.stringify({ question }),
   });
 }
+
+export type MarketingCampaignSummary = {
+  id: string;
+  title: string;
+  subject: string;
+  tags: string[];
+  posterPath: string | null;
+  posterUrl: string | null;
+};
+
+export type MarketingCampaignUpsert = {
+  id: string;
+  title: string;
+  subject: string;
+  tags: string[];
+  messageText: string;
+  messageHtml: string;
+  posterUrl?: string;
+};
+
+export async function fetchMarketingCampaigns(token: string) {
+  return apiFetch<{ campaigns: MarketingCampaignSummary[] }>("/api/marketing/campaigns", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export async function fetchMarketingCampaign(token: string, id: string) {
+  return apiFetch<{ campaign: MarketingCampaignUpsert & { posterPath?: string } }>(
+    `/api/marketing/campaigns/${encodeURIComponent(id)}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+}
+
+export async function fetchMarketingTagOptions(token: string) {
+  return apiFetch<{
+    categories: Array<{ slug: string; name: string }>;
+    flavorTags: string[];
+  }>("/api/marketing/tag-options", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export async function upsertMarketingCampaign(token: string, campaign: MarketingCampaignUpsert) {
+  return apiFetch<{ ok: true; campaign: { id: string } }>("/api/marketing/campaigns", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(campaign),
+  });
+}
+
+export async function sendMarketingCampaign(
+  token: string,
+  id: string,
+  payload: { dryRun: boolean; lookbackDays: number; limit: number },
+) {
+  return apiFetch<
+    | {
+        dryRun: true;
+        matched: number;
+        selected: number;
+        recipients: Array<{ id: string; email: string | null; fullName: string }>;
+      }
+    | {
+        matched: number;
+        attempted: number;
+        sent: number;
+        errors: Array<{ email: string; message: string }>;
+      }
+  >(`/api/marketing/campaigns/${encodeURIComponent(id)}/send`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+}

@@ -120,7 +120,7 @@ export const BASE_MENU_ITEMS: MenuItem[] = [
     name: "Kitsune Udon",
     description: "Udon noodles with sweet fried tofu",
     price: 7.8,
-    category: "ramen",
+    category: "udon",
     image: "https://images.unsplash.com/photo-1610554666975-339e1f736bc8",
     isHighMargin: true,
     flavorProfile: { umami: 0.7, citrus: 0.1, refreshing: 0.3, hearty: 0.7 },
@@ -131,7 +131,7 @@ export const BASE_MENU_ITEMS: MenuItem[] = [
     name: "Sukiyaki Beef Udon",
     description: "Udon noodles with sweet soy beef sukiyaki",
     price: 9.8,
-    category: "ramen",
+    category: "udon",
     image: "https://images.unsplash.com/photo-1610554666975-339e1f736bc8",
     isHighMargin: false,
     flavorProfile: { umami: 0.9, citrus: 0.1, refreshing: 0.2, hearty: 0.9 },
@@ -142,7 +142,7 @@ export const BASE_MENU_ITEMS: MenuItem[] = [
     name: "Tempura Udon",
     description: "Udon noodle soup served with crispy tempura",
     price: 11.8,
-    category: "ramen",
+    category: "udon",
     image: "https://images.unsplash.com/photo-1610554666975-339e1f736bc8",
     isHighMargin: true,
     flavorProfile: { umami: 0.8, citrus: 0.1, refreshing: 0.3, hearty: 0.8 },
@@ -326,10 +326,15 @@ export function getTierFromPoints(points: number): LoyaltyProfile["tier"] {
   return "silver";
 }
 
+export function normalizeMenuCategory(category: string) {
+  return category === "ramen" ? "udon" : category;
+}
+
 export function mergeMenuImages(items: MenuItem[]): MenuItem[] {
   const fallbackImageByName = new Map(BASE_MENU_ITEMS.map((item) => [item.name, item.image]));
   return items.map((item) => ({
     ...item,
+    category: normalizeMenuCategory(item.category),
     image: item.image || fallbackImageByName.get(item.name) || "",
   }));
 }

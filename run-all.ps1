@@ -53,6 +53,14 @@ $projects = @(
     @{
         Name = "CompanyFacingApp"
         RelativePath = "CompanyFacingApp"
+    },
+    @{
+        Name = "QueueTableManagementSystem"
+        RelativePath = "QueueTableManagementSystem"
+    },
+    @{
+        Name = "DigitalTwin"
+        RelativePath = "DigitalTwin"
     }
 )
 
@@ -93,7 +101,7 @@ npm run dev
     ) | Out-Null
 }
 
-Write-Host "Started backend, customer app, and company app in separate PowerShell windows." -ForegroundColor Green
+Write-Host "Started backend and all apps in separate PowerShell windows (CustomerFacingApp, CompanyFacingApp, QueueTableManagementSystem, DigitalTwin)." -ForegroundColor Green
 if ($Setup) {
     Write-Host "Setup completed before launch." -ForegroundColor Green
 }
