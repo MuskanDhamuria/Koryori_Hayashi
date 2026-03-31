@@ -22,7 +22,7 @@ WORKDIR /app/backend
 
 ENV NODE_ENV=production
 
-COPY --from=deps /app/backend/node_modules ./node_modules
+COPY --from=build /app/backend/node_modules ./node_modules
 COPY --from=build /app/backend/dist ./dist
 COPY --from=build /app/backend/prisma ./prisma
 COPY --from=build /app/backend/package.json ./package.json
