@@ -40,3 +40,4 @@ backend/.data/
 # Streamlit
 .streamlit/secrets.toml
 Dashboard/.streamlit/secrets.toml
+DEPLOYMENT.md

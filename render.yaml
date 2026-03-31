@@ -1,0 +1,52 @@
+services:
+  - type: web
+    name: koryori-backend
+    runtime: docker
+    plan: free
+    dockerfilePath: backend/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+
+      # --- Required (set these in Render UI) ---
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: SEED_STAFF_EMAIL
+        sync: false
+      - key: SEED_STAFF_PASSWORD
+        sync: false
+      - key: CUSTOMER_APP_ORIGIN
+        sync: false
+      - key: COMPANY_APP_ORIGIN
+        sync: false
+
+      # --- Optional ---
+      - key: QUEUE_APP_ORIGIN
+        sync: false
+      - key: DIGITAL_TWIN_APP_ORIGIN
+        sync: false
+      - key: APP_ORIGINS
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: EMAILJS_SERVICE_ID
+        sync: false
+      - key: EMAILJS_TEMPLATE_ID
+        sync: false
+      - key: EMAILJS_PUBLIC_KEY
+        sync: false
+      - key: EMAILJS_PRIVATE_KEY
+        sync: false
+
+      # Prisma auto-sync on boot (disable if you prefer migrate deploy)
+      - key: PRISMA_DB_PUSH_ON_START
+        value: "1"
+
