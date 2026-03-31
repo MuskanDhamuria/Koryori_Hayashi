@@ -362,6 +362,14 @@ const menuSeed = [
   }
 ];
 
+function preserveExistingImageUrl(existingImageUrl: string | null | undefined, nextImageUrl: string | null | undefined) {
+  if (typeof existingImageUrl === "string" && existingImageUrl.trim().length > 0) {
+    return existingImageUrl;
+  }
+
+  return nextImageUrl ?? null;
+}
+
 async function main() {
   const passwordHash = await bcrypt.hash(env.SEED_STAFF_PASSWORD, 12);
 
@@ -390,12 +398,18 @@ async function main() {
   const skuToId = new Map<string, string>();
 
   for (const item of menuSeed) {
+    const existingMenuItem = await prisma.menuItem.findUnique({
+      where: { sku: item.sku },
+      select: { imageUrl: true }
+    });
+    const imageUrl = preserveExistingImageUrl(existingMenuItem?.imageUrl, item.imageUrl);
+
     const menuItem = await prisma.menuItem.upsert({
       where: { sku: item.sku },
       update: {
         name: item.name,
         description: item.description,
-        imageUrl: item.imageUrl,
+        imageUrl,
         price: item.price,
         cost: item.cost,
         isHighMargin: item.isHighMargin,
@@ -408,7 +422,7 @@ async function main() {
         sku: item.sku,
         name: item.name,
         description: item.description,
-        imageUrl: item.imageUrl,
+        imageUrl,
         price: item.price,
         cost: item.cost,
         isHighMargin: item.isHighMargin,
