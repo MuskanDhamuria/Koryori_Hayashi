@@ -8,12 +8,12 @@
 
 This project is a **comprehensive digital ecosystem** designed for Koryori Hayashi to enhance **operational efficiency, improved customer experience, and revenue optimization** through data, AI, and simulation.
 
-It consists of five core components:
+It consists of five core components with links to their deployed applications:
 
-* **Company-Facing Application** (Operations & Analytics)
-* **Customer-Facing Application** (Customer Experience)
-* **Queue Table Management System** (Table & queue operations)
-* **Digital Twin** (Simulation)
+* **Company-Facing Application** (Operations & Analytics) https://koryori-hayashi-company.vercel.app/
+* **Customer-Facing Application** (Customer Experience) https://koryori-hayashi-customers.vercel.app/
+* **Queue Table Management System** (Table & queue operations) https://koryori-hayashi-qtms.vercel.app/
+* **Digital Twin** (Simulation) https://koryori-hayashi-digital-twin.vercel.app/
 * **Dashboard** (For Samuel- restaurant owner)
 
 
