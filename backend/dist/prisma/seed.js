@@ -383,7 +383,6 @@ async function main() {
             update: {
                 name: item.name,
                 description: item.description,
-                imageUrl: item.imageUrl,
                 price: item.price,
                 cost: item.cost,
                 isHighMargin: item.isHighMargin,

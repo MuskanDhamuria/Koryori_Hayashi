@@ -64,6 +64,14 @@ export function buildApp() {
             callback(new Error(`Origin ${origin} is not allowed`), false);
         },
     });
+    app.get("/", async () => {
+        return {
+            status: "ok",
+            service: "backend",
+            health: "/health",
+            docs: "/docs"
+        };
+    });
     app.register(swaggerPlugin);
     app.register(authPlugin);
     app.register(healthRoutes, { prefix: "/health" });

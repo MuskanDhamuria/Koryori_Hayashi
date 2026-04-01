@@ -1,6 +1,5 @@
 param(
-    [switch]$Setup,
-    [switch]$SkipSeed
+    [switch]$Setup
 )
 
 $ErrorActionPreference = "Stop"
@@ -71,10 +70,6 @@ if ($Setup) {
 
     Invoke-InProject -Name "Backend" -RelativePath "backend" -Command @("npm", "run", "prisma:generate")
     Invoke-InProject -Name "Backend" -RelativePath "backend" -Command @("npm", "run", "prisma:push")
-
-    if (-not $SkipSeed) {
-        Invoke-InProject -Name "Backend" -RelativePath "backend" -Command @("npm", "run", "prisma:seed")
-    }
 }
 
 $backendEnvPath = Join-Path $PSScriptRoot "backend\.env"
