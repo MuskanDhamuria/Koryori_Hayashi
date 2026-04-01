@@ -1,0 +1,11 @@
+{
+  "id": "xmas-funtimes",
+  "title": "SANTA IS HERE!",
+  "subject": "CHRISTMAS PROMOTION",
+  "tags": [
+    "audience:all"
+  ],
+  "messageText": "Hi {{name}}!\n\nHOHOHO! MERRY CHRISTMAS!!\n\nSanta has come early this year! Come down to our restaurant to enjoy 80% off if you dress up as Santa Claus!\n\n{{posterUrl}}\n\nSee you!\n\nLove,\nKoryori Hayashi",
+  "messageHtml": "<p>Hi {{name}}!</p><p>HOHOHO! MERRY CHRISTMAS!!</p><p>Santa has come early this year! Come down to our restaurant to enjoy 80% off if you dress up as Santa Claus!</p><p>{{profileUrl}}</p><p>See you!</p><p>Love,<br/>Koryori Hayashi</p>",
+  "posterUrl": "https://t3.ftcdn.net/jpg/02/98/07/58/360_F_298075849_XSXBshTM589esdqUUHPqpdX95d2QqyKE.jpg"
+}

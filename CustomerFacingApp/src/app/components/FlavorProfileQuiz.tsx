@@ -87,19 +87,7 @@ export function FlavorProfileQuiz({
         <Card className="paper-panel relative w-full gap-0 rounded-2xl border-[color:var(--border)] sm:rounded-3xl lg:rounded-[32px]">
 
           {/* ── Close button — sits inside the top-right corner of the card ── */}
-          {onLogout && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onLogout}
-              className="absolute left-3 top-3 z-50 rounded-full border-[color:var(--border)] bg-white/85 text-[color:var(--ink)] shadow-sm hover:bg-white sm:left-4 sm:top-4"
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Log out</span>
-            </Button>
-          )}
-
+         
           <button
             onClick={onClose}
             className="absolute right-3 top-3 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--ink)] text-[color:var(--paper)] shadow-lg transition-all hover:scale-110 hover:bg-[color:var(--navy)] active:scale-95 sm:right-4 sm:top-4 sm:h-11 sm:w-11"

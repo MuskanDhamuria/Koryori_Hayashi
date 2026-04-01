@@ -19,16 +19,33 @@ import { digitalTwinRoutes } from "./modules/digitalTwin/routes.js";
 import { marketingRoutes } from "./modules/marketing/routes.js";
 import { queueRoutes } from "./modules/queue/routes.js";
 
+function parseCommaSeparatedOrigins(input?: string) {
+  if (!input) return [];
+  return input
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+}
+
 export function buildApp() {
-  const allowedOrigins = new Set([
+  const configuredOrigins = [
     env.CUSTOMER_APP_ORIGIN,
     env.COMPANY_APP_ORIGIN,
+    env.QUEUE_APP_ORIGIN,
+    env.DIGITAL_TWIN_APP_ORIGIN,
+    ...parseCommaSeparatedOrigins(env.APP_ORIGINS),
+  ].filter(Boolean);
+
+  const allowedOrigins = new Set([
+    ...configuredOrigins,
     "http://localhost:5173",
     "http://localhost:5174",
     "http://localhost:5175",
+    "http://localhost:5176",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:5174",
     "http://127.0.0.1:5175",
+    "http://127.0.0.1:5176",
   ]);
 
   const app = Fastify({
@@ -51,6 +68,15 @@ export function buildApp() {
       }
       callback(new Error(`Origin ${origin} is not allowed`), false);
     },
+  });
+
+  app.get("/", async () => {
+    return {
+      status: "ok",
+      service: "backend",
+      health: "/health",
+      docs: "/docs"
+    };
   });
   app.register(swaggerPlugin);
   app.register(authPlugin);

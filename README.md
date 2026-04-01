@@ -8,12 +8,13 @@
 
 This project is a **comprehensive digital ecosystem** designed for Koryori Hayashi to enhance **operational efficiency, improved customer experience, and revenue optimization** through data, AI, and simulation.
 
-It consists of four core components:
+It consists of five core components with links to their deployed applications:
 
-* 🏢 **Company-Facing Application** (Operations & Analytics)
-* 📱 **Customer-Facing Application** (Customer Experience)
-* 🔁 **Digital Twin** (Simulation)
-* 📱 **Dashboard** (For Samuel- restaurant owner)
+* **Company-Facing Application** (Operations & Analytics) https://koryori-hayashi-company.vercel.app/
+* **Customer-Facing Application** (Customer Experience) https://koryori-hayashi-customers.vercel.app/
+* **Queue Table Management System** (Table & queue operations) https://koryori-hayashi-qtms.vercel.app/
+* **Digital Twin** (Simulation) https://koryori-hayashi-digital-twin.vercel.app/
+* **Dashboard** (For Samuel- restaurant owner)
 
 
 ---
@@ -92,7 +93,7 @@ Used for analysis and modeling:
 
 ### 1. Install dependencies
 
-In three terminals:
+In five terminals:
 
 ```powershell
 cd backend
@@ -106,6 +107,16 @@ npm install
 
 ```powershell
 cd CompanyFacingApp
+npm install
+```
+
+```powershell
+cd QueueTableManagementSystem
+npm install
+```
+
+```powershell
+cd DigitalTwin
 npm install
 ```
 
@@ -183,6 +194,20 @@ cd CompanyFacingApp
 npm run dev
 ```
 
+Queue Table Management System:
+
+```powershell
+cd QueueTableManagementSystem
+npm run dev
+```
+
+Digital Twin:
+
+```powershell
+cd DigitalTwin
+npm run dev
+```
+
 Or from the repo root, launch everything with one command:
 
 ```powershell
@@ -202,6 +227,8 @@ If you also want the script to install dependencies and run the backend Prisma s
 - Backend staff integrations: `http://localhost:4000/api/integrations/*`
 - Customer app: `http://localhost:5173`
 - Company app: `http://localhost:5174`
+- Queue Table Management System: `http://localhost:5175` (Vite may pick the next available port)
+- Digital Twin: `http://localhost:5176` (Vite may pick the next available port)
 
 ## Seeded Login
 
