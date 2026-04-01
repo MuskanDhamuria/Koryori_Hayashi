@@ -53,20 +53,6 @@ This document lists the code locations that implement the project’s analytics,
 | Optimization | Table assignment (greedy + exact max-weight assignment via DP) | `QueueTableManagementSystem/src/app/lib/ai/assignment.ts` |
 | Math helpers | Linear algebra utilities used by the above | `QueueTableManagementSystem/src/app/lib/ai/math.ts` |
 
-## CustomerFacingApp (Frontend TS) — Recommendation Algorithms
-
-| Area | Algorithm / Logic | File path |
-|---|---|---|
-| Bandit | Thompson sampling multi-armed bandit + persistence | `CustomerFacingApp/src/app/services/mabService.ts` |
-| Recommendation scoring | Multi-signal ranking (bandit + weather + flavor + history + pairings) | `CustomerFacingApp/src/app/services/recommendationService.ts` |
-| Weather scoring | Weather-based boost scoring used by recommendations | `CustomerFacingApp/src/app/services/weatherService.ts` |
-
-## CompanyFacingApp (Frontend TS) — Demo Analytics Algorithms
-
-| Area | Algorithm / Logic | File path |
-|---|---|---|
-| Mock forecasting | Simple linear regression + moving average + trend projection (mock/demo data) | `CompanyFacingApp/src/app/utils/mockData.ts` |
-
 ## Dashboard (Python) — Offline Analytics Notebook + Streamlit Viewer
 
 | Area | Algorithm / Logic | File path |
